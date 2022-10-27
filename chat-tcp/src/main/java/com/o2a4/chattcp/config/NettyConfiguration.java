@@ -12,16 +12,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.InetSocketAddress;
+import java.net.*;
 
 @Configuration
 @RequiredArgsConstructor
 public class NettyConfiguration {
 
-    @Value("${server.host}")
-    private String host;
-    @Value("${server.port}")
-    private int port;
+    @Value("${server.address}")
+    private String address;
+//    @Value("${server.netty.port}")
+//    private int port;
     @Value("${server.netty.boss-count}")
     private int bossCount;
     @Value("${server.netty.worker-count}")
@@ -42,7 +42,7 @@ public class NettyConfiguration {
                 // ChannelInitializer: 새로운 Channel을 구성할 때 사용되는 특별한 handler. 주로 ChannelPipeline으로 구성
                 .childHandler(nettyChannelInitializer);
 
-        // ServerBootstarp에 다양한 Option 추가 가능
+        // ServerBootstrap에 다양한 Option 추가 가능
         // SO_BACKLOG: 동시에 수용 가능한 최대 incoming connections 개수
         // 이 외에도 SO_KEEPALIVE, TCP_NODELAY 등 옵션 제공
         b.option(ChannelOption.SO_BACKLOG, backlog);
@@ -65,7 +65,14 @@ public class NettyConfiguration {
     // IP 소켓 주소(IP 주소, Port 번호)를 구현
     // 도메인 이름으로 객체 생성 가능
     @Bean
-    public InetSocketAddress inetSocketAddress() {
-        return new InetSocketAddress(host, port);
+    public InetSocketAddress inetSocketAddress() throws UnknownHostException {
+
+//        System.out.println("주소 찍기" + " " + InetAddress.getLocalHost().getHostAddress());
+//        return new InetSocketAddress(InetAddress.getLocalHost(), port);
+
+//        return new InetSocketAddress("localhost", port);
+        // TODO 로컬호스트나 아이피 주소 특정하는게 문제 그냥 만들면 0.0.0.0으로 가고,,,
+        System.out.println("ㅇㄴㄹㄴㅇㄹㄴㅇㄹㄴㅇㄹㄴㅇ");
+        return  new InetSocketAddress(8092);
     }
 }

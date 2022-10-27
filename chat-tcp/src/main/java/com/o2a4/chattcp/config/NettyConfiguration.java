@@ -20,8 +20,6 @@ public class NettyConfiguration {
 
     @Value("${server.address}")
     private String address;
-//    @Value("${server.netty.port}")
-//    private int port;
     @Value("${server.netty.boss-count}")
     private int bossCount;
     @Value("${server.netty.worker-count}")
@@ -70,9 +68,7 @@ public class NettyConfiguration {
 //        System.out.println("주소 찍기" + " " + InetAddress.getLocalHost().getHostAddress());
 //        return new InetSocketAddress(InetAddress.getLocalHost(), port);
 
-//        return new InetSocketAddress("localhost", port);
-        // TODO 로컬호스트나 아이피 주소 특정하는게 문제 그냥 만들면 0.0.0.0으로 가고,,,
-        System.out.println("ㅇㄴㄹㄴㅇㄹㄴㅇㄹㄴㅇㄹㄴㅇ");
-        return  new InetSocketAddress(8092);
+        // 이러면 채팅서버 127.0.0.1로 뜸
+        return  new InetSocketAddress("localhost",8092);
     }
 }

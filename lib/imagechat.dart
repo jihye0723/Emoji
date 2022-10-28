@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
-import 'package:untitled/chat.dart';
-
-//이름 필요
 const String _name = "코딩하기 싫은 호랑이";
+const _color = Colors.indigo;
+const String _station = "고독한 대화방";
 
 //유저 프로필사진
 Widget getAvatar(name) {
@@ -22,30 +19,39 @@ Widget getAvatar(name) {
   }
 }
 
-class ImagePage extends StatefulWidget {
-  const ImagePage({super.key, required this.title});
-  final String title;
+//가장 큰 틀
+class ImageChat extends StatelessWidget {
+  const ImageChat({super.key, required this.one, required this.name});
 
-  @override
-  _ImagePageState createState() => _ImagePageState();
-}
+  final int one;
+  final String name;
 
-class _ImagePageState extends State<ImagePage> {
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: _color,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
+              print(name);
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
             padding: const EdgeInsets.only(left: 10)),
         centerTitle: true,
         elevation: 0,
-        title: Text(widget.title),
-        backgroundColor: Colors.deepOrangeAccent,
+        title: Container(
+          width: width * 0.35,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: const MyStatefulWidget(text: _station, color: _color),
+        ),
+        backgroundColor: _color,
         actions: <Widget>[
           IconButton(
             onPressed: () {
@@ -73,7 +79,7 @@ class _ImagePageState extends State<ImagePage> {
                         TextButton(
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white, // 텍스트 색 바꾸기
-                            backgroundColor: Colors.indigo, // 백그라운드로 컬러 설정
+                            backgroundColor: _color, // 백그라운드로 컬러 설정
 
                             textStyle: const TextStyle(fontSize: 16),
                             shape: RoundedRectangleBorder(
@@ -95,7 +101,52 @@ class _ImagePageState extends State<ImagePage> {
         ],
       ),
       body: Center(
-        child: ChatScreen(name: _name),
+        child: ChatScreen(name: name),
+      ),
+    );
+  }
+}
+
+// 전광판 지나가는 거
+class MyStatefulWidget extends StatefulWidget {
+  const MyStatefulWidget({super.key, required this.text, this.color});
+  final String text;
+  final color;
+
+  @override
+  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
+}
+
+class _MyStatefulWidgetState extends State<MyStatefulWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(seconds: 3),
+    vsync: this,
+  )..repeat(reverse: false);
+  late final Animation<Offset> _offsetAnimation = Tween<Offset>(
+    begin: const Offset(-0.5, 0),
+    end: const Offset(1.0, 0),
+  ).animate(CurvedAnimation(
+    parent: _controller,
+    curve: Curves.linear,
+  ));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _offsetAnimation,
+      child: Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: Text(
+          widget.text,
+          style: TextStyle(color: widget.color),
+        ),
       ),
     );
   }
@@ -103,107 +154,88 @@ class _ImagePageState extends State<ImagePage> {
 
 //채팅
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.name});
   final String name;
+  const ChatScreen({super.key, required this.name});
 
   @override
   ChatScreenState createState() => ChatScreenState();
 }
 
-//화면구성용 상태위젯, 애니메이션 효과
+// 화면 구성용 상태 위젯. 애니메이션 효과를 위해 TickerProviderStateMixin를 가짐
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  // 메시지 저장하는 리스트
+  // 입력한 메시지를 저장하는 리스트
   final List<ChatMessage> _message = <ChatMessage>[];
+  late FocusNode chatNode;
+
+  // 텍스트필드 제어용 컨트롤러
+  final TextEditingController _textController = TextEditingController();
 
   // 텍스트필드에 입력된 데이터의 존재 여부
   bool _isComposing = false;
-
-  //이미지
-  final ImagePicker _picker = ImagePicker();
-  XFile? _image;
-  late File target;
-
-  Future _getImage() async {
-    XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery, maxWidth: 220, maxHeight: 220);
-    if (image != null) {
-      setState(() {
-        _image = image!;
-        _isComposing = true;
-      });
-    }
-  }
-
-//채팅창 화면
+  //채팅창화면
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.deepOrangeAccent,
+      backgroundColor: _color,
       body: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(30.0)),
-            color: Theme.of(context).cardColor,
-          ),
-          child: Column(children: <Widget>[
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(30.0)),
+          color: Theme.of(context).cardColor,
+        ),
+        child: Column(
+          children: <Widget>[
+            // 리스트뷰를 Flexible로 추가.
             Flexible(
+              // 리스트뷰 추가
               child: ListView.builder(
                 padding: const EdgeInsets.all(8.0),
+                // 리스트뷰의 스크롤 방향을 반대로 변경. 최신 메시지가 하단에 추가됨
                 reverse: true,
                 itemCount: _message.length,
                 itemBuilder: (_, index) => _message[index],
               ),
             ),
-            //구분선
+            // 구분선
             const Divider(height: 1.0),
-            //메세지 입력부분
+            // 메시지 입력을 받은 위젯(_buildTextCompose)추가
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
               ),
               child: _buildTextComposer(widget.name),
             )
-          ])),
+          ],
+        ),
+      ),
     );
   }
 
   // 채팅 입력부분
   Widget _buildTextComposer(String name) {
     return IconTheme(
-      data: const IconThemeData(color: Colors.deepOrangeAccent),
+      data: const IconThemeData(color: _color),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0) +
-            const EdgeInsets.only(top: 10, bottom: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              // 플랫폼 종류에 따라 적당한 버튼 추가
-              child: IconButton(
-                // 아이콘 버튼에 전송 아이콘 추가
-                icon: const Icon(Icons.image),
-                // 입력된 텍스트가 존재할 경우에만 _handleSubmitted 호출
-                onPressed: _getImage,
+            // 텍스트 입력 필드
+            Flexible(
+              child: TextField(
+                controller: _textController,
+                // 입력된 텍스트에 변화가 있을 때 마다
+                onChanged: (text) {
+                  setState(() {
+                    _isComposing = text.isNotEmpty;
+                  });
+                },
+                // 키보드상에서 확인을 누를 경우. 입력값이 있을 때에만 _handleSubmitted 호출
+                onSubmitted: _isComposing ? _handleSubmitted : null,
+                // 텍스트 필드에 힌트 텍스트 추가
+                decoration:
+                    const InputDecoration.collapsed(hintText: "채팅을 입력하세요"),
+                focusNode: chatNode,
               ),
             ),
-
-            // 텍스트 입력 필드
-            (_image == null)
-                ? Container()
-                : Flexible(
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: FileImage(File(_image!.path)),
-                        filterQuality: FilterQuality.low,
-                      )),
-                    ),
-                  ),
             // 전송 버튼
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -212,8 +244,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // 아이콘 버튼에 전송 아이콘 추가
                 icon: const Icon(Icons.send),
                 // 입력된 텍스트가 존재할 경우에만 _handleSubmitted 호출
-                onPressed:
-                    _isComposing ? () => _handleSubmitted(_image!) : null,
+                onPressed: _isComposing
+                    ? () => _handleSubmitted(_textController.text)
+                    : null,
               ),
             ),
           ],
@@ -222,23 +255,23 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // 메시지 전송 버튼이 클릭될 때 호출/ 이미지 전송
-  void _handleSubmitted(XFile image) {
+  // 메시지 전송 버튼이 클릭될 때 호출
+  void _handleSubmitted(String text) {
     // 텍스트 필드의 내용 삭제
-    _image = XFile("");
-
+    _textController.clear();
+    FocusScope.of(context).requestFocus(chatNode);
     // _isComposing을 false로 설정
     setState(() {
       _isComposing = false;
     });
     // 입력받은 텍스트를 이용해서 리스트에 추가할 메시지 생성
     ChatMessage message = ChatMessage(
-      image: image,
+      text: text,
       // animationController 항목에 애니메이션 효과 설정
       // ChatMessage은 UI를 가지는 위젯으로 새로운 message가 리스트뷰에 추가될 때
       // 발생할 애니메이션 효과를 위젯에 직접 부여함
       animationController: AnimationController(
-        duration: const Duration(milliseconds: 00),
+        duration: const Duration(milliseconds: 700),
         vsync: this,
       ),
     );
@@ -253,6 +286,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    chatNode = FocusNode();
   }
 
   @override
@@ -261,52 +296,48 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     for (ChatMessage message in _message) {
       message.animationController?.dispose();
     }
+    chatNode.dispose();
     super.dispose();
   }
 }
 
 // 리스브뷰에 추가될 메시지 위젯
-class ChatMessage extends StatefulWidget {
-  // 출력할 메시지
+class ChatMessage extends StatelessWidget {
+  final String text; // 출력할 메시지
   final AnimationController animationController; // 리스트뷰에 등록될 때 보여질 효과
-  final XFile image;
 
   const ChatMessage(
-      {super.key, required this.animationController, required this.image});
+      {super.key, required this.text, required this.animationController});
 
-  @override
-  State<ChatMessage> createState() => _ChatMessageState();
-}
-
-class _ChatMessageState extends State<ChatMessage> {
   @override
   Widget build(BuildContext context) {
     // 위젯에 애니메이션을 발생하기 위해 SizeTransition을 추가
     return SizeTransition(
       sizeFactor:
           // 사용할 애니메이션 효과 설정
-          CurvedAnimation(
-              parent: widget.animationController!, curve: Curves.ease),
+          CurvedAnimation(parent: animationController!, curve: Curves.easeOut),
       axisAlignment: 0.0,
-      child: Message(context, _name, widget.image),
+      child: Message(context, _name, text),
     );
   }
 }
 
 // 내채팅 니채팅 확인, type은 내채팅인지 확인하기 위해만들어둠, 추후에 작업이 필요 현재는 단순 아이디 비교
-Widget Message(BuildContext context, String type, XFile image) {
+Widget Message(BuildContext context, String type, String text) {
   if (type == "코딩하기 싫은 호랑이") {
     return
         // 리스트뷰에 추가될 컨테이너 위젯
         Container(
       margin: const EdgeInsets.symmetric(vertical: 10.0) +
-          const EdgeInsets.only(right: 10.0),
+          const EdgeInsets.only(right: 5.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
+          //사진 클릭 이벤트
           Container(
             margin: const EdgeInsets.only(right: 16.0),
+            // 사용자명의 첫번째 글자를 서클 아바타로 표시
             child: CircleAvatar(child: getAvatar(_name)),
           ),
           Column(
@@ -314,9 +345,22 @@ Widget Message(BuildContext context, String type, XFile image) {
             children: <Widget>[
               // 사용자명을 subhead 테마로 출력
               Text(_name, style: Theme.of(context).textTheme.bodySmall),
-              const Padding(padding: EdgeInsets.only(bottom: 5)),
               // 입력받은 메시지 출력
-              Image(fit: BoxFit.contain, image: FileImage(File(image!.path))),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                margin: const EdgeInsets.only(top: 5.0),
+                padding: const EdgeInsets.all(8),
+                constraints: BoxConstraints(
+                  minWidth: _name.length.toDouble() * 10 > 300
+                      ? 300
+                      : _name.length.toDouble() * 10,
+                  maxWidth: 300,
+                ),
+                child: Text(text, softWrap: true),
+              ),
             ],
           )
         ],
@@ -325,7 +369,7 @@ Widget Message(BuildContext context, String type, XFile image) {
   } else {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10.0) +
-          const EdgeInsets.only(left: 10.0),
+          const EdgeInsets.only(left: 5.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -374,6 +418,7 @@ Widget Message(BuildContext context, String type, XFile image) {
             },
             child: Container(
               margin: const EdgeInsets.only(right: 16.0),
+              // 사용자명의 첫번째 글자를 서클 아바타로 표시
               child: CircleAvatar(child: getAvatar(_name)),
             ),
           ),
@@ -382,13 +427,21 @@ Widget Message(BuildContext context, String type, XFile image) {
             children: <Widget>[
               // 사용자명을 subhead 테마로 출력
               Text(_name, style: Theme.of(context).textTheme.bodySmall),
-              const Padding(padding: EdgeInsets.only(bottom: 5)),
-
-              // 서버에서 받은 주소 연결하면 될듯
-              Image.network(
-                'https://picsum.photos/250?image=9',
-                width: MediaQuery.of(context).size.width * 0.4,
-                fit: BoxFit.contain,
+              // 입력받은 메시지 출력
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                margin: const EdgeInsets.only(top: 5.0),
+                padding: const EdgeInsets.all(8),
+                constraints: BoxConstraints(
+                  minWidth: _name.length.toDouble() * 10 > 300
+                      ? 300
+                      : _name.length.toDouble() * 10,
+                  maxWidth: 300,
+                ),
+                child: Text(text, softWrap: true),
               ),
             ],
           )

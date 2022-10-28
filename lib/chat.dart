@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'data/station.dart' as station;
 
 var Station = station.two;
+const String _name = "코딩하기 싫은 기린";
+const _color = Colors.green;
+const String _station = "역삼역";
+
+//목적지 설정은 한번하면 앱자체에서 계속 데이터를 들고있게 하는게 좋겠음.
 
 //유저 프로필사진
 Widget getAvatar(name) {
@@ -10,30 +15,32 @@ Widget getAvatar(name) {
   String animal = lastname.trim();
   switch (animal) {
     case '호랑이':
-      return Image.asset("assets/images/tiger.png");
+      return Image.asset("images/tiger.png");
     case '기린':
-      return Image.asset("assets/images/giraffe.png");
+      return Image.asset("images/giraffe.png");
     default:
-      return Image.asset("assets/images/bear.png");
+      return Image.asset("images/bear.png");
   }
 }
 
 //가장 큰 틀
 class TextChat extends StatelessWidget {
-  final String station;
-  final _color = Colors.green;
+  const TextChat({super.key, required this.one, required this.name});
 
-  const TextChat({super.key, required String color, required String station});
+  final int one;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: _color,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              print("back");
+              print(name);
+              Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
             padding: const EdgeInsets.only(left: 10)),
@@ -58,18 +65,17 @@ class TextChat extends StatelessWidget {
                     return AlertDialog(
                       title: Image.asset(
                         "images/map.png",
-                        width: 100,
-                        height: 100,
+                        height: height * 0.1,
                       ),
-                      content: Container(
-                          child: Column(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: const [
                           Text(
                             "목적지 선택",
                             textAlign: TextAlign.center,
                           ),
                         ],
-                      )),
+                      ),
                       actionsPadding: const EdgeInsets.only(bottom: 30),
                       actionsAlignment: MainAxisAlignment.center,
                       actions: [
@@ -97,11 +103,10 @@ class TextChat extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(
-        child: ChatScreen(),
+      body: Center(
+        child: ChatScreen(name: name),
       ),
     );
-    // defaultTargetPlatform을 사용하기 위해서는 foundation.dart 패키지의 추가 필요
   }
 }
 
@@ -152,7 +157,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
 
 //채팅
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String name;
+  const ChatScreen({super.key, required this.name});
 
   @override
   ChatScreenState createState() => ChatScreenState();
@@ -199,7 +205,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
               ),
-              child: _buildTextComposer(),
+              child: _buildTextComposer(widget.name),
             )
           ],
         ),
@@ -208,7 +214,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   // 채팅 입력부분
-  Widget _buildTextComposer() {
+  Widget _buildTextComposer(String name) {
     return IconTheme(
       data: const IconThemeData(color: _color),
       child: Container(
@@ -230,7 +236,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // 텍스트 필드에 힌트 텍스트 추가
                 decoration:
                     const InputDecoration.collapsed(hintText: "채팅을 입력하세요"),
-                autofocus: true,
                 focusNode: chatNode,
               ),
             ),
@@ -301,12 +306,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
 // 리스브뷰에 추가될 메시지 위젯
 class ChatMessage extends StatelessWidget {
-  final String? text; // 출력할 메시지
-  final AnimationController? animationController; // 리스트뷰에 등록될 때 보여질 효과
-  String name;
+  final String text; // 출력할 메시지
+  final AnimationController animationController; // 리스트뷰에 등록될 때 보여질 효과
 
   const ChatMessage(
-      {super.key, this.text, this.animationController, required String name});
+      {super.key, required this.text, required this.animationController});
 
   @override
   Widget build(BuildContext context) {
@@ -316,14 +320,14 @@ class ChatMessage extends StatelessWidget {
           // 사용할 애니메이션 효과 설정
           CurvedAnimation(parent: animationController!, curve: Curves.easeOut),
       axisAlignment: 0.0,
-      child: Message(context, name, text!),
+      child: Message(context, _name, text),
     );
   }
 }
 
 // 내채팅 니채팅 확인, type은 내채팅인지 확인하기 위해만들어둠, 추후에 작업이 필요 현재는 단순 아이디 비교
 Widget Message(BuildContext context, String type, String text) {
-  if (type == "출근하기 싫은 호랑이") {
+  if (type == "코딩하기 싫은 호랑이") {
     return
         // 리스트뷰에 추가될 컨테이너 위젯
         Container(

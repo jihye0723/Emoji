@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'chat.dart';
+import 'imagechat.dart';
+import 'test.dart';
 
 //메인 구동
 void main() => runApp(const MaterialApp(
@@ -12,11 +13,7 @@ void main() => runApp(const MaterialApp(
 
 //가장 큰 틀
 class MyApp extends StatelessWidget {
-  final String name;
-  var color;
-  final String station;
-
-  const MyApp({super.key, required this.name, this.color, this.station});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +30,9 @@ class MyApp extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const TextChat(
-                            name: "코딩하기 싫은 호랑이",
-                            station: "역삼역",
-                            color: colors.green,
+                      //builder: (context) => TextChat(one: 1,name: "구라",)));
+                      builder: (context) => const ImagePage(
+                            title: "고독한 지하철",
                           )));
             },
           ),

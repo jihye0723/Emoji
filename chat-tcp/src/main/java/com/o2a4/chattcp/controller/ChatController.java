@@ -1,14 +1,19 @@
 package com.o2a4.chattcp.controller;
 
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-
-public class ChatController {
-
-}
+//@Slf4j
+//@RestController
+//public class ChatController {
+//    @GetMapping("/chat/in")
+//    public Flux<String> roomIn() {
+//        return Flux.just("Hello", "World!");
+//    }
+//    @PostMapping("/chat/out")
+//    public Mono<String> roomOut(@RequestBody Mono<String> body) {
+//        return body.map(String::toUpperCase);
+//    }
+//}

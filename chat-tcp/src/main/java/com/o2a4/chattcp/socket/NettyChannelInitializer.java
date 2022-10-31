@@ -1,7 +1,7 @@
 package com.o2a4.chattcp.socket;
 
 import com.o2a4.chattcp.config.NettyConfiguration;
-import com.o2a4.chattcp.handler.ServiceHandler;
+import com.o2a4.chattcp.handler.ChatHandler;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    private final ServiceHandler serviceHandler;
+    private final ChatHandler chatHandler;
 
     private final DefaultEventExecutorGroup workerGroup = NettyConfiguration.workerGroup();
 
@@ -39,7 +39,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
                 .addLast(new ProtobufDecoder(TransferOuterClass.Transfer.getDefaultInstance()))
                 //Logger, Event Handler
                 .addLast(new LoggingHandler(LogLevel.valueOf(logLevel)))
-                .addLast(workerGroup, serviceHandler)
+                .addLast(workerGroup, chatHandler)
                 //ProtoBuf Encoder
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder());

@@ -1,8 +1,8 @@
 import 'dart:typed_data';
-import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:tcp_socket_connection/tcp_socket_connection.dart';
 import 'data/Transfer.pb.dart';
-import 'dart:convert';
 
 Transfer testMethod() {
   Transfer test1 = Transfer();
@@ -14,7 +14,11 @@ Transfer testMethod() {
   return test1;
 }
 
-class tcpchat2 extends StatelessWidget {
+void main() {
+  runApp(tcpchat());
+}
+
+class tcpchat extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -38,39 +42,22 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   //Instantiating the class with the Ip and the PortNumber
-
+  TcpSocketConnection socketConnection =
+      TcpSocketConnection("172.21.240.1", 7000);
   final TextEditingController _controller = TextEditingController();
 
-  Uint8List message = testMethod().writeToBuffer();
+  String message = testMethod().toBuilder().toString();
 
   @override
   void initState() {
     super.initState();
-    //startConnection();
-    create();
+    startConnection();
     print("hi");
-  }
-
-  void create() async {
-    Socket socket = await Socket.connect("172.21.240.1", 7000);
-    print('connected');
-    socket.listen((List<int> event) {
-      print(ini);
-    });
-
-    // send hello
-    socket.add(message);
-
-    // wait 5 seconds
-    //await Future.delayed(Duration(seconds: 5));
-
-    // .. and close the socket
-    //socket.close();
   }
 
   @override
   void dispose() {
-    //socketConnection.disconnect();
+    socketConnection.disconnect();
     super.dispose();
   }
 
@@ -82,14 +69,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //starting the connection and listening to the socket asynchronously
-  // void startConnection() async {
-  //   socketConnection.enableConsolePrint(
-  //       true); //use this to see in the console what's happening
-  //   if (await socketConnection.canConnect(5000, attempts: 3)) {
-  //     //check if it's possible to connect to the endpoint
-  //     await socketConnection.connect(5000, messageReceived, attempts: 3);
-  //   }
-  // }
+  void startConnection() async {
+    socketConnection.enableConsolePrint(
+        true); //use this to see in the console what's happening
+    if (await socketConnection.canConnect(5000, attempts: 3)) {
+      //check if it's possible to connect to the endpoint
+      await socketConnection.connect(5000, messageReceived, attempts: 3);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             TextButton(
                 onPressed: () {
-                  //socketConnection.disconnect();
+                  socketConnection.disconnect();
                 },
                 child: const Text("서버아웃!")),
             Form(
@@ -126,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      //socketConnection.sendMessage(message);
+      socketConnection.sendMessage(message);
       //print(message);
     }
   }

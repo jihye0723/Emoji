@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import 'package:untitled/chat.dart';
-
 //이름 필요
 const String _name = "코딩하기 싫은 호랑이";
 

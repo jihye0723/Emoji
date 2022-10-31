@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'chat.dart';
+import 'package:untitled/chattest.dart';
+import 'chat2.dart';
 import 'imagechat.dart';
 import 'test.dart';
+import 'tcptest.dart';
 
 //메인 구동
 void main() => runApp(const MaterialApp(
@@ -31,9 +33,10 @@ class MyApp extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       //builder: (context) => TextChat(one: 1,name: "구라",)));
-                      builder: (context) => const ImagePage(
-                            title: "고독한 지하철",
-                          )));
+                      // builder: (context) => const ImagePage(
+                      //       title: "고독한 지하철",
+                      //     )));
+                      builder: (context) => tcpchat2()));
             },
           ),
         ));

@@ -34,9 +34,10 @@ repositories {
 dependencies {
 
 //	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
-//	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'com.google.protobuf:protobuf-java:3.21.8'
+	implementation 'org.apache.commons:commons-collections4:4.4'
 //	implementation 'org.apache.kafka:kafka-streams'
 //	implementation 'org.springframework.kafka:spring-kafka'
 

@@ -671,7 +671,7 @@ class ChatMessage extends StatelessWidget {
   }
 }
 
-// 내채팅 니채팅 확인, type 은 내채팅인지 확인하기 위해만들어둠, 추후에 작업이 필요 현재는 단순 아이디 비교
+// 내채팅 니채팅 확인, type 은 내채팅인지 확인하기 위해 만들어 둠, 추후에 작업이 필요 현재는 단순 아이디 비교
 Widget Message(BuildContext context, String type, String text) {
   if (type == "코딩하기 싫은 호랑이") {
     return

@@ -2,14 +2,26 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'data/Transfer.pb.dart';
+import 'data/station.dart' as stationData;
 
 // 273,274 ip,포트 설정가능
 
+// 기본틀 238에서 나머지 정보들 다 가져오기
+// 채팅 스크린   528 init에서 ip,port 가져오기
+
+//열차번호로 몇호선인지 알아내기
+
+var _color;
+String ip = "";
+int port = 0;
 String text = "";
-String userId = "gkswotmd96";
-String mynickName = "출근하기 싫은 기린";
-const _color = Colors.green;
-const String _station = "역삼역";
+
+// 유저정보.
+String userId = "";
+String mynickName = "";
+
+//목적지 설정을 위한 데이터
+List<String> rain = [];
 
 //테스트용..
 List<int> test = [
@@ -103,24 +115,85 @@ Transfer testMethod(String line, String userId, String nickName) {
   return text;
 }
 
-///////// 유저 프로필사진만들기위한 것
-Widget getAvatar(name) {
-  String lastname =
-      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
-  String animal = lastname.trim();
-  switch (animal) {
-    case '호랑이':
-      return Image.asset("assets/images/tiger.png");
-    case '기린':
-      return Image.asset("assets/images/giraffe.png");
-    default:
-      return Image.asset("assets/images/bear.png");
+// 기본 채팅 틀
+class TextChat extends StatefulWidget {
+  final String train;
+  final String station;
+
+  TextChat({super.key, required this.train, required this.station});
+
+  //도착지 검새바를 위한 리스트
+  final List<String> list = ["역삼역"];
+
+  late String _info = "";
+  late String _destination = "역삼역";
+
+  @override
+  State<TextChat> createState() => _TextChatState();
+}
+
+//.//////////////목적지선택 검색을 위한 메소드 모음
+class Search extends SearchDelegate {
+  late String selectedResult;
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    // TODO: implement buildActions
+    throw UnimplementedError();
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    // TODO: implement buildLeading
+    throw UnimplementedError();
+  }
+
+  final List<String> listExample;
+  Search(this.listExample);
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return Center(
+      child: Text(selectedResult),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    // TODO: implement buildSuggestions
+    throw UnimplementedError();
   }
 }
 
-// 기본 채팅 틀
-class TextChat extends StatelessWidget {
-  const TextChat({super.key});
+////// 채팅
+class _TextChatState extends State<TextChat> {
+  ////// 몇호선, 색깔 선정
+  find() {
+    switch (widget.train[0]) {
+      case "1":
+        _color = Colors.blue;
+        rain = stationData.one;
+        break;
+      case "2":
+        _color = Colors.green;
+        rain = stationData.two;
+        break;
+      case "3":
+        _color = Colors.orange;
+        rain = stationData.three;
+        break;
+      default:
+        break;
+    }
+  }
+
+  //시작..
+  @override
+  void initState() {
+    super.initState();
+    widget._info = widget.station;
+    find();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +205,8 @@ class TextChat extends StatelessWidget {
         leading: IconButton(
             onPressed: () {
               print(mynickName);
-              Navigator.pop(context);
+              //showSearch(context: context, delegate: Search(widget.list));
+              //Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
             padding: const EdgeInsets.only(left: 10)),
@@ -144,7 +218,7 @@ class TextChat extends StatelessWidget {
             color: Colors.black,
             borderRadius: BorderRadius.circular(10.0),
           ),
-          child: const MyStatefulWidget(text: _station, color: _color),
+          child: MyStatefulWidget(text: widget._info, color: _color),
         ),
         backgroundColor: _color,
         actions: <Widget>[
@@ -155,17 +229,28 @@ class TextChat extends StatelessWidget {
                   context: context,
                   builder: (BuildContext ctx) {
                     return AlertDialog(
-                      title: Image.asset(
-                        "images/map.png",
-                        height: height * 0.1,
-                      ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
+                      title: Column(
+                        children: [
                           Text(
                             "목적지 선택",
                             textAlign: TextAlign.center,
                           ),
+                          Image.asset(
+                            "assets/images/map.png",
+                            height: height * 0.1,
+                          ),
+                        ],
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(widget._destination),
+                          TextField(),
+                          // ListView.builder(
+                          //     itemCount: widget.list.length,
+                          //     itemBuilder: (context, index) => ListTile(
+                          //           title: Text(widget.list[index]),
+                          //         ))
                         ],
                       ),
                       actionsPadding: const EdgeInsets.only(bottom: 30),
@@ -274,11 +359,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   //채팅
   late Socket socket;
-  String ip = "172.27.160.1";
-  int port = 70;
+  String ip = "";
+  int port = 0;
+
   //////////////////////////tcp 서버연결부분
 
   void create() async {
+    //print("hi");
     socket = await Socket.connect(ip, port);
     print('connected');
 
@@ -405,7 +492,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   //////////////////////////////////////// 채팅 입력부분
   Widget _buildTextComposer() {
     return IconTheme(
-      data: const IconThemeData(color: _color),
+      data: IconThemeData(color: _color),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -520,12 +607,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     message.animationController.forward();
   }
 
-  ///             initState
+  ///             initState    채팅부분 포트랑,ip 가져오기
   @override
   void initState() {
     super.initState();
+    setting();
     create();
     chatNode = FocusNode();
+  }
+
+  void setting() {
+    ip = "172.27.160.1";
+    port = 70;
+    userId = "gkswotmd96";
+    mynickName = "출근하기 싫은 기린";
   }
 
   ///             dispose
@@ -857,7 +952,7 @@ Widget message(BuildContext context, String nick, String text) {
                     return AlertDialog(
                       actionsAlignment: MainAxisAlignment.center,
                       title: Image.asset(
-                        "images/warning.png",
+                        "assets/images/warning.png",
                         width: width * 0.1,
                         height: height * 0.1,
                       ),
@@ -917,5 +1012,20 @@ Widget message(BuildContext context, String nick, String text) {
         ],
       ),
     );
+  }
+}
+
+///////// 유저 프로필사진만들기위한 것
+Widget getAvatar(name) {
+  String lastname =
+      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
+  String animal = lastname.trim();
+  switch (animal) {
+    case '호랑이':
+      return Image.asset("assets/images/tiger.png");
+    case '기린':
+      return Image.asset("assets/images/giraffe.png");
+    default:
+      return Image.asset("assets/images/bear.png");
   }
 }

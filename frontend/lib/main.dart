@@ -34,8 +34,13 @@ class MyApp extends StatelessWidget {
             ElevatedButton(
               child: const Text("문자채팅방"),
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => TextChat()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TextChat(
+                              train: "2221",
+                              station: "역삼역",
+                            )));
               },
             ),
             ElevatedButton(

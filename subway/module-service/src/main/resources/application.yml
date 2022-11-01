@@ -1,0 +1,32 @@
+# mongo
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      username: sub
+      password: sub1
+      database: subway
+#      uri: mongodb: //localhost:27017/subway
+
+---
+
+# userDetailService
+spring:
+  main:
+    allow-bean-definition-overriding: true
+---
+
+# port
+spring:
+  server:
+    port: 8082
+
+---
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+---

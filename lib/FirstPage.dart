@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'CustomSlider.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -14,16 +15,6 @@ class _FirstPageState extends State<FirstPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final double customWidth = MediaQuery.of(context).size.width;
-    // final double customHeight = MediaQuery.of(context).size.height;
-    //
-    // final double stationNameSectionWidth = customWidth * 0.7;
-    // final double stationInfoSectionWidth = customWidth * 0.85;
-    // final double railBoxWidth = ((customWidth * 0.85) - 180) / 2;
-    //
-    // final double alreadyOnBoardSectionWidth = customWidth * 0.5;
-    // final double advBoardSectionWidth = customWidth * 0.85;
-
     sdt(int trainNo) {
       showDialog(
           context: context,
@@ -164,80 +155,67 @@ class _FirstPageState extends State<FirstPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Container(
-              // beforeStation
-              // alignment: Alignment.centerLeft,
-              child: Container(
-                  width: 50.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0x7f32a23c)),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "낙성대",
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                  )),
+            CustomSlider(
+              trainNo: "2147",
+              remainTime: 1,
+              direction: 1,
             ),
-            Container(
-              // beforeTrainInfo
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(left: 10.w),
-                        // right: 200,
-                        // top: 400,
-                        child: TextButton(
-                          onPressed: () {
-                            // double www = context
-                            print(context.size);
-                            sdt(2147);
-                          },
-                          child: Stack(
-                            children: [
-                              Text(
-                                "2147",
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                ),
-                              ),
-                              Image.asset(
-                                'assets/images/train.png',
-                                width: 30.w,
-                              ),
-                            ],
-                          ),
-                          // child: Text("test"),
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
-                    // width: 100,
-                    width: 80.w,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    "3분 후 도착",
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                    ),
-                  )
-                ],
-              ),
-            ),
+            // Container(
+            //   // beforeTrainInfo
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Stack(
+            //         children: [
+            //           Container(
+            //             padding: EdgeInsets.only(left: 10.w),
+            //             // right: 200,
+            //             // top: 400,
+            //             child: TextButton(
+            //               onPressed: () {
+            //                 // double www = context
+            //                 print(context.size);
+            //                 sdt(2147);
+            //               },
+            //               child: Stack(
+            //                 children: [
+            //                   Text(
+            //                     "2147",
+            //                     style: TextStyle(
+            //                       fontSize: 10.sp,
+            //                     ),
+            //                   ),
+            //                   Image.asset(
+            //                     'assets/images/train.png',
+            //                     width: 30.w,
+            //                   ),
+            //                 ],
+            //               ),
+            //               // child: Text("test"),
+            //             ),
+            //           )
+            //         ],
+            //       ),
+            //       Container(
+            //         // width: 100,
+            //         width: 80.w,
+            //         decoration: BoxDecoration(
+            //           border: Border.all(
+            //             color: Colors.black,
+            //             width: 1,
+            //           ),
+            //         ),
+            //       ),
+            //       Text(
+            //         "3분 후 도착",
+            //         style: TextStyle(
+            //           fontSize: 10.sp,
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
             Container(
               // currentStation
               child: Container(
@@ -256,84 +234,71 @@ class _FirstPageState extends State<FirstPage> {
                     ),
                   )),
             ),
-            Container(
-              // nextTrainInfo
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(right: 10.w),
-                        // right: 200,
-                        // top: 400,
-                        child: TextButton(
-                          // 슬라이더 이용해서
-                          onPressed: () {
-                            print(context.size);
-                            sdt(2156);
-                          },
-                          child: Stack(
-                            children: [
-                              Text(
-                                "2156",
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                ),
-                              ),
-                              Transform(
-                                alignment: Alignment.center,
-                                transform: Matrix4.rotationY(3.14),
-                                child: Image.asset(
-                                  'assets/images/train.png',
-                                  width: 30.w,
-                                ),
-                              ),
-                            ],
-                          ),
-                          // child: Text("test"),
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
-                    // width: 100,
-                    width: 80.w,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    "2분 후 도착",
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              // nextStation
-              // alignment: Alignment.centerRight,
-              child: Container(
-                  width: 50.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0x7f32a23c)),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "방배",
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                  )),
-            ),
+            // Container(
+            //   // nextTrainInfo
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     crossAxisAlignment: CrossAxisAlignment.end,
+            //     children: [
+            //       Stack(
+            //         children: [
+            //           Container(
+            //             padding: EdgeInsets.only(right: 10.w),
+            //             // right: 200,
+            //             // top: 400,
+            //             child: TextButton(
+            //               // 슬라이더 이용해서
+            //               onPressed: () {
+            //                 print(context.size);
+            //                 sdt(2156);
+            //               },
+            //               child: Stack(
+            //                 children: [
+            //                   Text(
+            //                     "2156",
+            //                     style: TextStyle(
+            //                       fontSize: 10.sp,
+            //                     ),
+            //                   ),
+            //                   Transform(
+            //                     alignment: Alignment.center,
+            //                     transform: Matrix4.rotationY(3.14),
+            //                     child: Image.asset(
+            //                       'assets/images/train.png',
+            //                       width: 30.w,
+            //                     ),
+            //                   ),
+            //                 ],
+            //               ),
+            //               // child: Text("test"),
+            //             ),
+            //           )
+            //         ],
+            //       ),
+            //       Container(
+            //         // width: 100,
+            //         width: 80.w,
+            //         decoration: BoxDecoration(
+            //           border: Border.all(
+            //             color: Colors.black,
+            //             width: 1,
+            //           ),
+            //         ),
+            //       ),
+            //       Text(
+            //         "2분 후 도착",
+            //         style: TextStyle(
+            //           fontSize: 10.sp,
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
+            CustomSlider(
+              trainNo: "2156",
+              remainTime: 473,
+              direction: 0,
+            )
           ],
         ),
       ),

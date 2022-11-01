@@ -10,7 +10,7 @@
 // https://stackoverflow.com/questions/70786192/flutter-change-slider-thumb-to-image
 // https://stackoverflow.com/questions/73735773/how-can-i-build-the-following-thumb-for-a-slider/73872457#73872457
 
-// customSliderFFFFFF.dart 참고
+// CustomSlider.dart 참고
 // 여러가지로 따라해봤는데, 렌더링 전에 이미지 불러오는 과정에서 에러
 // late 변수, nullable initialize, nullcheck operator on null, 등등..
 // 근본적인 원인은 빌드(렌더링) 과정을 정확하게 이해하지 못한거같음..

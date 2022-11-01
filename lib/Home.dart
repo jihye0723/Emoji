@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'FirstPage.dart';
 import 'SecondPage.dart';
 import 'package:flutter/material.dart';
+import 'CustomSlider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -34,16 +35,16 @@ class _HomeState extends State<Home> {
       ),
       // 탭 누르는거에 따라서 페이지 전환
       body: pages[_selectedIndex],
-      // body: customSlider(),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.green,
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.train), label: "지하철"),
-          const BottomNavigationBarItem(icon: Icon(Icons.image), label: "고독한"),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+      // body: CustomSlider(),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   selectedItemColor: Colors.green,
+      //   items: [
+      //     const BottomNavigationBarItem(icon: Icon(Icons.train), label: "지하철"),
+      //     const BottomNavigationBarItem(icon: Icon(Icons.image), label: "고독한"),
+      //   ],
+      //   currentIndex: _selectedIndex,
+      //   onTap: _onItemTapped,
+      // ),
     );
   }
 }

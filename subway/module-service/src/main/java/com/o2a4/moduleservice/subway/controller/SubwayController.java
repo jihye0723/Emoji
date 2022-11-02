@@ -1,5 +1,6 @@
 package com.o2a4.moduleservice.subway.controller;
 
+import com.o2a4.moduleservice.subway.dto.StationDto;
 import lombok.AllArgsConstructor;
 import com.o2a4.moduleservice.subway.document.Station;
 import com.o2a4.moduleservice.subway.service.SubwayService;
@@ -20,14 +21,14 @@ public class SubwayController {
 
 //    @PathVariable("id")
     @GetMapping(value = "/station")
-    public ResponseEntity<User>  home(@RequestParam("latitude") String latitude, @RequestParam("longtitude") String longtitude){
+    public ResponseEntity<Station>  findStationByGps(@RequestParam("latitude") double latitude, @RequestParam("longtitude") double longtitude) throws Exception {
 
-        return ResponseEntity.ok(subwayService.findStation(user));
+        return ResponseEntity.ok(subwayService.findStation(latitude, longtitude));
     }
 
 
-    @GetMapping("/board")
-    public List<Station> findAll() { // 리턴을 JavaObject로 하면 스프링 내부적으로 JSON으로 자동 변환 해준다.
-        return stationRepository.findAll();
-    }
+//    @GetMapping("/board")
+//    public List<Station> findAll() { // 리턴을 JavaObject로 하면 스프링 내부적으로 JSON으로 자동 변환 해준다.
+//        return stationRepository.findAll();
+//    }
 }

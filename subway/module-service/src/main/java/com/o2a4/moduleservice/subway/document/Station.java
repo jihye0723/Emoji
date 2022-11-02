@@ -1,11 +1,13 @@
 package com.o2a4.moduleservice.subway.document;
 
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
-@Document(collection = "station")
+//@Data
+@Getter
+@Document(collection = "stations")
 public class Station {
 
     @Id
@@ -24,5 +26,5 @@ public class Station {
     private double latitude;
     
     // 경도
-    private double longtitude;
+    private double longitude;
 }

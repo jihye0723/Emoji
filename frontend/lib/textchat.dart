@@ -1,15 +1,17 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:intl/intl.dart';
+
 import 'data/Transfer.pb.dart';
 import 'data/station.dart' as stationData;
 
-// 273,274 ip,포트 설정가능
-
-// 기본틀 238에서 나머지 정보들 다 가져오기
-// 채팅 스크린   528 init에서 ip,port 가져오기
-
+// 채팅 스크린   618줄  init에서 ip,port 가져오기
 //열차번호로 몇호선인지 알아내기
+// 메시지 언제 끊을것이지...
 
 var _color;
 String ip = "";
@@ -22,6 +24,8 @@ String mynickName = "";
 
 //목적지 설정을 위한 데이터
 List<String> rain = [];
+
+late Socket socket;
 
 //테스트용..
 List<int> test = [
@@ -103,14 +107,15 @@ List<int> test = [
 ];
 
 /* protobuf 사용을 위한 메소드 설정*/
-Transfer testMethod(String line, String userId, String nickName) {
+Transfer testMethod(
+    String sendtype, String line, String userId, String nickName, String date) {
   Transfer text = Transfer();
 
-  text.type = "msg";
+  text.type = sendtype;
   text.content = line;
   text.userId = userId;
   text.nickName = nickName;
-  text.sendAt = "너는 누구인가";
+  text.sendAt = date;
 
   return text;
 }
@@ -122,47 +127,11 @@ class TextChat extends StatefulWidget {
 
   TextChat({super.key, required this.train, required this.station});
 
-  //도착지 검새바를 위한 리스트
-  final List<String> list = ["역삼역"];
-
   late String _info = "";
   late String _destination = "역삼역";
 
   @override
   State<TextChat> createState() => _TextChatState();
-}
-
-//.//////////////목적지선택 검색을 위한 메소드 모음
-class Search extends SearchDelegate {
-  late String selectedResult;
-
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    // TODO: implement buildActions
-    throw UnimplementedError();
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    // TODO: implement buildLeading
-    throw UnimplementedError();
-  }
-
-  final List<String> listExample;
-  Search(this.listExample);
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Center(
-      child: Text(selectedResult),
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    // TODO: implement buildSuggestions
-    throw UnimplementedError();
-  }
 }
 
 ////// 채팅
@@ -196,17 +165,40 @@ class _TextChatState extends State<TextChat> {
   }
 
   @override
+  void dispose() {
+    _destinationEditController.dispose();
+    super.dispose();
+  }
+
+  static List<String> getSuggestions(String query) {
+    List<String> matches = [];
+    matches.addAll(rain);
+    //matches.add("value");
+    //matches.add("car");
+    //matches.add("bar");
+    //matches.add("aar");
+    matches.retainWhere((s) => s.contains(query));
+    if (matches.length >= 3) {
+      matches.removeRange(3, matches.length);
+    }
+    return matches;
+  }
+
+  //목적지 도착 textfield 컨트롤러
+  final _destinationEditController = TextEditingController();
+
+  @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: _color,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              print(mynickName);
-              //showSearch(context: context, delegate: Search(widget.list));
-              //Navigator.pop(context);
+              //print(mynickName);
+              Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
             padding: const EdgeInsets.only(left: 10)),
@@ -229,29 +221,47 @@ class _TextChatState extends State<TextChat> {
                   context: context,
                   builder: (BuildContext ctx) {
                     return AlertDialog(
-                      title: Column(
-                        children: [
-                          Text(
-                            "목적지 선택",
-                            textAlign: TextAlign.center,
-                          ),
-                          Image.asset(
-                            "assets/images/map.png",
-                            height: height * 0.1,
-                          ),
-                        ],
-                      ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(widget._destination),
-                          TextField(),
-                          // ListView.builder(
-                          //     itemCount: widget.list.length,
-                          //     itemBuilder: (context, index) => ListTile(
-                          //           title: Text(widget.list[index]),
-                          //         ))
-                        ],
+                      content: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TypeAheadField(
+                                textFieldConfiguration: TextFieldConfiguration(
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                    controller: _destinationEditController,
+                                    //autofocus: true,
+                                    style: DefaultTextStyle.of(context)
+                                        .style
+                                        .copyWith(
+                                            height: 1,
+                                            fontSize: 20,
+                                            color: Colors.black),
+                                    decoration: InputDecoration(
+                                      hintText: _destinationEditController.text,
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.all(1),
+                                      constraints:
+                                          BoxConstraints(maxWidth: 200),
+                                    )),
+                                suggestionsCallback: (pattern) {
+                                  return getSuggestions(pattern);
+                                },
+                                itemBuilder: (context, suggestion) {
+                                  return ListTile(
+                                    leading: Icon(Icons.train),
+                                    title: Text(suggestion),
+                                  );
+                                },
+                                onSuggestionSelected: (suggestion) {
+                                  _destinationEditController.text = suggestion;
+                                  widget._destination = suggestion;
+                                },
+                              )
+                            ],
+                          );
+                        },
                       ),
                       actionsPadding: const EdgeInsets.only(bottom: 30),
                       actionsAlignment: MainAxisAlignment.center,
@@ -269,9 +279,24 @@ class _TextChatState extends State<TextChat> {
                           onPressed: () {
                             Navigator.of(ctx).pop();
                           },
-                          child: const Text("선택하기"),
+                          child: const Text("닫기"),
                         )
                       ],
+                      title: Column(
+                        children: [
+                          Text(
+                            "목적지 선택",
+                            textAlign: TextAlign.center,
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top: 20),
+                            child: Image.asset(
+                              "assets/images/map.png",
+                              height: height * 0.1,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   });
             },
@@ -290,6 +315,7 @@ class _TextChatState extends State<TextChat> {
 // ////////////////////////전광판 지나가는 거
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({super.key, required this.text, this.color});
+
   final String text;
   final color;
 
@@ -298,9 +324,7 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget>
-    with SingleTickerProviderStateMixin {
-  //채팅용 변수
-
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   //애니메이션 용ㅎ
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 2),
@@ -316,13 +340,42 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        print("resumed");
+        break;
+      case AppLifecycleState.inactive:
+        print("inactive");
+
+        Timer(Duration(seconds: 10), () async {
+          //socket.close();
+          print("socket disconnected");
+        });
+        break;
+      case AppLifecycleState.paused:
+        print("paused");
+        Timer(Duration(seconds: 10), () async {
+          //socket.close();
+          print(state);
+        });
+        break;
+      case AppLifecycleState.detached:
+        print("detached");
+        break;
+    }
   }
 
   @override
@@ -358,16 +411,23 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late FocusNode chatNode;
 
   //채팅
-  late Socket socket;
+
   String ip = "";
   int port = 0;
 
   //////////////////////////tcp 서버연결부분
-
+  ////// 서버 연결되면 들어왔다고 알려주는 메시지 전송하고, 연결이 성공적으로 되면 채팅이 가능하도록 채팅창을 막던지. 로딩창을 유지하던지 하자.
   void create() async {
     //print("hi");
     socket = await Socket.connect(ip, port);
     print('connected');
+
+    final date =
+        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+    Uint8List initmessage =
+        testMethod("init", "init", userId, mynickName, date).writeToBuffer();
+    socket.add(initmessage);
 
     // 서버에서 채팅날아오면 받기
     socket.listen((List<int> event) {
@@ -395,6 +455,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         // 위젯의 애니메이션 효과 발생
         message.animationController.forward();
       }
+
+      //자리양도일때 채팅방에 가운데 띄워주기 버튼도 추가해야하고 그안에 양도를 특정할 수 있는 데이터도 같이 보내야함.
+
+      //빌런은 열차번호 보내줘야한다.
     });
   }
 
@@ -575,8 +639,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _handleSubmitted(String text) {
     // 텍스트 필드의 내용 삭제
     _textController.clear();
+    final date =
+        DateFormat('yyy-MM-ddn HH:mm:ss').format(DateTime.now()).toString();
 
-    Uint8List tcpmessage = testMethod(text, userId, mynickName).writeToBuffer();
+    Uint8List tcpmessage =
+        testMethod("msg", text, userId, mynickName, date).writeToBuffer();
     socket.add(tcpmessage);
     //Transfer exam = Transfer.fromBuffer(tcpmessage);
 
@@ -617,8 +684,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void setting() {
-    ip = "172.27.160.1";
-    port = 70;
+    ip = "172.24.208.1";
+    port = 7000;
     userId = "gkswotmd96";
     mynickName = "출근하기 싫은 기린";
   }
@@ -626,11 +693,22 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   ///             dispose
   @override
   void dispose() {
+    // 서버에서 나간다
+    final date =
+        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+    Uint8List closemessage =
+        testMethod("close", "close", userId, mynickName, date).writeToBuffer();
+    socket.add(closemessage);
+    //print(Transfer.fromBuffer(closemessage));
+
     // 메시지가 생성될 때마다 animationController 가 생성/부여 되었으므로 모든 메시지로부터 animationController 해제
     for (ChatMessage message in _message) {
       message.animationController.dispose();
     }
     chatNode.dispose();
+    socket.close();
+    print("disconnected");
     super.dispose();
   }
 

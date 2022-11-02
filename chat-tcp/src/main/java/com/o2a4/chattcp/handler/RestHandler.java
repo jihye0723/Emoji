@@ -3,22 +3,21 @@ package com.o2a4.chattcp.handler;
 import com.o2a4.chattcp.decoder.JwtDecoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class RestHandler {
 
-    private final ReactiveRedisTemplate<String,String>  redisTemplate;
+    private static String prefix = "chat:";
+
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private final JwtDecoder jwtDecoder;
 
@@ -45,24 +44,23 @@ public class RestHandler {
         String userId = jwtDecoder.decode(token);
 
         train.subscribe(
-            trainId -> {
-                // 2 열차 확인
-                log.info("열차 채팅방 확인");
-                redisTemplate.opsForHash().get("train:".concat(trainId),"channelGroup")
-                    .map(v -> {
-                        if (v != null) {
-                            // TODO 방이 있을 때 나머지 로직 구현
-                            redisTemplate.opsForHash().put(userId, "channelGroup", "CG".concat(trainId));
-                        }
-                        return v;
-                    })
-                        // 방이 없는 경우
-                    .switchIfEmpty(Mono.defer(() -> {
-                        return null;
-                    }));
-            }
+                trainId -> {
+                    // 2 열차 확인
+                    log.info("열차 채팅방 확인");
+                    redisTemplate.opsForHash().get(prefix + "train:" + trainId, "channelGroup")
+                            .map(v -> {
+                                if (v != null) {
+                                    // TODO 방이 있을 때 나머지 로직 구현
+                                    redisTemplate.opsForHash().put(prefix + userId, "channelGroup", trainId);
+                                }
+                                return null;
+                            })
+                            // 방이 없는 경우
+                            .switchIfEmpty(Mono.defer(() -> {
+                                return null;
+                            }));
+                }
         );
-
 
 
         Flux<String> temp = Flux.just("Room", "In!");

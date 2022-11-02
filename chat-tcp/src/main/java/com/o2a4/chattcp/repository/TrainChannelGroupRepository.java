@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TrainChannelGroupRepository {
-
+    // TODO ConcurrentSkipListMap 고려?
     private final Map<Integer, String> trainChannelGroupMap = new ConcurrentHashMap<>();
 
     public Map<Integer, String> getTrainChannelGroupMap() {

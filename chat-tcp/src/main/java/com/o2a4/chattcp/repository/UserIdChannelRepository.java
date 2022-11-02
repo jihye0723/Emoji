@@ -1,15 +1,13 @@
 package com.o2a4.chattcp.repository;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelId;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class UserIdChannelIdRepository {
+public class UserIdChannelRepository {
 
 //    @Autowired
 //    private LoginService loginService;

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'GetOnTrainDialog.dart';
 
 class CustomSlider extends StatefulWidget {
   const CustomSlider(
@@ -30,6 +31,56 @@ class _CustomSliderState extends State<CustomSlider> {
   int _sliderButtonPaddingLeft = 0;
   int _sliderButtonPaddingRight = 0;
 
+  String _arrivalInfo = "";
+
+  int calcSliderValue(int rTime, int dir) {
+    int sv = 0;
+    if (rTime > 9) {
+      sv = 9;
+    } else if (rTime < 0) {
+      sv = 0;
+    } else {
+      sv = rTime;
+    }
+
+    return dir == 0 ? sv : (9 - sv);
+  }
+
+  int calcPadding(int val) {
+    if (val < 1) {
+      return 0;
+    } else if (val > 8) {
+      return (125 / 9).round() * val - 24;
+    } else {
+      return (125 / 9).round() * val - 12;
+    }
+  }
+
+  String setArrivalInfo(int rTime) {
+    if (rTime > 0) {
+      return "약 $rTime분 후 도착";
+    } else {
+      return "곧 도착";
+    }
+  }
+
+  void printFunction() {
+    print("sv = $_sliderValue");
+    print("rv = $_reverseSliderValue");
+    print("rt = $_remainTime");
+
+    if (widget.direction == 1) {
+      print("clicked left");
+    } else {
+      print("clicked right");
+    }
+
+    print("left : $_sliderButtonPaddingLeft");
+    print("right : $_sliderButtonPaddingRight");
+
+    print(_arrivalInfo);
+  }
+
   Future<ui.Image> loadImage(String assetPath) async {
     ByteData data = await rootBundle.load(assetPath);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
@@ -45,24 +96,14 @@ class _CustomSliderState extends State<CustomSlider> {
       setState(() {
         customImage = image;
         _remainTime = (widget.remainTime / 60).round();
-        if (_remainTime > 9) {
-          _sliderValue = 9;
-          _reverseSliderValue = 0;
-        } else {
-          _sliderValue = _remainTime;
-          _reverseSliderValue = (9 - _remainTime);
-        }
-        _sliderButtonPaddingLeft = _sliderValue * 11;
-        _sliderButtonPaddingRight = _reverseSliderValue * 11;
 
-        if (_sliderButtonPaddingLeft > 0 && _sliderButtonPaddingLeft <= 11) {
-          _sliderButtonPaddingLeft = 0;
-          _sliderButtonPaddingRight = 95;
-        } else if (_sliderButtonPaddingRight > 0 &&
-            _sliderButtonPaddingRight <= 11) {
-          _sliderButtonPaddingLeft = 95;
-          _sliderButtonPaddingRight = 0;
-        }
+        _sliderValue = calcSliderValue(_remainTime, widget.direction);
+        _reverseSliderValue = 9 - _sliderValue;
+
+        _sliderButtonPaddingLeft = calcPadding(_sliderValue);
+        _sliderButtonPaddingRight = calcPadding(_reverseSliderValue);
+
+        _arrivalInfo = setArrivalInfo(_remainTime);
       });
     });
 
@@ -75,6 +116,12 @@ class _CustomSliderState extends State<CustomSlider> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Container(
+            width: 110.w,
+            height: 20.h,
+            // decoration: BoxDecoration(
+            //     border: Border.all(color: Colors.green, width: 1)),
+          ),
           SliderTheme(
               data: SliderThemeData(
                 overlayShape: SliderComponentShape.noOverlay,
@@ -95,16 +142,14 @@ class _CustomSliderState extends State<CustomSlider> {
                       child: Container(
                         width: 110.w,
                         height: 10.h,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blue, width: 1)),
+                        // decoration: BoxDecoration(
+                        //     border: Border.all(color: Colors.blue, width: 1)),
                         child: Slider(
-                          value: (widget.direction == 1
-                              ? _reverseSliderValue.toDouble()
-                              : _sliderValue.toDouble()),
+                          value: _sliderValue.toDouble(),
                           min: 0,
                           max: 9,
                           divisions: 10,
-                          label: "2135",
+                          // label: "2135",
                           onChanged: (value) {
                             setState(() {
                               _sliderValue = value.toInt();
@@ -120,36 +165,28 @@ class _CustomSliderState extends State<CustomSlider> {
                         width: 125.w,
                         height: 25.h,
                         padding: EdgeInsets.only(
-                          left: (widget.direction == 1
-                              ? _sliderButtonPaddingRight.w
-                              : _sliderButtonPaddingLeft.w),
-                          right: (widget.direction == 1
-                              ? _sliderButtonPaddingLeft.w
-                              : _sliderButtonPaddingRight.w),
+                          left: (_sliderButtonPaddingLeft.w),
+                          right: (_sliderButtonPaddingRight.w),
                         ),
                         child: TextButton(
                           style: TextButton.styleFrom(
                               minimumSize: Size.zero, padding: EdgeInsets.zero),
                           onPressed: () => {
-                            if (widget.direction == 1)
-                              {
-                                print(
-                                    "clicked left : 약 $_reverseSliderValue분 후 도착"),
-                                print("left : $_sliderButtonPaddingLeft"),
-                                print("right : $_sliderButtonPaddingRight")
-                              }
-                            else
-                              {
-                                print("clicked right : 약 $_sliderValue분 후 도착"),
-                                print("left : $_sliderButtonPaddingLeft"),
-                                print("right : $_sliderButtonPaddingRight")
-                              }
+                            // printFunction(),
+                            // showDialogGetOnTrain(int.parse(widget.trainNo))
+                            showDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext ctx) {
+                                  return GetOnTrainDialog(
+                                      trainNo: int.parse(widget.trainNo));
+                                })
                           },
                           child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black, width: 1),
-                            ),
-                          ),
+                              // decoration: BoxDecoration(
+                              //   border: Border.all(color: Colors.black, width: 1),
+                              // ),
+                              ),
                         ),
                       ),
                       // TextButton(
@@ -175,7 +212,17 @@ class _CustomSliderState extends State<CustomSlider> {
                     ],
                   ),
                 ],
-              ))
+              )),
+          Container(
+            width: 110.w,
+            height: 20.h,
+            alignment: Alignment.center,
+            // decoration: BoxDecoration(
+            //     border: Border.all(color: Colors.green, width: 1)),
+            child: Text(
+              _arrivalInfo,
+            ),
+          ),
         ],
       );
     } else {

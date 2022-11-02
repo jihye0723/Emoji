@@ -7,27 +7,6 @@ import 'Home.dart';
 //   flutter_screenutil: ^5.6.0
 
 void main() async {
-  // String jsonString1 = '''
-  // {
-  //   "currentStation" : "사당",
-  //   "lineNo" : 2,
-  //   "before" : {
-  //     "stationName" : "낙성대",
-  //     "trainCode" : "2147",
-  //     "remainTime" : 3
-  //   },
-  //   "next" : {
-  //     "stationName" : "방배",
-  //     "trainCode" : "2156",
-  //     "remainTime" : 2
-  //   }
-  // }
-  // ''';
-  //
-  // Map<String, dynamic> jsonData = jsonDecode(jsonString1);
-  //
-  // TrainInfo trainInfo = TrainInfo.fromJson(jsonData);
-
   await ScreenUtil.ensureScreenSize();
   runApp(const MyApp());
 }

@@ -19,6 +19,9 @@ public class Station {
     // 지하철역 이름
     private String stationName;
 
+    // 호선 코드
+    private String subwayCode;
+    
     // 호선
     private String subwayLine;
 
@@ -27,4 +30,7 @@ public class Station {
     
     // 경도
     private double longitude;
+
+    // 지하철역 내부코드
+    private String stationCodeIn;
 }

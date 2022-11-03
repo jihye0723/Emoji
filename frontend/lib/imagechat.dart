@@ -4,21 +4,6 @@ const String _name = "코딩하기 싫은 호랑이";
 const _color = Colors.indigo;
 const String _station = "고독한 대화방";
 
-//유저 프로필사진
-Widget getAvatar(name) {
-  String lastname =
-      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
-  String animal = lastname.trim();
-  switch (animal) {
-    case '호랑이':
-      return Image.asset("images/tiger.png");
-    case '기린':
-      return Image.asset("images/giraffe.png");
-    default:
-      return Image.asset("images/bear.png");
-  }
-}
-
 //가장 큰 틀
 class ImageChat extends StatelessWidget {
   const ImageChat({super.key, required this.one, required this.name});
@@ -448,5 +433,20 @@ Widget Message(BuildContext context, String type, String text) {
         ],
       ),
     );
+  }
+}
+
+//유저 프로필사진
+Widget getAvatar(name) {
+  String lastname =
+      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
+  String animal = lastname.trim();
+  switch (animal) {
+    case '호랑이':
+      return Image.asset("images/tiger.png");
+    case '기린':
+      return Image.asset("images/giraffe.png");
+    default:
+      return Image.asset("images/bear.png");
   }
 }

@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:practice_01/chat.dart';
 
 import 'data/Transfer.pb.dart';
 import 'data/station.dart' as stationData;
@@ -14,8 +16,6 @@ import 'data/station.dart' as stationData;
 // 메시지 언제 끊을것이지...
 
 var _color;
-String ip = "";
-int port = 0;
 String text = "";
 
 // 유저정보.
@@ -108,10 +108,10 @@ List<int> test = [
 
 /* protobuf 사용을 위한 메소드 설정*/
 Transfer testMethod(
-    String sendtype, String line, String userId, String nickName, String date) {
+    String sendType, String line, String userId, String nickName, String date) {
   Transfer text = Transfer();
 
-  text.type = sendtype;
+  text.type = sendType;
   text.content = line;
   text.userId = userId;
   text.nickName = nickName;
@@ -205,7 +205,7 @@ class _TextChatState extends State<TextChat> {
         centerTitle: true,
         elevation: 0,
         title: Container(
-          width: width * 0.35,
+          width: (width * 0.3).w,
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(10.0),
@@ -236,14 +236,14 @@ class _TextChatState extends State<TextChat> {
                                         .style
                                         .copyWith(
                                             height: 1,
-                                            fontSize: 20,
+                                            fontSize: 17.sp,
                                             color: Colors.black),
                                     decoration: InputDecoration(
                                       hintText: _destinationEditController.text,
                                       border: OutlineInputBorder(),
                                       contentPadding: EdgeInsets.all(1),
                                       constraints:
-                                          BoxConstraints(maxWidth: 200),
+                                          BoxConstraints(maxWidth: 180.w),
                                     )),
                                 suggestionsCallback: (pattern) {
                                   return getSuggestions(pattern);
@@ -263,7 +263,7 @@ class _TextChatState extends State<TextChat> {
                           );
                         },
                       ),
-                      actionsPadding: const EdgeInsets.only(bottom: 30),
+                      actionsPadding: EdgeInsets.only(bottom: 30.h),
                       actionsAlignment: MainAxisAlignment.center,
                       actions: [
                         TextButton(
@@ -271,7 +271,7 @@ class _TextChatState extends State<TextChat> {
                             foregroundColor: Colors.white, // 텍스트 색 바꾸기
                             backgroundColor: _color, // 백그라운드로 컬러 설정
 
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 16.sp),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -289,7 +289,7 @@ class _TextChatState extends State<TextChat> {
                             textAlign: TextAlign.center,
                           ),
                           Container(
-                            margin: EdgeInsets.only(top: 20),
+                            margin: EdgeInsets.only(top: 20.h),
                             child: Image.asset(
                               "assets/images/map.png",
                               height: height * 0.1,
@@ -301,7 +301,7 @@ class _TextChatState extends State<TextChat> {
                   });
             },
             icon: const Icon(Icons.pin_drop),
-            padding: const EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: 20.w),
           )
         ],
       ),
@@ -383,7 +383,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     return SlideTransition(
       position: _offsetAnimation,
       child: Padding(
-        padding: const EdgeInsets.all(6.0),
+        padding: EdgeInsets.all(6.w),
         child: Text(
           widget.text,
           style: TextStyle(color: widget.color),
@@ -397,7 +397,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
 /*----------------------------채팅 시작--------------------*/
 
 class ChatScreen extends StatefulWidget {
-  //final String name;
   const ChatScreen({super.key});
 
   @override
@@ -410,24 +409,30 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final List<ChatMessage> _message = <ChatMessage>[];
   late FocusNode chatNode;
 
-  //채팅
-
+  //TCP서버용
   String ip = "";
   int port = 0;
 
   //////////////////////////tcp 서버연결부분
   ////// 서버 연결되면 들어왔다고 알려주는 메시지 전송하고, 연결이 성공적으로 되면 채팅이 가능하도록 채팅창을 막던지. 로딩창을 유지하던지 하자.
   void create() async {
-    //print("hi");
-    socket = await Socket.connect(ip, port);
-    print('connected');
+    try {
+      socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
+      print('connected');
+    } catch (e) {
+      makeMessage("서버 연결에 실패하였습니다....", "alert_start");
+    }
 
+    //소켓 연결하고 들어왔다 알려주기
     final date =
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
     Uint8List initmessage =
         testMethod("init", "init", userId, mynickName, date).writeToBuffer();
     socket.add(initmessage);
+
+    //채팅방 입장할때 알려줌
+    makeMessage("채팅방에 입장하셨습니다.", "alert_start");
 
     // 서버에서 채팅날아오면 받기
     socket.listen((List<int> event) {
@@ -437,23 +442,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
       // 채팅을 위한것이면 채팅에 저장하기
       if (testmessage.type == "msg") {
-        ChatMessage message = ChatMessage(
-          text: testmessage.content,
-          nickName: testmessage.nickName,
-          // animationController 항목에 애니메이션 효과 설정
-          // ChatMessage 은 UI를 가지는 위젯으로 새로운 message 가 리스트뷰에 추가될 때
-          // 발생할 애니메이션 효과를 위젯에 직접 부여함
-          animationController: AnimationController(
-            duration: const Duration(milliseconds: 700),
-            vsync: this,
-          ),
-        );
-        // 리스트에 메시지 추가
-        setState(() {
-          _message.insert(0, message);
-        });
-        // 위젯의 애니메이션 효과 발생
-        message.animationController.forward();
+        makeMessage(testmessage.content, testmessage.nickName);
       }
 
       //자리양도일때 채팅방에 가운데 띄워주기 버튼도 추가해야하고 그안에 양도를 특정할 수 있는 데이터도 같이 보내야함.
@@ -486,6 +475,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
   }
 
+  //채팅 만들어주는 메소드
+  void makeMessage(String myText, String myName) {
+    ChatMessage message = ChatMessage(
+      text: myText,
+      nickName: myName,
+      animationController: AnimationController(
+        duration: const Duration(milliseconds: 700),
+        vsync: this,
+      ),
+    );
+
+    // 리스트에 메시지 추가
+    setState(() {
+      _message.insert(0, message);
+    });
+
+    // 위젯의 애니메이션 효과 발생
+    message.animationController.forward();
+  }
+
   // 자리 양도 기능에서, 개최자의 자리 소개 시에 key 값을 지정함으로써 폼 내부의 TextFormField 값을 저장하고 validation 을 진행하는데 사용한다.
   final formKey = GlobalKey<FormState>();
 
@@ -500,7 +509,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     assert(validator != null);
 
     return Container(
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+        margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
         child: (TextFormField(
           onSaved: onSaved,
           validator: validator,
@@ -587,7 +596,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
 
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8.0),
+            margin: EdgeInsets.symmetric(horizontal: 8.h),
             child: Row(
               children: <Widget>[
                 // 플러스 버튼
@@ -616,7 +625,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ),
                 // 전송 버튼
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  margin: EdgeInsets.symmetric(horizontal: 4.h),
                   // 플랫폼 종류에 따라 적당한 버튼 추가
                   child: IconButton(
                     // 아이콘 버튼에 전송 아이콘 추가
@@ -683,8 +692,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     chatNode = FocusNode();
   }
 
+  //TCP채팅 ip,port랑 유저아이디,닉네임 필요
   void setting() {
-    ip = "172.24.208.1";
+    ip = "172.30.0.1";
     port = 7000;
     userId = "gkswotmd96";
     mynickName = "출근하기 싫은 기린";
@@ -734,13 +744,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget seatHandoverButton() {
     return GestureDetector(
       child: Container(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+        padding: EdgeInsets.fromLTRB(0, 20.h, 0, 20.h),
         child: Column(
-          children: const [
+          children: [
             Image(
               image: AssetImage('assets/images/seat-icon.png'),
-              width: 35,
-              height: 35,
+              width: 35.w,
+              height: 35.h,
             ),
             Text('자리 양도')
           ],
@@ -769,12 +779,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ),
                     Image.asset(
                       "assets/images/seat-icon.png",
-                      width: width * 0.1,
-                      height: width * 0.1,
+                      width: (width * 0.1).w,
+                      height: (width * 0.1).h,
                     ),
-                    const Text('자리 양도',
+                    Text('자리 양도',
                         style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w800))
+                            fontSize: 24.sp, fontWeight: FontWeight.w800))
                   ],
                 ),
                 content: Column(
@@ -799,21 +809,24 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                actionsPadding: EdgeInsets.only(bottom: height * 0.03),
+                actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
                 actions: [
                   Column(
                     children: [
                       Container(
-                          margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child:
-                              const Text('앉아계신게 맞나요? 아닐 경우 불이익이 있을 수 있습니다.')),
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10.h),
+                        child: const Text(
+                          '앉아계신게 맞나요? \n아닐 경우 불이익이 있을 수 있습니다.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
                           foregroundColor: Colors.white,
                           backgroundColor: const Color(0xff747f00),
                           // 백그라운드로 컬러 설정
-                          textStyle: const TextStyle(fontSize: 16),
+                          textStyle: TextStyle(fontSize: 16.sp),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
@@ -837,13 +850,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget reportVillain() {
     return GestureDetector(
       child: Container(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+        padding: EdgeInsets.fromLTRB(0, 10.h, 0, 5.h),
         child: Column(
-          children: const [
+          children: [
             Image(
               image: AssetImage('assets/images/villain-icon.png'),
-              width: 35,
-              height: 35,
+              width: 35.w,
+              height: 35.h,
             ),
             Text("빌런 제보")
           ],
@@ -872,12 +885,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ),
                     Image.asset(
                       "assets/images/villain-icon.png",
-                      width: width * 0.1,
-                      height: width * 0.1,
+                      width: (width * 0.1).w,
+                      height: (width * 0.1).h,
                     ),
-                    const Text('빌런 제보',
+                    Text('빌런 제보',
                         style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w800))
+                            fontSize: 24.sp, fontWeight: FontWeight.w800))
                   ],
                 ),
 
@@ -893,17 +906,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                actionsPadding: EdgeInsets.only(bottom: height * 0.03),
+                actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
                 actions: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
                           foregroundColor: Colors.white,
                           backgroundColor: const Color(0xffff5f5f),
-                          textStyle: const TextStyle(fontSize: 16),
+                          textStyle: TextStyle(fontSize: 16.sp),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
@@ -916,10 +929,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       ),
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
                           foregroundColor: Colors.white,
                           backgroundColor: const Color(0xff5abaff),
-                          textStyle: const TextStyle(fontSize: 16),
+                          textStyle: TextStyle(fontSize: 16.sp),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
@@ -960,9 +973,42 @@ class ChatMessage extends StatelessWidget {
           // 사용할 애니메이션 효과 설정
           CurvedAnimation(parent: animationController, curve: Curves.easeOut),
       axisAlignment: 0.0,
-      child: message(context, nickName, text),
+      child: (nickName == "alert_start")
+          ? alarm(context, text)
+          : message(context, nickName, text),
     );
   }
+}
+
+// 알람용
+Widget alarm(BuildContext context, String text) {
+  return
+      // 리스트뷰에 추가될 컨테이너 위젯
+      Container(
+    margin: const EdgeInsets.symmetric(vertical: 10.0) +
+        const EdgeInsets.only(right: 5.0),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // 입력받은 메시지 출력
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              margin: EdgeInsets.only(top: 5.h),
+              padding: EdgeInsets.all(8.w),
+              child: Text(text),
+            ),
+          ],
+        )
+      ],
+    ),
+  );
 }
 
 // 내채팅 니채팅 확인, type 은 내채팅인지 확인하기 위해 만들어 둠, 추후에 작업이 필요 현재는 단순 아이디 비교
@@ -979,7 +1025,7 @@ Widget message(BuildContext context, String nick, String text) {
         children: <Widget>[
           //사진 클릭 이벤트
           Container(
-            margin: const EdgeInsets.only(right: 16.0),
+            margin: EdgeInsets.only(right: 16.0.w),
             // 사용자명의 첫번째 글자를 서클 아바타로 표시
             child: CircleAvatar(child: getAvatar(mynickName)),
           ),
@@ -994,13 +1040,13 @@ Widget message(BuildContext context, String nick, String text) {
                   color: Colors.black12,
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                margin: const EdgeInsets.only(top: 5.0),
+                margin: EdgeInsets.only(top: 5.h),
                 padding: const EdgeInsets.all(8),
                 constraints: BoxConstraints(
-                  minWidth: mynickName.length.toDouble() * 10 > 300
-                      ? 300
-                      : mynickName.length.toDouble() * 10,
-                  maxWidth: 300,
+                  minWidth: mynickName.length.toDouble() * 10 > 280
+                      ? 280
+                      : (mynickName.length.toDouble() * 10),
+                  maxWidth: 280,
                 ),
                 child: Text(text, softWrap: true),
               ),
@@ -1031,20 +1077,21 @@ Widget message(BuildContext context, String nick, String text) {
                       actionsAlignment: MainAxisAlignment.center,
                       title: Image.asset(
                         "assets/images/warning.png",
-                        width: width * 0.1,
-                        height: height * 0.1,
+                        width: (width * 0.1).w,
+                        height: (height * 0.1).h,
                       ),
                       content: Text(
                         "$nick\n신고하시겠어요?",
                         textAlign: TextAlign.center,
                       ),
-                      actionsPadding: EdgeInsets.only(bottom: height * 0.03),
+                      actionsPadding:
+                          EdgeInsets.only(bottom: (height * 0.03).h),
                       actions: [
                         TextButton(
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white, // 텍스트 색 바꾸기
                             backgroundColor: Colors.red, // 백그라운드로 컬러 설정
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 16.sp),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -1078,10 +1125,10 @@ Widget message(BuildContext context, String nick, String text) {
                 margin: const EdgeInsets.only(top: 5.0),
                 padding: const EdgeInsets.all(8),
                 constraints: BoxConstraints(
-                  minWidth: nick.length.toDouble() * 10 > 300
-                      ? 300
+                  minWidth: nick.length.toDouble() * 10 > 280
+                      ? 280
                       : nick.length.toDouble() * 10,
-                  maxWidth: 300,
+                  maxWidth: 280,
                 ),
                 child: Text(text, softWrap: true),
               ),

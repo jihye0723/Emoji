@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 //이름 필요
 const String _name = "코딩하기 싫은 호랑이";
 
-//유저 프로필사진
-Widget getAvatar(name) {
-  String lastname =
-
-      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
-  String animal = lastname.trim();
-  switch (animal) {
-    case '호랑이':
-      return Image.asset("images/tiger.png");
-    case '기린':
-      return Image.asset("images/giraffe.png");
-    default:
-      return Image.asset("images/bear.png");
-  }
-}
+// 유저정보.
+String userId = "";
+String mynickName = "";
 
 class ImagePage extends StatefulWidget {
-  const ImagePage({super.key, required this.title});
-  final String title;
+  const ImagePage({super.key});
 
   @override
   _ImagePageState createState() => _ImagePageState();
@@ -32,6 +20,7 @@ class ImagePage extends StatefulWidget {
 class _ImagePageState extends State<ImagePage> {
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
@@ -40,11 +29,19 @@ class _ImagePageState extends State<ImagePage> {
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
-            padding: const EdgeInsets.only(left: 10)),
+            padding: EdgeInsets.only(left: 10.w)),
         centerTitle: true,
         elevation: 0,
-        title: Text(widget.title),
-        backgroundColor: Colors.deepOrangeAccent,
+        title: Container(
+          padding: EdgeInsets.all(5.w),
+          width: (width * 0.3).w,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Text("고독한 지하철", textAlign: TextAlign.center),
+        ),
+        backgroundColor: Colors.teal,
         actions: <Widget>[
           IconButton(
             onPressed: () {
@@ -55,7 +52,7 @@ class _ImagePageState extends State<ImagePage> {
                     return AlertDialog(
                       title: Image.asset(
                         "images/map.png",
-                        height: height * 0.1,
+                        height: (height * 0.1).h,
                       ),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -66,7 +63,7 @@ class _ImagePageState extends State<ImagePage> {
                           ),
                         ],
                       ),
-                      actionsPadding: const EdgeInsets.only(bottom: 30),
+                      actionsPadding: EdgeInsets.only(bottom: 30.h),
                       actionsAlignment: MainAxisAlignment.center,
                       actions: [
                         TextButton(
@@ -74,7 +71,7 @@ class _ImagePageState extends State<ImagePage> {
                             foregroundColor: Colors.white, // 텍스트 색 바꾸기
                             backgroundColor: Colors.indigo, // 백그라운드로 컬러 설정
 
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 16.sp),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -89,7 +86,7 @@ class _ImagePageState extends State<ImagePage> {
                   });
             },
             icon: const Icon(Icons.pin_drop),
-            padding: const EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: 20.w),
           )
         ],
       ),
@@ -136,10 +133,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 //채팅창 화면
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+    // double height = MediaQuery.of(context).size.height;
+    // double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.deepOrangeAccent,
+      backgroundColor: Colors.teal,
       body: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(30.0)),
@@ -173,12 +170,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       data: const IconThemeData(color: Colors.deepOrangeAccent),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0) +
-            const EdgeInsets.only(top: 10, bottom: 10),
+            EdgeInsets.only(top: 10.h, bottom: 10.h),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              margin: EdgeInsets.symmetric(horizontal: 4.0.h),
               // 플랫폼 종류에 따라 적당한 버튼 추가
               child: IconButton(
                 // 아이콘 버튼에 전송 아이콘 추가
@@ -193,8 +190,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ? Container()
                 : Flexible(
                     child: Container(
-                      width: 50,
-                      height: 50,
+                      width: 50.w,
+                      height: 50.h,
                       decoration: BoxDecoration(
                           image: DecorationImage(
                         fit: BoxFit.cover,
@@ -205,7 +202,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   ),
             // 전송 버튼
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              margin: EdgeInsets.symmetric(horizontal: 4.0.h),
               // 플랫폼 종류에 따라 적당한 버튼 추가
               child: IconButton(
                 // 아이콘 버튼에 전송 아이콘 추가
@@ -298,14 +295,14 @@ Widget Message(BuildContext context, String type, XFile image) {
     return
         // 리스트뷰에 추가될 컨테이너 위젯
         Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0) +
-          const EdgeInsets.only(right: 10.0),
+      margin: EdgeInsets.symmetric(vertical: 10.0.h) +
+          EdgeInsets.only(right: 10.0.w),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           Container(
-            margin: const EdgeInsets.only(right: 16.0),
+            margin: EdgeInsets.only(right: 16.0.w),
             child: CircleAvatar(child: getAvatar(_name)),
           ),
           Column(
@@ -313,7 +310,7 @@ Widget Message(BuildContext context, String type, XFile image) {
             children: <Widget>[
               // 사용자명을 subhead 테마로 출력
               Text(_name, style: Theme.of(context).textTheme.bodySmall),
-              const Padding(padding: EdgeInsets.only(bottom: 5)),
+              Padding(padding: EdgeInsets.only(bottom: 5.h)),
               // 입력받은 메시지 출력
               Image(fit: BoxFit.contain, image: FileImage(File(image!.path))),
             ],
@@ -323,8 +320,8 @@ Widget Message(BuildContext context, String type, XFile image) {
     );
   } else {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0) +
-          const EdgeInsets.only(left: 10.0),
+      margin: EdgeInsets.symmetric(vertical: 10.0.h) +
+          EdgeInsets.only(left: 10.0.w),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -344,20 +341,21 @@ Widget Message(BuildContext context, String type, XFile image) {
                       actionsAlignment: MainAxisAlignment.center,
                       title: Image.asset(
                         "images/warning.png",
-                        width: width * 0.1,
-                        height: height * 0.1,
+                        width: (width * 0.1).w,
+                        height: (height * 0.1).h,
                       ),
                       content: const Text(
                         "$_name\n신고하시겠어요?",
                         textAlign: TextAlign.center,
                       ),
-                      actionsPadding: EdgeInsets.only(bottom: height * 0.03),
+                      actionsPadding:
+                          EdgeInsets.only(bottom: (height * 0.03).h),
                       actions: [
                         TextButton(
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white, // 텍스트 색 바꾸기
                             backgroundColor: Colors.red, // 백그라운드로 컬러 설정
-                            textStyle: const TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 16.sp),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
@@ -372,7 +370,7 @@ Widget Message(BuildContext context, String type, XFile image) {
                   });
             },
             child: Container(
-              margin: const EdgeInsets.only(right: 16.0),
+              margin: EdgeInsets.only(right: 16.0.w),
               child: CircleAvatar(child: getAvatar(_name)),
             ),
           ),
@@ -381,12 +379,12 @@ Widget Message(BuildContext context, String type, XFile image) {
             children: <Widget>[
               // 사용자명을 subhead 테마로 출력
               Text(_name, style: Theme.of(context).textTheme.bodySmall),
-              const Padding(padding: EdgeInsets.only(bottom: 5)),
+              Padding(padding: EdgeInsets.only(bottom: 5.h)),
 
               // 서버에서 받은 주소 연결하면 될듯
               Image.network(
                 'https://picsum.photos/250?image=9',
-                width: MediaQuery.of(context).size.width * 0.4,
+                width: (MediaQuery.of(context).size.width * 0.4).w,
                 fit: BoxFit.contain,
               ),
             ],
@@ -394,5 +392,20 @@ Widget Message(BuildContext context, String type, XFile image) {
         ],
       ),
     );
+  }
+}
+
+//유저 프로필사진
+Widget getAvatar(name) {
+  String lastname =
+      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
+  String animal = lastname.trim();
+  switch (animal) {
+    case '호랑이':
+      return Image.asset("assets/images/tiger.png");
+    case '기린':
+      return Image.asset("assets/images/giraffe.png");
+    default:
+      return Image.asset("assets/images/bear.png");
   }
 }

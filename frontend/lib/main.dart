@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:practice_01/kakao_login_button.dart';
 import 'chat.dart';
 import 'imagechat.dart';
 import 'test.dart';
 
 // 메인 함수
 void main() {
+  KakaoSdk.init(nativeAppKey: '9e8f2d7dc89324523cecae5569e5f764',);
   runApp(
     const MaterialApp(
       // 디버그 표시를 없앤다.
@@ -57,6 +60,7 @@ class MyApp extends StatelessWidget {
                     )));
                   },
                 ),
+                KakaoLoginButton()
               ],
             )
 

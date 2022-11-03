@@ -1,45 +1,20 @@
 import 'dart:convert';
 
-class JsonData {
-/*
- * 샘플 데이터 json 구조
- *
- * "station" : "사당",
- * "trainList" : [
- *   {
- *    "line" : "2호선",
- *    "direction" : 1 (외선),
- *    "trainNo" : "2147",
- *    "remainTime" : 7777 },
- *   {
- *    "line" : "4호선",
- *    "direction" : 0 (상행),
- *    "trainNo" : "4642",
- *    "remainTime" : 125 },
- *   {
- *    "line" : "4호선",
- *    "direction" : 1 (하행),
- *    "trainNo" : "4129",
- *    "remainTime" : 374 },
- *   {
- *    "line" : "2호선",
- *    "direction" : 0 (내선),
- *    "trainNo" : "2156",
- *    "remainTime" : 111 },
- * ]
- */
+class TrainInfo {
+// sample data json 구조
 
   final String stationName;
   final List<Train> trainList;
 
-  JsonData({required this.stationName, required this.trainList});
+  TrainInfo({required this.stationName, required this.trainList});
 
-  factory JsonData.fromJson(Map<String, dynamic> parsedJson) {
+  factory TrainInfo.fromJson(Map<String, dynamic> parsedJson) {
     var list = parsedJson['trainList'] as List;
+    var name = parsedJson['stationName'];
     List<Train> trainList = list.map((i) => Train.fromJson(i)).toList();
 
-    return JsonData(
-        stationName: parsedJson['stationName'], trainList: trainList);
+    return TrainInfo(
+        stationName: name != null ? name : "null인데유?", trainList: trainList);
   }
 }
 

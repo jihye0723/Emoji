@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:subway/SearchTrainDialog.dart';
 import 'CustomSlider.dart';
+import 'TrainInfo.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -14,10 +16,29 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
-  // final searchTrainController = TextEditingController();
+  TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
+  bool _loaded = false;
+  // String _stationName = "무슨무슨역";
 
-  final String _jsonString = "";
-  final Map<String, dynamic> _jsonData = {};
+  Future<String> _loadAsset() async {
+    return await rootBundle.loadString('assets/data/sample.json');
+  }
+
+  Future<TrainInfo> loadTrainInfo() async {
+    String jsonString = await _loadAsset();
+    final jsonResponse = json.decode(jsonString);
+    return TrainInfo.fromJson(jsonResponse);
+  }
+
+  @override
+  void initState() {
+    loadTrainInfo().then((value) => setState(() {
+          // print(value.stationName + " " + value.trainList.length.toString());
+          _trainInfo = value;
+          _loaded = true;
+        }));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +58,9 @@ class _FirstPageState extends State<FirstPage> {
           ),
           color: Colors.white,
         ),
-        child: Text(
-          "사당",
-          style: TextStyle(
-            fontSize: 32.sp,
-          ),
-        ),
+        child: _loaded
+            ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
+            : Text("로딩중", style: TextStyle(fontSize: 32.sp, color: Colors.red)),
       ),
     );
 

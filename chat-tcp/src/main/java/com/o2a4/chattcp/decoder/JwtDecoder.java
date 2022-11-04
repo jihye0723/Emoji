@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtDecoder {
     public static String decode(String token) {
+        // TODO 디코드 로직
         return "ssafy";
     }
 }

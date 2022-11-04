@@ -4,9 +4,11 @@ import com.o2a4.chattcp.socket.NettyChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.internal.SystemPropertyUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.*;
+import java.util.TimerTask;
 
 @Configuration
 @RequiredArgsConstructor
@@ -43,6 +46,8 @@ public class NettyConfiguration {
                 // NioServerSocketChannel: incoming connections를 수락하기 위해 새로운 Channel을 객체화할 때 사용
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.valueOf(logLevel)))
+//                이거 적용시키면 수신 없으면 종료, 송신 없으면 컨택, 둘다 세팅 이렇게 가능한데,,
+//                .childHandler(new IdleStateHandler(1,2,0))
                 // ChannelInitializer: 새로운 Channel을 구성할 때 사용되는 특별한 handler. 주로 ChannelPipeline으로 구성
                 .childHandler(nettyChannelInitializer);
 
@@ -50,6 +55,7 @@ public class NettyConfiguration {
         // SO_BACKLOG: 동시에 수용 가능한 최대 incoming connections 개수
         // 이 외에도 SO_KEEPALIVE, TCP_NODELAY 등 옵션 제공
         serverBootstrap.option(ChannelOption.SO_BACKLOG, backlog);
+        serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true); //OS에 따라 옵션이 다르고 성능이 별로라서 비추천
 
         return serverBootstrap;
     }

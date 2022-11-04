@@ -1,5 +1,6 @@
 package com.o2a4.chattcp.repository;
 
+import io.netty.channel.group.ChannelGroup;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -7,9 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class TrainChannelGroupRepository {
-    private final Map<Integer, String> trainChannelGroupMap = new ConcurrentHashMap<>();
+    private final Map<String, ChannelGroup> trainChannelGroupMap = new ConcurrentHashMap<>();
 
-    public Map<Integer, String> getTrainChannelGroupMap() {
+    public Map<String, ChannelGroup> getTrainChannelGroupMap() {
         return trainChannelGroupMap;
     }
 }

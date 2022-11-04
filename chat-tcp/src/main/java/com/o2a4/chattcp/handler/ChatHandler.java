@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -28,6 +29,8 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) {
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("Remote Address: " + remoteAddress);
+
+        // TODO 입장 처리 - Map에 채널ID, 채널 저장 & Redis에 유저-채널-채널id 저장
     }
 
 

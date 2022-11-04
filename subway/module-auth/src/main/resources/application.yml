@@ -1,0 +1,44 @@
+# mongo
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      authentication-database: admin
+      username: sub
+      password: sub1
+      database: test
+#      uri: mongodb: //localhost:27017/test
+
+---
+
+# userDetailService
+spring:
+  main:
+    allow-bean-definition-overriding: true
+---
+
+# port
+spring:
+  server:
+    port: 8081
+
+---
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+# mysql
+#spring.datasource.url=jdbc:mysql://localhost:3306/sample?autoReconnect=true
+#spring.datasource.username=root
+#spring.datasource.password=ssafy
+#spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+#spring.sql.init.mode= always
+
+# jpa - mysql
+#spring.jpa.show-sql= true
+#spring.jpa.database= mysql
+#spring.jpa.database-platform= org.hibernate.dialect.MySQL5InnoDBDialect
+#spring.jpa.defer-datasource-initialization= true
+---

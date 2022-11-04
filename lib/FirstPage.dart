@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:subway/SearchTrainDialog.dart';
 import 'CustomSlider.dart';
 import 'TrainInfo.dart';
@@ -17,25 +18,78 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
-  bool _loaded = false;
+  bool _loadedInfo = false;
+  Position? _currentPosition;
+  bool _checkedPosition = false;
   // String _stationName = "무슨무슨역";
 
-  Future<String> _loadAsset() async {
-    return await rootBundle.loadString('assets/data/sample.json');
-  }
-
+  // [TEST] sample.json 읽어서 json parsing (Done)
   Future<TrainInfo> loadTrainInfo() async {
-    String jsonString = await _loadAsset();
+    String jsonString = await rootBundle.loadString('assets/data/sample.json');
     final jsonResponse = json.decode(jsonString);
     return TrainInfo.fromJson(jsonResponse);
   }
 
+  // 현재 위치 조회 (Done)
+  Future<Position> getLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
+  // 페이지 리로드  (Todo)
+  void reloadPage() {}
+
+  // 위치 정보 서버로 전달 (Todo)
+  void sendLocationToServer(Position position) {}
+
+  // 서버로부터 받은 역 정보 읽어서 parsing (Todo)
+  void getTrainInfo() {}
+
+  // 탑승정보 서버로 전달 (Todo)
+  void sendBoardingInfoToServer() {}
+
   @override
   void initState() {
+    getLocation().then((value) => setState(() {
+          _currentPosition = value;
+          _checkedPosition = true;
+        }));
     loadTrainInfo().then((value) => setState(() {
           // print(value.stationName + " " + value.trainList.length.toString());
           _trainInfo = value;
-          _loaded = true;
+          _loadedInfo = true;
         }));
     super.initState();
   }
@@ -58,7 +112,7 @@ class _FirstPageState extends State<FirstPage> {
           ),
           color: Colors.white,
         ),
-        child: _loaded
+        child: _loadedInfo
             ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
             : Text("로딩중", style: TextStyle(fontSize: 32.sp, color: Colors.red)),
       ),
@@ -189,18 +243,18 @@ class _FirstPageState extends State<FirstPage> {
           children: <Widget>[
             stationNameSection,
             Expanded(
-              child: ListView(
-                // 동적 바인딩 하기 전에 테스트용 여러개 집어넣어봤음
-                children: [
-                  stationInfoSection,
-                  stationInfoSection,
-                  stationInfoSection,
-                  // stationInfoSection,
-                  // stationInfoSection,
-                  alreadyOnBoardSection
-                ],
-              ),
-            ),
+                child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    padding: EdgeInsets.all(8.w),
+                    itemCount: 3,
+                    itemBuilder: (BuildContext context, int index) {
+                      return stationInfoSection;
+                    })),
+            alreadyOnBoardSection,
+            // child: ListView(
+            //   // 동적 바인딩 하기 전에 테스트용 여러개 집어넣어봤음
+            //   children: [stationInfoSection, alreadyOnBoardSection],
+            // ),
             advBoardSection,
           ],
         ),

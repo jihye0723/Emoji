@@ -124,8 +124,13 @@ Transfer testMethod(
 class TextChat extends StatefulWidget {
   final String train;
   final String station;
+  final String rail;
 
-  TextChat({super.key, required this.train, required this.station});
+  TextChat(
+      {super.key,
+      required this.train,
+      required this.station,
+      required this.rail});
 
   late String _info = "";
   late String _destination = "역삼역";
@@ -136,25 +141,8 @@ class TextChat extends StatefulWidget {
 
 ////// 채팅
 class _TextChatState extends State<TextChat> {
-  ////// 몇호선, 색깔 선정
-  find() {
-    switch (widget.train[0]) {
-      case "1":
-        _color = Colors.blue;
-        rain = stationData.one;
-        break;
-      case "2":
-        _color = Colors.green;
-        rain = stationData.two;
-        break;
-      case "3":
-        _color = Colors.orange;
-        rain = stationData.three;
-        break;
-      default:
-        break;
-    }
-  }
+  //목적지 도착 textfield 컨트롤러
+  final _destinationEditController = TextEditingController();
 
   //시작..
   @override
@@ -170,6 +158,75 @@ class _TextChatState extends State<TextChat> {
     super.dispose();
   }
 
+  ////// 몇호선, 색깔 선정
+  find() {
+    switch (widget.rail) {
+      case "1호선":
+        _color = Color(0xff0D347F);
+        rain = stationData.one;
+        break;
+      case "2호선":
+        _color = Color(0xff3B9F37);
+        rain = stationData.two;
+        break;
+      case "3호선":
+        _color = Color(0xff3B9F37);
+        rain = stationData.three;
+        break;
+      case "4호선":
+        _color = Color(0xff3165A8);
+        rain = stationData.four;
+        break;
+      case "5호선":
+        _color = Color(0xff703E8C);
+        rain = stationData.five;
+        break;
+      case "6호선":
+        _color = Color(0xff904D23);
+        rain = stationData.six;
+        break;
+      case "7호선":
+        _color = Color(0xff5B692E);
+        rain = stationData.seven;
+        break;
+      case "8호선":
+        _color = Color(0xffC82363);
+        rain = stationData.eight;
+        break;
+      case "9호선":
+        _color = Color(0xffB39627);
+        rain = stationData.nine;
+        break;
+      case "분당선":
+        _color = Color(0xffDBA829);
+        rain = stationData.bundang;
+        break;
+      case "신분당선":
+        _color = Color(0xff971F2D);
+        rain = stationData.newbundang;
+        break;
+      case "경의중앙선":
+        _color = Color(0xff76B69B);
+        rain = stationData.gyeongui;
+        break;
+      case "경춘선":
+        _color = Color(0xff2D9B76);
+        rain = stationData.gyeongchun;
+        break;
+      case "공항철도":
+        _color = Color(0xff6CA8CE);
+        rain = stationData.gonghang;
+        break;
+      case "에버라인":
+        _color = Color(0xff6FB26C);
+        rain = stationData.everline;
+        break;
+      default:
+        break;
+    }
+  }
+
+  //검색용 메소드.. 도착역검색
   static List<String> getSuggestions(String query) {
     List<String> matches = [];
     matches.addAll(rain);
@@ -184,9 +241,6 @@ class _TextChatState extends State<TextChat> {
     return matches;
   }
 
-  //목적지 도착 textfield 컨트롤러
-  final _destinationEditController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -197,7 +251,6 @@ class _TextChatState extends State<TextChat> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              //print(mynickName);
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
@@ -210,7 +263,8 @@ class _TextChatState extends State<TextChat> {
             color: Colors.black,
             borderRadius: BorderRadius.circular(10.0),
           ),
-          child: MyStatefulWidget(text: widget._info, color: _color),
+          //child: MyStatefulWidget(text: widget._info, color: Colors.white),
+          child: MyStatefulWidget(text: "역삼역", color: Colors.white),
         ),
         backgroundColor: _color,
         actions: <Widget>[
@@ -292,7 +346,7 @@ class _TextChatState extends State<TextChat> {
                             margin: EdgeInsets.only(top: 20.h),
                             child: Image.asset(
                               "assets/images/map.png",
-                              height: height * 0.1,
+                              height: (height * 0.1).h,
                             ),
                           ),
                         ],
@@ -329,10 +383,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 2),
     vsync: this,
-  )..repeat(reverse: false);
+  )..repeat(reverse: true);
   late final Animation<Offset> _offsetAnimation = Tween<Offset>(
-    begin: const Offset(-0.5, 0),
-    end: const Offset(1.0, 0),
+    begin: Offset(-0.03.w, 0),
+    end: Offset(0.48.w, 0),
   ).animate(CurvedAnimation(
     parent: _controller,
     curve: Curves.linear,
@@ -349,6 +403,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     _controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _offsetAnimation,
+      child: Padding(
+        padding: EdgeInsets.all(6.w),
+        child: Text(
+          widget.text,
+          style: TextStyle(color: widget.color),
+        ),
+      ),
+    );
   }
 
   @override
@@ -376,20 +444,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
         print("detached");
         break;
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _offsetAnimation,
-      child: Padding(
-        padding: EdgeInsets.all(6.w),
-        child: Text(
-          widget.text,
-          style: TextStyle(color: widget.color),
-        ),
-      ),
-    );
   }
 }
 /////////////////전광판 끝
@@ -420,19 +474,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
     } catch (e) {
-      makeMessage("서버 연결에 실패하였습니다....", "alert_start");
+      makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
     }
 
     //소켓 연결하고 들어왔다 알려주기
     final date =
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
-    Uint8List initmessage =
+    Uint8List initMessage =
         testMethod("init", "init", userId, mynickName, date).writeToBuffer();
-    socket.add(initmessage);
+    socket.add(initMessage);
 
     //채팅방 입장할때 알려줌
-    makeMessage("채팅방에 입장하셨습니다.", "alert_start");
+    makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
 
     // 서버에서 채팅날아오면 받기
     socket.listen((List<int> event) {
@@ -442,8 +496,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
       // 채팅을 위한것이면 채팅에 저장하기
       if (testmessage.type == "msg") {
-        makeMessage(testmessage.content, testmessage.nickName);
+        makeMessage(
+            testmessage.content, testmessage.nickName, testmessage.userId);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("자리 양도 이벤트가 발생하였습니다"),
+          duration: Duration(seconds: 5),
+          backgroundColor: _color,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: '참가!',
+            disabledTextColor: Colors.white,
+            textColor: Colors.white,
+            onPressed: () {
+              print(testmessage.userId);
+            },
+          ),
+        ));
       }
+
+      // if (testmessage.type == "msg") {
+      //   makeMessage(testmessage.content, testmessage.userId, 0);
+      // }
 
       //자리양도일때 채팅방에 가운데 띄워주기 버튼도 추가해야하고 그안에 양도를 특정할 수 있는 데이터도 같이 보내야함.
 
@@ -476,10 +549,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   //채팅 만들어주는 메소드
-  void makeMessage(String myText, String myName) {
+  void makeMessage(String myText, String myName, String id) {
     ChatMessage message = ChatMessage(
       text: myText,
       nickName: myName,
+      userId: id,
       animationController: AnimationController(
         duration: const Duration(milliseconds: 700),
         vsync: this,
@@ -667,6 +741,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     ChatMessage message = ChatMessage(
       text: text,
       nickName: mynickName,
+      userId: userId,
       // animationController 항목에 애니메이션 효과 설정
       // ChatMessage 은 UI를 가지는 위젯으로 새로운 message 가 리스트뷰에 추가될 때
       // 발생할 애니메이션 효과를 위젯에 직접 부여함
@@ -694,9 +769,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   //TCP채팅 ip,port랑 유저아이디,닉네임 필요
   void setting() {
-    ip = "172.30.0.1";
+    ip = "172.17.112.1";
     port = 7000;
-    userId = "gkswotmd96";
+    userId = "ssafy1234";
     mynickName = "출근하기 싫은 기린";
   }
 
@@ -958,10 +1033,12 @@ class ChatMessage extends StatelessWidget {
   final String text; // 출력할 메시지
   final AnimationController animationController;
   final String nickName; // 리스트뷰에 등록될 때 보여질 효과
+  final String userId;
 
   const ChatMessage(
       {super.key,
       required this.text,
+      required this.userId,
       required this.animationController,
       required this.nickName});
 
@@ -973,47 +1050,65 @@ class ChatMessage extends StatelessWidget {
           // 사용할 애니메이션 효과 설정
           CurvedAnimation(parent: animationController, curve: Curves.easeOut),
       axisAlignment: 0.0,
-      child: (nickName == "alert_start")
-          ? alarm(context, text)
-          : message(context, nickName, text),
+      child: (nickName == "alert")
+          ? alarm(context, nickName, text)
+          : message(context, nickName, text, userId),
+    );
+  }
+
+  // 각 기능을 이용하고 난 뒤에 스낵바를 띄워 안내해주는 설정 더하였습니다. (추후 개선 및 디자인 가능)
+  void showSnackBar(BuildContext context, String snackBarText) {
+    final snackBar = SnackBar(
+      content: Text(snackBarText),
+      backgroundColor: const Color(0xff32a1c8),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: '확인',
+        disabledTextColor: Colors.white,
+        textColor: Colors.yellow,
+        onPressed: () {
+          //Do whatever you want
+        },
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  // 알람용
+  Widget alarm(BuildContext context, String nickName, String text) {
+    return
+        // 리스트뷰에 추가될 컨테이너 위젯
+        Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0) +
+          const EdgeInsets.only(right: 5.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              // 입력받은 메시지 출력
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                margin: EdgeInsets.only(top: 5.h),
+                padding: EdgeInsets.all(8.w),
+                child: Text(text),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }
 
-// 알람용
-Widget alarm(BuildContext context, String text) {
-  return
-      // 리스트뷰에 추가될 컨테이너 위젯
-      Container(
-    margin: const EdgeInsets.symmetric(vertical: 10.0) +
-        const EdgeInsets.only(right: 5.0),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // 입력받은 메시지 출력
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              margin: EdgeInsets.only(top: 5.h),
-              padding: EdgeInsets.all(8.w),
-              child: Text(text),
-            ),
-          ],
-        )
-      ],
-    ),
-  );
-}
-
 // 내채팅 니채팅 확인, type 은 내채팅인지 확인하기 위해 만들어 둠, 추후에 작업이 필요 현재는 단순 아이디 비교
-Widget message(BuildContext context, String nick, String text) {
-  if (nick == mynickName) {
+Widget message(BuildContext context, String nick, String text, String id) {
+  if (id == userId) {
     return
         // 리스트뷰에 추가될 컨테이너 위젯
         Container(
@@ -1097,6 +1192,7 @@ Widget message(BuildContext context, String nick, String text) {
                             ),
                           ),
                           onPressed: () {
+                            print(id);
                             Navigator.of(ctx).pop();
                           },
                           child: const Text("신고하기"),

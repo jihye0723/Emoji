@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
                               builder: (context) => TextChat(
                                     train: "2221",
                                     station: "역삼역",
+                                    rail: "2호선",
                                   )));
                     },
                   ),

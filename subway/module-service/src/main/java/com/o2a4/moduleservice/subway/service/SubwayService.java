@@ -5,11 +5,12 @@ import com.o2a4.moduleservice.subway.document.Station;
 import com.o2a4.moduleservice.subway.dto.StationDto;
 import com.o2a4.moduleservice.subway.repository.StationRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-//@Slf4j
+@Slf4j
 @Component
 @AllArgsConstructor
 @Service

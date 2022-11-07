@@ -46,7 +46,9 @@ class SearchTrainDialog extends StatelessWidget {
                   barrierDismissible: true,
                   builder: (BuildContext ctx) {
                     return GetOnTrainDialog(
-                        trainNo: int.parse(searchTrainController.text));
+                      trainNo: int.parse(searchTrainController.text),
+                      remainTime: 0,
+                    );
                   });
             } else {}
           },

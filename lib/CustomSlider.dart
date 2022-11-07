@@ -179,7 +179,8 @@ class _CustomSliderState extends State<CustomSlider> {
                                 barrierDismissible: true,
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
-                                      trainNo: int.parse(widget.trainNo));
+                                      trainNo: int.parse(widget.trainNo),
+                                      remainTime: widget.remainTime);
                                 })
                           },
                           child: Container(

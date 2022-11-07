@@ -5,6 +5,7 @@ import com.o2a4.chattcp.handler.ChatHandler;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
@@ -14,6 +15,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +25,6 @@ import org.springframework.stereotype.Component;
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChatHandler chatHandler;
-
-    private final DefaultEventExecutorGroup workerGroup = NettyConfiguration.workerGroup();
 
     @Value("${server.netty.logLevel}")
     private String logLevel;
@@ -39,7 +40,8 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
                 .addLast(new ProtobufDecoder(TransferOuterClass.Transfer.getDefaultInstance()))
                 //Logger, Event Handler
                 .addLast(new LoggingHandler(LogLevel.valueOf(logLevel)))
-                .addLast(workerGroup, chatHandler)
+//                .addLast(workerGroup, chatHandler)
+                .addLast(chatHandler)
                 //ProtoBuf Encoder
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder());

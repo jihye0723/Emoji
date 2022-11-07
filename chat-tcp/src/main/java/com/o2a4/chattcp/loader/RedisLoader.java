@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class RedisLoader {
-    @Value("${server.port}")
+    @Value("${server.netty.transfer.port}")
     private int port;
 
         private final ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
@@ -24,9 +24,7 @@ public class RedisLoader {
 
     @PostConstruct
     public void loadData() {
-        // FIXME delete O(N)이라 시간 좀 걸릴수도? flush하는 좋은 방법을 모르겠음
-        //  => 채팅서버용 redis를 따로 파면 flushAll로 다 날릴 수 있는데
-        //  => FIXME 0이 어떻게 찍히는거지..
+        // redis DB를 0번으로 사용하기 때문에 0번을 flush
         String tempKey = "server:" + port;
 
         reactiveRedisConnectionFactory.getReactiveConnection().serverCommands().flushDb().then(Mono.just(tempKey))

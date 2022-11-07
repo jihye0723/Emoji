@@ -1,11 +1,20 @@
 package com.o2a4.chattcp.handler;
 
+import com.o2a4.chattcp.config.NettyConfiguration;
 import com.o2a4.chattcp.decoder.JwtDecoder;
 import com.o2a4.chattcp.model.Bridge;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.MediaType;
@@ -15,17 +24,23 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class RestHandler {
+    static String uPrefix = "user:";
+    static String tPrefix = "train:";
+    static String sPrefix = "server:";
 
-    @Value("${server.port}")
+    @Value("${server.netty.transfer.port}")
     private String port;
 
-    private final ReactiveRedisTemplate<String,String> redisTemplate;
+    private final ServerBootstrap serverBootstrap;
+
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     private final JwtDecoder jwtDecoder;
 
@@ -53,36 +68,45 @@ public class RestHandler {
             return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
         }
 
-        Mono<Bridge> train = req.bodyToMono(Bridge.class)
-                .switchIfEmpty(Mono.error(new IllegalStateException("user required")))
+        // TODO 이미 서버에 들어가있는 유저인 경우에 막아야함 (호출 연달아 여러번)
+        Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
+                // 서버에서 찾을 수 없을 때만 통과
+                .filter(i -> i == null)
+                // 없었다면 body를 사용
+                .switchIfEmpty(req.bodyToMono(Bridge.class))
+                // body가 없으면
+                .switchIfEmpty(Mono.error(new IllegalStateException("유저 정보가 없습니다")))
+                // 정상적으로 body에서 데이터를 불러왔다면
                 .flatMap(data -> {
                     // 2 열차 확인
                     log.info("CHECK TRAIN");
-                    String trainId = data.getData();
+                    String trainId = ((Bridge) data).getData();
 
-                    return redisTemplate.opsForHash().get("train:" + trainId, "server")
+                    return redisTemplate.opsForHash().get(tPrefix + trainId, "server")
                             .switchIfEmpty(Mono.defer(() -> {
                                 log.info("TRAIN {} DOES NOT EXIST", trainId);
-                                return redisTemplate.opsForHash().put("train:" + trainId, "server", port)
-                                        .flatMap(portRes -> {
-                                            log.info("ADD USER {} TO SERVER", userId);
-                                            log.info("ADD USER CG START");
-                                            redisTemplate.opsForHash().put("user:" + userId, "channelGroup", trainId).subscribe(i -> {
-                                                log.info("ADD USER CG END");
-                                            });
-                                            log.info("ADD USER SERVER START");
-                                            redisTemplate.opsForHash().put("user:" + userId, "server", port).subscribe(i -> {
-                                                log.info("ADD USER SERVER END");
-                                            });
+                                // 채널그룹 맵에 추가
+                                tcgRepo.getTrainChannelGroupMap().put(trainId, new DefaultChannelGroup(serverBootstrap.config().childGroup().next()));
 
-                                            return Mono.just("ADD USER DONE");
-                                        });
-                            }));
+                                Map<String, String> map = new HashMap<>();
+                                map.put("server", port);
+                                map.put("villain", "0");
+
+                                return redisTemplate.opsForHash().putAll(tPrefix + trainId, map);
+                            }))
+                            .flatMap(portRes -> {
+                                log.info("ADD USER {} TO SERVER", userId);
+                                redisTemplate.opsForHash().put(uPrefix + userId, "channelGroup", trainId).subscribe();
+                                redisTemplate.opsForHash().put(uPrefix + userId, "server", port).subscribe();
+
+                                return Mono.just("ADD USER DONE");
+                            });
                 })
                 .flatMap(i -> {
                     log.info("INCREASE USER COUNT");
-                    return redisTemplate.opsForValue().increment("server:" + port);
+                    return redisTemplate.opsForValue().increment(sPrefix + port);
                 }).map(i -> {
+                    log.info("BRIDGE");
                     Bridge res = new Bridge();
 
                     res.setName("port");
@@ -116,9 +140,8 @@ public class RestHandler {
         }
 
         log.info("GET USER CHANNELGROUP");
-        // TODO 여러개 가져온 필드에 대해서 각각 처리해주기
-        Mono<Bridge> result = redisTemplate.opsForHash().entries("user:" + userId)
-                .collectMap(x-> x.getKey(), x->x.getValue())
+        Mono<Bridge> result = redisTemplate.opsForHash().entries(uPrefix + userId)
+                .collectMap(x -> x.getKey(), x -> x.getValue())
                 .flatMap(map -> {
                     log.info("REMOVE USER {}", userId);
                     log.info("MAP VALUES : {}", map.values());
@@ -133,21 +156,29 @@ public class RestHandler {
                     }
                     // FIXME 로직을 tcp 쪽으로 다 넘길지 여기서 할 지 생각을 해봐야할듯
                     // 채널그룹이 있는데 사람이 tcp 연결전에 나간 경우 / 채널그룹을 새로 만들었는데 tcp 연결전에 나간경우
-                    // 그냥 열차에 맵핑만 시키고 tcp 연결되면 redis에?
 
                     // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거
-                    if (tcgRepo.getTrainChannelGroupMap().get(channelGroup).size() == 0) {
+                    ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);
+                    if (cg != null && cg.size() == 0) {
                         log.info("REMOVE TRAIN {} SERVER", channelGroup);
                         // 메모리에서 채널그룹 제거
                         tcgRepo.getTrainChannelGroupMap().remove(channelGroup);
-                        // Redis에서 열차 서버 매핑정보 제거
-                        redisTemplate.opsForHash().delete("train:"+channelGroup).subscribe(i -> { log.info("REMOVE REDIS TRAIN {}", channelGroup); });
                     }
 
-                    return redisTemplate.opsForHash().delete("user:" + userId).doOnSubscribe(i -> {log.info("REMOVE USER {} REDIS", userId);});
+                    return Mono.zip(
+                            // Redis에서 유저 정보 제거
+                            redisTemplate.opsForHash().delete(uPrefix + userId).doOnSubscribe(i -> {
+                                log.info("REMOVE USER {} REDIS", userId);
+                            }),
+                            // Redis에서 열차 서버 매핑정보 제거
+                            redisTemplate.opsForHash().delete(tPrefix + channelGroup).doOnSubscribe(i -> {
+                                log.info("REMOVE TRAIN {} REDIS", channelGroup);
+                            }));
                 }).flatMap(i -> {
-                    if (i.equals(true)) {
-                        redisTemplate.opsForValue().decrement("server:" + port).subscribe(a -> {log.info("DECREASE USER COUNT");});
+                    if (i.getT1() && i.getT2()) {
+                        redisTemplate.opsForValue().decrement(sPrefix + port).subscribe(a -> {
+                            log.info("DECREASE USER COUNT");
+                        });
                     }
                     return Mono.just("pass");
                 }).map(i -> {

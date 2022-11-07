@@ -18,11 +18,19 @@ public final class TransferOuterClass {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <pre>
+     * type : msg / seat / villain
+     * </pre>
+     *
      * <code>string type = 1;</code>
      * @return The type.
      */
     java.lang.String getType();
     /**
+     * <pre>
+     * type : msg / seat / villain
+     * </pre>
+     *
      * <code>string type = 1;</code>
      * @return The bytes for type.
      */
@@ -30,11 +38,19 @@ public final class TransferOuterClass {
         getTypeBytes();
 
     /**
+     * <pre>
+     * content : 안녕
+     * </pre>
+     *
      * <code>string content = 2;</code>
      * @return The content.
      */
     java.lang.String getContent();
     /**
+     * <pre>
+     * content : 안녕
+     * </pre>
+     *
      * <code>string content = 2;</code>
      * @return The bytes for content.
      */
@@ -42,11 +58,19 @@ public final class TransferOuterClass {
         getContentBytes();
 
     /**
+     * <pre>
+     * userID : 1234
+     * </pre>
+     *
      * <code>string userId = 3;</code>
      * @return The userId.
      */
     java.lang.String getUserId();
     /**
+     * <pre>
+     * userID : 1234
+     * </pre>
+     *
      * <code>string userId = 3;</code>
      * @return The bytes for userId.
      */
@@ -54,11 +78,19 @@ public final class TransferOuterClass {
         getUserIdBytes();
 
     /**
+     * <pre>
+     * nickName : 출근하는 호돌이
+     * </pre>
+     *
      * <code>string nickName = 4;</code>
      * @return The nickName.
      */
     java.lang.String getNickName();
     /**
+     * <pre>
+     * nickName : 출근하는 호돌이
+     * </pre>
+     *
      * <code>string nickName = 4;</code>
      * @return The bytes for nickName.
      */
@@ -66,11 +98,19 @@ public final class TransferOuterClass {
         getNickNameBytes();
 
     /**
+     * <pre>
+     * send_at : 20221101T105112
+     * </pre>
+     *
      * <code>string send_at = 5;</code>
      * @return The sendAt.
      */
     java.lang.String getSendAt();
     /**
+     * <pre>
+     * send_at : 20221101T105112
+     * </pre>
+     *
      * <code>string send_at = 5;</code>
      * @return The bytes for sendAt.
      */
@@ -125,6 +165,10 @@ public final class TransferOuterClass {
     public static final int TYPE_FIELD_NUMBER = 1;
     private volatile java.lang.Object type_;
     /**
+     * <pre>
+     * type : msg / seat / villain
+     * </pre>
+     *
      * <code>string type = 1;</code>
      * @return The type.
      */
@@ -142,6 +186,10 @@ public final class TransferOuterClass {
       }
     }
     /**
+     * <pre>
+     * type : msg / seat / villain
+     * </pre>
+     *
      * <code>string type = 1;</code>
      * @return The bytes for type.
      */
@@ -163,6 +211,10 @@ public final class TransferOuterClass {
     public static final int CONTENT_FIELD_NUMBER = 2;
     private volatile java.lang.Object content_;
     /**
+     * <pre>
+     * content : 안녕
+     * </pre>
+     *
      * <code>string content = 2;</code>
      * @return The content.
      */
@@ -180,6 +232,10 @@ public final class TransferOuterClass {
       }
     }
     /**
+     * <pre>
+     * content : 안녕
+     * </pre>
+     *
      * <code>string content = 2;</code>
      * @return The bytes for content.
      */
@@ -201,6 +257,10 @@ public final class TransferOuterClass {
     public static final int USERID_FIELD_NUMBER = 3;
     private volatile java.lang.Object userId_;
     /**
+     * <pre>
+     * userID : 1234
+     * </pre>
+     *
      * <code>string userId = 3;</code>
      * @return The userId.
      */
@@ -218,6 +278,10 @@ public final class TransferOuterClass {
       }
     }
     /**
+     * <pre>
+     * userID : 1234
+     * </pre>
+     *
      * <code>string userId = 3;</code>
      * @return The bytes for userId.
      */
@@ -239,6 +303,10 @@ public final class TransferOuterClass {
     public static final int NICKNAME_FIELD_NUMBER = 4;
     private volatile java.lang.Object nickName_;
     /**
+     * <pre>
+     * nickName : 출근하는 호돌이
+     * </pre>
+     *
      * <code>string nickName = 4;</code>
      * @return The nickName.
      */
@@ -256,6 +324,10 @@ public final class TransferOuterClass {
       }
     }
     /**
+     * <pre>
+     * nickName : 출근하는 호돌이
+     * </pre>
+     *
      * <code>string nickName = 4;</code>
      * @return The bytes for nickName.
      */
@@ -277,6 +349,10 @@ public final class TransferOuterClass {
     public static final int SEND_AT_FIELD_NUMBER = 5;
     private volatile java.lang.Object sendAt_;
     /**
+     * <pre>
+     * send_at : 20221101T105112
+     * </pre>
+     *
      * <code>string send_at = 5;</code>
      * @return The sendAt.
      */
@@ -294,6 +370,10 @@ public final class TransferOuterClass {
       }
     }
     /**
+     * <pre>
+     * send_at : 20221101T105112
+     * </pre>
+     *
      * <code>string send_at = 5;</code>
      * @return The bytes for sendAt.
      */
@@ -717,6 +797,10 @@ public final class TransferOuterClass {
 
       private java.lang.Object type_ = "";
       /**
+       * <pre>
+       * type : msg / seat / villain
+       * </pre>
+       *
        * <code>string type = 1;</code>
        * @return The type.
        */
@@ -733,6 +817,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * type : msg / seat / villain
+       * </pre>
+       *
        * <code>string type = 1;</code>
        * @return The bytes for type.
        */
@@ -750,6 +838,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * type : msg / seat / villain
+       * </pre>
+       *
        * <code>string type = 1;</code>
        * @param value The type to set.
        * @return This builder for chaining.
@@ -765,6 +857,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * type : msg / seat / villain
+       * </pre>
+       *
        * <code>string type = 1;</code>
        * @return This builder for chaining.
        */
@@ -775,6 +871,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * type : msg / seat / villain
+       * </pre>
+       *
        * <code>string type = 1;</code>
        * @param value The bytes for type to set.
        * @return This builder for chaining.
@@ -793,6 +893,10 @@ public final class TransferOuterClass {
 
       private java.lang.Object content_ = "";
       /**
+       * <pre>
+       * content : 안녕
+       * </pre>
+       *
        * <code>string content = 2;</code>
        * @return The content.
        */
@@ -809,6 +913,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * content : 안녕
+       * </pre>
+       *
        * <code>string content = 2;</code>
        * @return The bytes for content.
        */
@@ -826,6 +934,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * content : 안녕
+       * </pre>
+       *
        * <code>string content = 2;</code>
        * @param value The content to set.
        * @return This builder for chaining.
@@ -841,6 +953,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * content : 안녕
+       * </pre>
+       *
        * <code>string content = 2;</code>
        * @return This builder for chaining.
        */
@@ -851,6 +967,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * content : 안녕
+       * </pre>
+       *
        * <code>string content = 2;</code>
        * @param value The bytes for content to set.
        * @return This builder for chaining.
@@ -869,6 +989,10 @@ public final class TransferOuterClass {
 
       private java.lang.Object userId_ = "";
       /**
+       * <pre>
+       * userID : 1234
+       * </pre>
+       *
        * <code>string userId = 3;</code>
        * @return The userId.
        */
@@ -885,6 +1009,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * userID : 1234
+       * </pre>
+       *
        * <code>string userId = 3;</code>
        * @return The bytes for userId.
        */
@@ -902,6 +1030,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * userID : 1234
+       * </pre>
+       *
        * <code>string userId = 3;</code>
        * @param value The userId to set.
        * @return This builder for chaining.
@@ -917,6 +1049,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * userID : 1234
+       * </pre>
+       *
        * <code>string userId = 3;</code>
        * @return This builder for chaining.
        */
@@ -927,6 +1063,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * userID : 1234
+       * </pre>
+       *
        * <code>string userId = 3;</code>
        * @param value The bytes for userId to set.
        * @return This builder for chaining.
@@ -945,6 +1085,10 @@ public final class TransferOuterClass {
 
       private java.lang.Object nickName_ = "";
       /**
+       * <pre>
+       * nickName : 출근하는 호돌이
+       * </pre>
+       *
        * <code>string nickName = 4;</code>
        * @return The nickName.
        */
@@ -961,6 +1105,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * nickName : 출근하는 호돌이
+       * </pre>
+       *
        * <code>string nickName = 4;</code>
        * @return The bytes for nickName.
        */
@@ -978,6 +1126,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * nickName : 출근하는 호돌이
+       * </pre>
+       *
        * <code>string nickName = 4;</code>
        * @param value The nickName to set.
        * @return This builder for chaining.
@@ -993,6 +1145,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * nickName : 출근하는 호돌이
+       * </pre>
+       *
        * <code>string nickName = 4;</code>
        * @return This builder for chaining.
        */
@@ -1003,6 +1159,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * nickName : 출근하는 호돌이
+       * </pre>
+       *
        * <code>string nickName = 4;</code>
        * @param value The bytes for nickName to set.
        * @return This builder for chaining.
@@ -1021,6 +1181,10 @@ public final class TransferOuterClass {
 
       private java.lang.Object sendAt_ = "";
       /**
+       * <pre>
+       * send_at : 20221101T105112
+       * </pre>
+       *
        * <code>string send_at = 5;</code>
        * @return The sendAt.
        */
@@ -1037,6 +1201,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * send_at : 20221101T105112
+       * </pre>
+       *
        * <code>string send_at = 5;</code>
        * @return The bytes for sendAt.
        */
@@ -1054,6 +1222,10 @@ public final class TransferOuterClass {
         }
       }
       /**
+       * <pre>
+       * send_at : 20221101T105112
+       * </pre>
+       *
        * <code>string send_at = 5;</code>
        * @param value The sendAt to set.
        * @return This builder for chaining.
@@ -1069,6 +1241,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * send_at : 20221101T105112
+       * </pre>
+       *
        * <code>string send_at = 5;</code>
        * @return This builder for chaining.
        */
@@ -1079,6 +1255,10 @@ public final class TransferOuterClass {
         return this;
       }
       /**
+       * <pre>
+       * send_at : 20221101T105112
+       * </pre>
+       *
        * <code>string send_at = 5;</code>
        * @param value The bytes for sendAt to set.
        * @return This builder for chaining.

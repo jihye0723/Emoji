@@ -23,12 +23,14 @@ import java.util.TimerTask;
 @RequiredArgsConstructor
 public class NettyConfiguration {
 
+//    private final DefaultEventExecutorGroup workerGroup = this.workerGroup();
+
     @Value("${server.netty.transfer.port}")
     private int transferPort;
     @Value("${server.netty.bossCount}")
     private int bossCount;
-    @Value("${server.netty.ioCount}")
-    private int ioCount;
+//    @Value("${server.netty.ioCount}")
+//    private int ioCount;
     @Value("${server.netty.workerCount}")
     private int workerCount;
     @Value("${server.netty.keepAlive}")
@@ -42,7 +44,8 @@ public class NettyConfiguration {
     public ServerBootstrap serverBootstrap(NettyChannelInitializer nettyChannelInitializer) {
         // ServerBootstrap: 서버 설정을 도와주는 class
         ServerBootstrap serverBootstrap = new ServerBootstrap();
-        serverBootstrap.group(bossGroup(), ioGroup())
+//        serverBootstrap.group(bossGroup(), ioGroup())
+        serverBootstrap.group(bossGroup(), workerGroup())
                 // NioServerSocketChannel: incoming connections를 수락하기 위해 새로운 Channel을 객체화할 때 사용
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.valueOf(logLevel)))
@@ -67,21 +70,30 @@ public class NettyConfiguration {
     }
 
     // io: worker에서 I/O만 분리하여 처리
-    @Bean(destroyMethod = "shutdownGracefully")
-    public NioEventLoopGroup ioGroup() {
-        return new NioEventLoopGroup(ioCount);
-    }
+//    @Bean(destroyMethod = "shutdownGracefully")
+//    public NioEventLoopGroup ioGroup() {
+//        return new NioEventLoopGroup(ioCount);
+//    }
     
     // worker: boss가 수락한 연결 핸들링
     @Bean(destroyMethod = "shutdownGracefully")
-    public static DefaultEventExecutorGroup workerGroup() {
+    public NioEventLoopGroup workerGroup() {
+//        application.properties 로 정의한 내용을 쓸 때는 workerCount 로!
+        int DEFAULT_WORKERGROUP_THREADS = Math.max(1, SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
+
+        return new NioEventLoopGroup(DEFAULT_WORKERGROUP_THREADS);
+//        return new NioEventLoopGroup(DEFAULT_WORKERGROUP_THREADS);        기본 NioEventLoopGroup
+    }
+
+    /*@Bean(destroyMethod = "shutdownGracefully")
+    public DefaultEventExecutorGroup workerGroup() {
 //        application.properties 로 정의한 내용을 쓸 때는 workerCount 로!
         int DEFAULT_WORKERGROUP_THREADS = Math.max(1, SystemPropertyUtil.getInt("io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
 
 //        io와 작업핸들러를 분리
         return new DefaultEventExecutorGroup(DEFAULT_WORKERGROUP_THREADS);
 //        return new NioEventLoopGroup(DEFAULT_WORKERGROUP_THREADS);        기본 NioEventLoopGroup
-    }
+    }*/
 
     // IP 소켓 주소(IP 주소, Port 번호)를 구현
     // 도메인 이름으로 객체 생성 가능

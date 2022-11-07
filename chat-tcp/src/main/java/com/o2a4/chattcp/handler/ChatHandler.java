@@ -1,5 +1,7 @@
 package com.o2a4.chattcp.handler;
 
+import com.o2a4.chattcp.proto.TransferOuterClass;
+import com.o2a4.chattcp.service.RoomService;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -7,6 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Component;
 @ChannelHandler.Sharable
 @RequiredArgsConstructor
 public class ChatHandler extends ChannelInboundHandlerAdapter {
+    private final RoomService roomService;
+
     // 핸들러가 생성될 때 호출되는 메소드
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
@@ -28,21 +33,51 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         String remoteAddress = ctx.channel().remoteAddress().toString();
-        log.info("Remote Address: " + remoteAddress);
+        log.info("[OPEN] Remote Address: " + remoteAddress);
+    }
 
-        // TODO 입장 처리 - Map에 채널ID, 채널 저장 & Redis에 유저-채널-채널id 저장
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        String remoteAddress = ctx.channel().remoteAddress().toString();
+        log.info("[CLOSED] Remote Address: " + remoteAddress);
     }
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg){
-//        ByteBuf mBuf = (ByteBuf) msg;
-//        buff.writeBytes(mBuf);  // 클라이언트에서 보내는 데이터가 축적됨
-//        mBuf.release();
+    public void channelRead(ChannelHandlerContext ctx, Object data){
+        TransferOuterClass.Transfer trans = (TransferOuterClass.Transfer) data;
 
-        System.out.println("MESSAGE\n" + msg);
+        switch (trans.getType()) {
+            case "msg":
+                log.info("메세지 : {}", trans.getContent());
+                break;
+            case "room-in":
+                log.info("채팅방 넣어주세요 USERID : {}", trans.getUserId());
+                roomService.roomIn(ctx.channel(), trans);
+                break;
+            case "room-out":
+                log.info("CHAT ROOM OUT USERID : {}", trans.getUserId());
+                roomService.roomOut(ctx.channel(), trans);
+                break;
+            case "seat-start":
+                String userId = trans.getUserId();
+                log.info("자리양도 시작 : {}", userId);
+                roomService.seatStart(trans);
+                break;
+            case "villain-on":
+                log.info("빌런 탑승! 어떤 열차에 있는 User? : {}", trans.getUserId());
+                roomService.villainOn(trans);
+                break;
+            case "villain-off":
+                log.info("빌런 탈출! 어떤 열차에 있는 User? : {}", trans.getUserId());
+                roomService.villainOff(trans);
+                break;
+            default:
+                log.info("WRONG TYPE : {}", trans.getType());
+                break;
+        }
 
-        final ChannelFuture f = ctx.writeAndFlush(msg);
+//        final ChannelFuture f = ctx.writeAndFlush(trans);
 //        f.addListener(ChannelFutureListener.CLOSE);
     }
 

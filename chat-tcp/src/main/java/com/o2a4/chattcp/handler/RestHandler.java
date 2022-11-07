@@ -1,6 +1,5 @@
 package com.o2a4.chattcp.handler;
 
-import com.o2a4.chattcp.config.NettyConfiguration;
 import com.o2a4.chattcp.decoder.JwtDecoder;
 import com.o2a4.chattcp.model.Bridge;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
@@ -8,20 +7,14 @@ import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
@@ -68,14 +61,16 @@ public class RestHandler {
             return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
         }
 
-        // TODO 이미 서버에 들어가있는 유저인 경우에 막아야함 (호출 연달아 여러번)
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
-                // 서버에서 찾을 수 없을 때만 통과
-                .filter(i -> i == null)
                 // 없었다면 body를 사용
                 .switchIfEmpty(req.bodyToMono(Bridge.class))
                 // body가 없으면
-                .switchIfEmpty(Mono.error(new IllegalStateException("유저 정보가 없습니다")))
+                .switchIfEmpty(Mono.error(new IllegalStateException("No User Info in Request")))
+                // 서버에서 찾을 수 없어서 request body로 변환된 경우에만 통과
+                .map(i -> {
+                    if (i instanceof Bridge) return i;
+                    else throw new IllegalArgumentException("중복된 유저입니다");
+                })
                 // 정상적으로 body에서 데이터를 불러왔다면
                 .flatMap(data -> {
                     // 2 열차 확인

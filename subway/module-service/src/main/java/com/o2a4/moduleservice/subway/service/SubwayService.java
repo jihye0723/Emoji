@@ -17,25 +17,24 @@ public class SubwayService {
     private final StationRepository stationRepository;
     private final SubwayAPIClient subwayAPIClient;
 
-    public Station findStation(double latitude, double longtitude) throws Exception {
-        Station result = new Station();
+    public List<StationDto> findStation(double latitude, double longtitude) throws Exception {
+        Station data = new Station();
         List<Station> list =  stationRepository.findAll();
 
         // 미터(Meter) 단위
         System.out.println("Lat : " + latitude + ",    Lon : " + longtitude);
         System.out.println("Lat : " + list.get(1).getLatitude() + ",    Lon : " + list.get(1).getLongitude());
-        for (Station s:list) {
-            double distanceMeter =
-                    distance(latitude, longtitude, s.getLatitude(), s.getLongitude(), "meter");
 
-            System.out.println("역 : " + s.getStationName() + " |   거리 : " + distanceMeter);
+        for (Station s:list) {
+            double distanceMeter = distance(latitude, longtitude, s.getLatitude(), s.getLongitude(), "meter");
+
             if(distanceMeter <= 20) {
-                result = s;
+                data = s;
                 break;
             }
         }
 
-        subwayAPIClient.realtimeStationArrivalInfo(result.getStationName());
+        List<StationDto> result = subwayAPIClient.realtimeStationArrivalInfo(data.getStationName());
         return result;
     }
 

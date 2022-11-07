@@ -2,8 +2,14 @@ package com.o2a4.moduleservice.subway.dto;
 
 import com.o2a4.moduleservice.subway.document.Station;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@Getter
+@ToString
+@NoArgsConstructor
 public class StationDto {
     /* ordkey는 다음과 같이 구성되어 있습니다.
     - 상하행 코드: 숫자 1자리
@@ -19,9 +25,9 @@ public class StationDto {
 //    private String statnId;     // 지하철역 ID
     private String statnNm;     // 지하철역 명
 //    private String statnFid;    // 이전 지하철역 ID
-    private String statnFnm;    // 이전 지하철역 명
+//    private String statnFnm;    // 이전 지하철역 명
 //    private String statnTid;    // 다음 지하철역 ID
-    private String statnTnm;    // 다음 지하철역 명
+//    private String statnTnm;    // 다음 지하철역 명
     private String trainLineNm; // 도착지 방면 (성수행 - 구로디지털단지방면)
     private String btrainSttus; // 열차종류 (급행,ITX)
     private String recptnDt;    // 열차도착정보를 생성한 시각

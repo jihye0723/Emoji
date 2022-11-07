@@ -1,6 +1,7 @@
 package com.o2a4.moduleservice.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -17,6 +18,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RequiredArgsConstructor
 @Configuration
 @EnableScheduling
@@ -76,14 +78,14 @@ public class HttpClientConfig  {
             public void run() {
                 try {
                     if (connectionManager != null) {
-                        LOGGER.info("{} : 만료 또는 Idle 커넥션 종료.", Thread.currentThread().getName());
+                        log.info("{} : 만료 또는 Idle 커넥션 종료.", Thread.currentThread().getName());
                         connectionManager.closeExpiredConnections();
                         connectionManager.closeIdleConnections(IDLE_TIMEOUT, TimeUnit.MILLISECONDS);
                     } else {
-                        LOGGER.info("{} : ConnectionManager가 없습니다.", Thread.currentThread().getName());
+                        log.info("{} : ConnectionManager가 없습니다.", Thread.currentThread().getName());
                     }
                 } catch (Exception e) {
-                    LOGGER.error(Thread.currentThread().getName() + " : 만료 또는 Idle 커넥션 종료 중 예외 발생.", e);
+                    log.error(Thread.currentThread().getName() + " : 만료 또는 Idle 커넥션 종료 중 예외 발생.", e);
                 }
             }
         };

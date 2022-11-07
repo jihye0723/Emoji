@@ -21,7 +21,7 @@ public class SubwayController {
 
 //    @PathVariable("id")
     @GetMapping(value = "/station")
-    public ResponseEntity<Station>  findStationByGps(@RequestParam("latitude") double latitude, @RequestParam("longtitude") double longtitude) throws Exception {
+    public ResponseEntity<List<StationDto>>  findStationByGps(@RequestParam("latitude") double latitude, @RequestParam("longtitude") double longtitude) throws Exception {
 
         return ResponseEntity.ok(subwayService.findStation(latitude, longtitude));
     }

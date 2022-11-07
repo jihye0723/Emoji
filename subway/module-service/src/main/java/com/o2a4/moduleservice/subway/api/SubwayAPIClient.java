@@ -1,6 +1,9 @@
 package com.o2a4.moduleservice.subway.api;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.o2a4.moduleservice.subway.dto.StationDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -8,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -16,7 +22,9 @@ import java.util.Map;
 public class SubwayAPIClient {
     private final RestTemplate restTemplate;     // RequiredArgsConstructor은 final로 선언된 필드에 생성자 만드는데, 이 경우 에러남
 
-    public void realtimeStationArrivalInfo(String station) throws Exception {
+    public List<StationDto> realtimeStationArrivalInfo(String station) throws Exception {
+//        StationDto[] stationDtos = new StationDto[0];
+        List<StationDto> stationDtos = new ArrayList<StationDto>();
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr/api/subway");       // URL*/
         urlBuilder.append("/" + URLEncoder.encode("4e6a745a69706a7736304550596e44","UTF-8") );  // 인증키 (sample사용시에는 호출시 제한됩니다.)*/
         urlBuilder.append("/" + URLEncoder.encode("json","UTF-8") );                            // 요청파일타입 (xml,xmlf,xls,json) */
@@ -32,8 +40,27 @@ public class SubwayAPIClient {
         ResponseEntity<Map> resultMap = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, entity, Map.class);
 
         if(resultMap.getStatusCode().equals(HttpStatus.OK)) {
-            System.out.println(resultMap.getBody());
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);   //선언한 필드만 매핑
+
+            String jsonSting = objectMapper.writeValueAsString(resultMap.getBody().get("realtimeArrivalList"));
+            stationDtos = objectMapper.readValue(jsonSting, new TypeReference<List<StationDto>>() {});//Event[].class);
+//            System.out.println(resultMap.getBody());
 //            System.out.println(resultMap.getBody().getClass().getName());
+            for ( StationDto s:stationDtos
+                 ) {
+                System.out.println(s.toString());
+
+            }
+            Iterator<StationDto> it = stationDtos.iterator();
+            while (it.hasNext()) {
+                StationDto item = it.next();
+                if (item.getArvlCd().equals("2")) {
+                    it.remove();
+                }
+            }
         }
+
+        return stationDtos;
     }
 }

@@ -18,8 +18,8 @@ import java.net.*;
 @RequiredArgsConstructor
 public class NettyConfiguration {
 
-    @Value("${server.address}")
-    private String address;
+//    @Value("${server.address}")
+//    private String address;
     @Value("${server.netty.boss-count}")
     private int bossCount;
     @Value("${server.netty.worker-count}")

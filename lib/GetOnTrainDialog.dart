@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:subway/TrainPositionSlider.dart';
+import 'TestChatPage.dart';
 
 class GetOnTrainDialog extends StatefulWidget {
   const GetOnTrainDialog(
@@ -260,6 +260,13 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                   Navigator.of(ctx).pop();
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => TestChatPage(
+                                          userId: "아이디",
+                                          userNick: "닉네임",
+                                          rail: "2호선",
+                                          trainNo: _trainNo,
+                                          position: _position)));
                                   Fluttertoast.showToast(
                                     msg: " $_trainNo 열차 $_position번 칸에 탑승",
                                     fontSize: 16.sp,

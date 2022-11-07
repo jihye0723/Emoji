@@ -1,0 +1,29 @@
+{
+  "stationName": "사당",
+  "trainList": [
+    {
+      "line": "2호선",
+      "direction": 1,
+      "trainNo": "2147",
+      "remainTime": 7777
+    },
+    {
+      "line": "4호선",
+      "direction": 0,
+      "trainNo": "4642",
+      "remainTime": 125
+    },
+    {
+      "line": "4호선",
+      "direction": 1,
+      "trainNo": "4129",
+      "remainTime": 374
+    },
+    {
+      "line": "2호선",
+      "direction": 0,
+      "trainNo": "2156",
+      "remainTime": 111
+    }
+  ]
+}

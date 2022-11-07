@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:subway/SearchTrainDialog.dart';
 import 'CustomSlider.dart';
 import 'TrainInfo.dart';
+import 'TrainLineColor.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -24,7 +24,7 @@ class _FirstPageState extends State<FirstPage> {
   Position? _currentPosition;
   bool _checkedPosition = false;
   // String _stationName = "무슨무슨역";
-  int _itemCount = 1;
+  int _itemCount = 0;
 
   RefreshController _controller = RefreshController(initialRefresh: false);
 
@@ -75,7 +75,7 @@ class _FirstPageState extends State<FirstPage> {
 
   // 페이지 리로드  (Todo)
   void _onRefresh() async {
-    await Future.delayed(Duration(milliseconds: 1000));
+    await Future.delayed(Duration(milliseconds: 100));
     print("refresh!!!!");
     getLocation().then((value) => setState(() {
           _currentPosition = value;
@@ -84,6 +84,7 @@ class _FirstPageState extends State<FirstPage> {
     loadTrainInfo().then((value) => setState(() {
           // print(value.stationName + " " + value.trainList.length.toString());
           _trainInfo = value;
+          _itemCount = (value.trainList.length / 2).round();
           _loadedInfo = true;
         }));
     print("count : " + _itemCount.toString());
@@ -95,9 +96,6 @@ class _FirstPageState extends State<FirstPage> {
 
   // 서버로부터 받은 역 정보 읽어서 parsing (Todo)
   void getTrainInfo() {}
-
-  // 탑승정보 서버로 전달 (Todo)
-  void sendBoardingInfoToServer() {}
 
   @override
   void initState() {
@@ -111,6 +109,7 @@ class _FirstPageState extends State<FirstPage> {
           _trainInfo = value;
           _loadedInfo = true;
         }));
+    _onRefresh();
     super.initState();
   }
 
@@ -139,57 +138,65 @@ class _FirstPageState extends State<FirstPage> {
     );
 
     // 역 정보 받아와서 열차 운행정보 구하면 열차 도착정보 띄워줄 섹션 (2호선, { 낙성대, 2147, 3분 }, { 방배, 2156, 2분 })
-    Widget stationInfoSection = Container(
-      alignment: Alignment.topCenter,
-      child: Container(
-        width: 320.w,
-        height: 120.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          // border: Border.all(
-          //   color: Colors.red,
-          //   width: 1,
-          // ),
-          // border: Border(
-          //     top: BorderSide(color: Colors.black, width: 1),
-          //     bottom: BorderSide(color: Colors.black, width: 1)),
-          color: Colors.white,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            CustomSlider(
-              trainNo: "2147",
-              remainTime: 7777,
-              direction: 1,
+    Widget stationInfoSection(int idx) => Container(
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: 320.w,
+            height: 120.h,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              // border: Border.all(
+              //   color: Colors.red,
+              //   width: 1,
+              // ),
+              // border: Border(
+              //     top: BorderSide(color: Colors.black, width: 1),
+              //     bottom: BorderSide(color: Colors.black, width: 1)),
+              color: Colors.white,
             ),
-            Container(
-              // currentStation
-              child: Container(
-                  width: 50.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0x7f32a23c)),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "사당",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10.sp,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                _trainInfo.trainList.length == 0
+                    ? Container()
+                    : CustomSlider(
+                        trainNo: _trainInfo.trainList[idx * 2].trainNo,
+                        remainTime: _trainInfo.trainList[idx * 2].remainTime,
+                        direction: _trainInfo.trainList[idx * 2].direction,
                       ),
-                    ),
-                  )),
+                Container(
+                  // currentStation
+                  child: Container(
+                      width: 50.w,
+                      height: 50.h,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _trainInfo.trainList.length == 0
+                              ? Colors.white60
+                              : lineColor(_trainInfo.trainList[idx * 2].line)),
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: Text(
+                          _trainInfo.stationName,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10.sp,
+                              color: Colors.white),
+                        ),
+                      )),
+                ),
+                _trainInfo.trainList.length == 0
+                    ? Container()
+                    : CustomSlider(
+                        trainNo: _trainInfo.trainList[idx * 2 + 1].trainNo,
+                        remainTime:
+                            _trainInfo.trainList[idx * 2 + 1].remainTime,
+                        direction: _trainInfo.trainList[idx * 2 + 1].direction,
+                      )
+              ],
             ),
-            CustomSlider(
-              trainNo: "2156",
-              remainTime: 33,
-              direction: 0,
-            )
-          ],
-        ),
-      ),
-    );
+          ),
+        );
 
     // 이미 타고 있어요 버튼
     // Widget alreadyOnBoardSection = Container(
@@ -288,13 +295,15 @@ class _FirstPageState extends State<FirstPage> {
                   // ),
                   controller: _controller,
                   onRefresh: _onRefresh,
-                  child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      padding: EdgeInsets.all(8.w),
-                      itemCount: _itemCount,
-                      itemBuilder: (BuildContext context, int index) {
-                        return stationInfoSection;
-                      })),
+                  child: _itemCount == 0
+                      ? Container()
+                      : ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          padding: EdgeInsets.all(8.w),
+                          itemCount: _itemCount,
+                          itemBuilder: (BuildContext context, int index) {
+                            return stationInfoSection(index);
+                          })),
             )),
             // Expanded(
             //     child: ListView.builder(

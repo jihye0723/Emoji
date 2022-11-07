@@ -1,29 +1,41 @@
 {
-  "stationName": "사당",
+  "stationName": "역삼",
   "trainList": [
     {
       "line": "2호선",
       "direction": 1,
-      "trainNo": "2147",
-      "remainTime": 7777
-    },
-    {
-      "line": "4호선",
-      "direction": 0,
-      "trainNo": "4642",
-      "remainTime": 125
-    },
-    {
-      "line": "4호선",
-      "direction": 1,
-      "trainNo": "4129",
-      "remainTime": 374
+      "trainNo": "2001",
+      "remainTime": 777
     },
     {
       "line": "2호선",
       "direction": 0,
-      "trainNo": "2156",
-      "remainTime": 111
+      "trainNo": "2000",
+      "remainTime": 26
+    },
+    {
+      "line": "4호선",
+      "direction": 1,
+      "trainNo": "4001",
+      "remainTime": 444
+    },
+    {
+      "line": "4호선",
+      "direction": 0,
+      "trainNo": "4000",
+      "remainTime": 1313
+    },
+    {
+      "line": "5호선",
+      "direction": 1,
+      "trainNo": "5001",
+      "remainTime": 234
+    },
+    {
+      "line": "5호선",
+      "direction": 0,
+      "trainNo": "5000",
+      "remainTime": 37
     }
   ]
 }

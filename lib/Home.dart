@@ -1,9 +1,6 @@
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'FirstPage.dart';
 import 'SecondPage.dart';
 import 'package:flutter/material.dart';
-import 'CustomSlider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -18,7 +15,7 @@ class _HomeState extends State<Home> {
   static List<Widget> pages = <Widget>[
     // 하단 내비게이션에 들어갈 페이지 리스트 2개
     FirstPage(),
-    SecondPage(),
+    // SecondPage(),
   ];
 
   void _onItemTapped(int index) {

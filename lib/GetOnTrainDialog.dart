@@ -62,7 +62,9 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
             child: Container(
               alignment: Alignment.topCenter,
               child: Text(
-                (_remainTime / 60).round().toString() + " 분 후 도착",
+                (_remainTime / 60).round() > 0
+                    ? (_remainTime / 60).round().toString() + " 분 후 도착"
+                    : "곧 도착",
                 style: TextStyle(
                   color: Colors.red,
                   fontSize: 9.sp,

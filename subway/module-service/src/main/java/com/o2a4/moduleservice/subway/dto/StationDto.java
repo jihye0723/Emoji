@@ -2,13 +2,39 @@ package com.o2a4.moduleservice.subway.dto;
 
 import com.o2a4.moduleservice.subway.document.Station;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@Getter
+@ToString
+@NoArgsConstructor
 public class StationDto {
-    private String a;
-    private String ab;
-
-
+    /* ordkey는 다음과 같이 구성되어 있습니다.
+    - 상하행 코드: 숫자 1자리
+    - 순번 코드: 숫자 1자리
+    - 첫번째 도착예정 정류장-현재 정류장 코드: 숫자 3자리
+    - 목적지 정류장: 문자열
+    - 급행여부 코드: 숫자 1자리
+     */
+    private String ordkey;      // 도착예정열차순번
+    private String arvlCd;      // 도착코드 (0:진입, 1:도착, 2:출발, 3:전역출발, 4:전역진입, 5:전역도착, 99:운행중)
+    private String updnLine;    // 상, 하행
+    private String subwayId;    // 지하철 호선 ID
+//    private String statnId;     // 지하철역 ID
+    private String statnNm;     // 지하철역 명
+//    private String statnFid;    // 이전 지하철역 ID
+//    private String statnFnm;    // 이전 지하철역 명
+//    private String statnTid;    // 다음 지하철역 ID
+//    private String statnTnm;    // 다음 지하철역 명
+    private String trainLineNm; // 도착지 방면 (성수행 - 구로디지털단지방면)
+    private String btrainSttus; // 열차종류 (급행,ITX)
+    private String recptnDt;    // 열차도착정보를 생성한 시각
+    private String barvlDt;     // 열차도착예정시간
+    private String btrainNo;    // 열차번호
+    private String arvlMsg2;    // 첫번째 도착 메세지 (전역 진입, 전역 도착 등)
+    private String arvlMsg3;    // 두번째 도착 메세지 (종합운동장 도착, 12분 후 (광명사거리) 등)
 
 
 
@@ -29,7 +55,7 @@ public class StationDto {
 //        
 //        "btrainSttus": null,
 //        "barvlDt": "0",
-//        "btrainNo": "A3071",    // 열차번호
+//        "btrainNo": "A3071",
 //
 //  
 //  

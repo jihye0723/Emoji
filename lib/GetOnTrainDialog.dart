@@ -7,11 +7,13 @@ class GetOnTrainDialog extends StatefulWidget {
   const GetOnTrainDialog(
       {Key? key,
       required this.trainNo,
+      required this.line,
       required this.stationName,
       required this.remainTime})
       : super(key: key);
 
   final int trainNo;
+  final String line;
   final String stationName;
   final int remainTime;
 
@@ -22,19 +24,13 @@ class GetOnTrainDialog extends StatefulWidget {
 }
 
 class GetOnTrainDialogState extends State<GetOnTrainDialog> {
-  int _trainNo = 0;
-  String _stationName = "";
-  int _remainTime = 0;
   int _position = 1;
-
-  bool _disabled = false;
+  int _trainNo = 0;
 
   @override
   void initState() {
     setState(() {
       _trainNo = widget.trainNo;
-      _stationName = widget.stationName;
-      _remainTime = widget.remainTime;
     });
     super.initState();
   }
@@ -52,7 +48,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
             // decoration: BoxDecoration(
             //     border: Border.all(color: Colors.orange, width: 1)),
             child: Text(
-              _trainNo.toString() + " 열차",
+              widget.trainNo.toString() + " 열차",
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -62,8 +58,8 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
             child: Container(
               alignment: Alignment.topCenter,
               child: Text(
-                (_remainTime / 60).round() > 0
-                    ? (_remainTime / 60).round().toString() + " 분 후 도착"
+                (widget.remainTime / 60).round() > 0
+                    ? (widget.remainTime / 60).round().toString() + " 분 후 도착"
                     : "곧 도착",
                 style: TextStyle(
                   color: Colors.red,
@@ -72,7 +68,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
               ),
             ),
           ),
-          _remainTime <= 60
+          widget.remainTime <= 60
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -132,7 +128,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                           value: _position.toDouble(),
                           divisions: 10,
                           // label: '${_position}',
-                          onChanged: _remainTime <= 60
+                          onChanged: widget.remainTime <= 60
                               ? (value) {
                                   setState(() {
                                     _position = value.round();
@@ -255,7 +251,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
           child: ElevatedButton(
             // style: ElevatedButton.styleFrom(
             //     minimumSize: Size.zero, padding: EdgeInsets.zero),
-            onPressed: _remainTime <= 60
+            onPressed: widget.remainTime <= 60
                 ? () {
                     showDialog(
                       context: context,
@@ -272,14 +268,14 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                       builder: (context) => TestChatPage(
                                           userId: "아이디",
                                           userNick: "닉네임",
-                                          rail: "2호선",
-                                          trainNo: _trainNo,
-                                          stationName: _stationName,
+                                          line: widget.line,
+                                          trainNo: widget.trainNo,
+                                          stationName: widget.stationName,
                                           position: _position)));
                                   Fluttertoast.showToast(
                                     msg: " $_trainNo 열차 $_position번 칸에 탑승",
                                     fontSize: 16.sp,
-                                    gravity: ToastGravity.CENTER,
+                                    gravity: ToastGravity.BOTTOM,
                                     timeInSecForIosWeb: 1,
                                     backgroundColor: Colors.red,
                                     textColor: Colors.white,

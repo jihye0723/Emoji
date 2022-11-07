@@ -6,7 +6,7 @@ class TestChatPage extends StatelessWidget {
       {Key? key,
       required this.userId,
       required this.userNick,
-      required this.rail,
+      required this.line,
       required this.trainNo,
       required this.stationName,
       required this.position})
@@ -14,7 +14,7 @@ class TestChatPage extends StatelessWidget {
 
   final String userId;
   final String userNick;
-  final String rail;
+  final String line;
   final int trainNo;
   final String stationName;
   final int position;
@@ -27,7 +27,7 @@ class TestChatPage extends StatelessWidget {
       children: [
         Text("userId : " + userId),
         Text("userNick : " + userNick),
-        Text("rail : " + rail),
+        Text("line : " + line),
         Text("trainNo : " + trainNo.toString()),
         Text("stationName : " + stationName),
         // Text("direction : " +

@@ -3,21 +3,15 @@ import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:subway/TrainInfo.dart';
 import 'GetOnTrainDialog.dart';
 
 class CustomSlider extends StatefulWidget {
-  const CustomSlider(
-      {Key? key,
-      required this.trainNo,
-      required this.stationName,
-      required this.remainTime,
-      required this.direction})
+  const CustomSlider({Key? key, required this.stationName, required this.train})
       : super(key: key);
 
-  final String trainNo;
   final String stationName;
-  final int remainTime;
-  final int direction;
+  final Train train;
 
   @override
   _CustomSliderState createState() => _CustomSliderState();
@@ -71,7 +65,7 @@ class _CustomSliderState extends State<CustomSlider> {
     print("rv = $_reverseSliderValue");
     print("rt = $_remainTime");
 
-    if (widget.direction == 1) {
+    if (widget.train.direction == 1) {
       print("clicked left");
     } else {
       print("clicked right");
@@ -97,9 +91,9 @@ class _CustomSliderState extends State<CustomSlider> {
       // print(image);
       setState(() {
         customImage = image;
-        _remainTime = (widget.remainTime / 60).round();
+        _remainTime = (widget.train.remainTime / 60).round();
 
-        _sliderValue = calcSliderValue(_remainTime, widget.direction);
+        _sliderValue = calcSliderValue(_remainTime, widget.train.direction);
         _reverseSliderValue = 9 - _sliderValue;
 
         _sliderButtonPaddingLeft = calcPadding(_sliderValue);
@@ -181,9 +175,10 @@ class _CustomSliderState extends State<CustomSlider> {
                                 barrierDismissible: true,
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
-                                      trainNo: int.parse(widget.trainNo),
+                                      trainNo: int.parse(widget.train.trainNo),
+                                      line: widget.train.line,
                                       stationName: widget.stationName,
-                                      remainTime: widget.remainTime);
+                                      remainTime: widget.train.remainTime);
                                 })
                           },
                           child: Container(

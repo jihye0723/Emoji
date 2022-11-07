@@ -160,10 +160,8 @@ class _FirstPageState extends State<FirstPage> {
                 _trainInfo.trainList.length == 0
                     ? Container()
                     : CustomSlider(
-                        trainNo: _trainInfo.trainList[idx * 2].trainNo,
                         stationName: _trainInfo.stationName,
-                        remainTime: _trainInfo.trainList[idx * 2].remainTime,
-                        direction: _trainInfo.trainList[idx * 2].direction,
+                        train: _trainInfo.trainList[idx * 2],
                       ),
                 Container(
                   // currentStation
@@ -189,11 +187,8 @@ class _FirstPageState extends State<FirstPage> {
                 _trainInfo.trainList.length == 0
                     ? Container()
                     : CustomSlider(
-                        trainNo: _trainInfo.trainList[idx * 2 + 1].trainNo,
                         stationName: _trainInfo.stationName,
-                        remainTime:
-                            _trainInfo.trainList[idx * 2 + 1].remainTime,
-                        direction: _trainInfo.trainList[idx * 2 + 1].direction,
+                        train: _trainInfo.trainList[idx * 2 + 1],
                       )
               ],
             ),

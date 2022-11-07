@@ -8,6 +8,7 @@ class TestChatPage extends StatelessWidget {
       required this.userNick,
       required this.rail,
       required this.trainNo,
+      // required this.direction,
       required this.position})
       : super(key: key);
 
@@ -15,6 +16,7 @@ class TestChatPage extends StatelessWidget {
   final String userNick;
   final String rail;
   final int trainNo;
+  // final int direction;
   final int position;
 
   @override
@@ -27,6 +29,9 @@ class TestChatPage extends StatelessWidget {
         Text("userNick : " + userNick),
         Text("rail : " + rail),
         Text("trainNo : " + trainNo.toString()),
+        // Text("direction : " +
+        //     direction.toString() +
+        //     ((direction % 2 == 1) ? " 홀수 외선 상행" : "짝수 내선 하행")),
         Text("position : " + position.toString()),
         ElevatedButton(
             onPressed: () {

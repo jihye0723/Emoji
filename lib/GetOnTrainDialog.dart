@@ -5,10 +5,14 @@ import 'TestChatPage.dart';
 
 class GetOnTrainDialog extends StatefulWidget {
   const GetOnTrainDialog(
-      {Key? key, required this.trainNo, required this.remainTime})
+      {Key? key,
+      required this.trainNo,
+      required this.direction,
+      required this.remainTime})
       : super(key: key);
 
   final int trainNo;
+  final int direction;
   final int remainTime;
 
   @override
@@ -19,6 +23,7 @@ class GetOnTrainDialog extends StatefulWidget {
 
 class GetOnTrainDialogState extends State<GetOnTrainDialog> {
   int _trainNo = 0;
+  int _direction = 0;
   int _remainTime = 0;
   int _position = 1;
 
@@ -28,6 +33,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
   void initState() {
     setState(() {
       _trainNo = widget.trainNo;
+      _direction = widget.direction;
       _remainTime = widget.remainTime;
     });
     super.initState();
@@ -266,6 +272,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                           userNick: "닉네임",
                                           rail: "2호선",
                                           trainNo: _trainNo,
+                                          // direction: _direction,
                                           position: _position)));
                                   Fluttertoast.showToast(
                                     msg: " $_trainNo 열차 $_position번 칸에 탑승",

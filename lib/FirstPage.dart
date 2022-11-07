@@ -192,30 +192,30 @@ class _FirstPageState extends State<FirstPage> {
     );
 
     // 이미 타고 있어요 버튼
-    Widget alreadyOnBoardSection = Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.only(
-          top: 10.h,
-          bottom: 10.h,
-        ),
-        child: SizedBox(
-          width: 180.w,
-          height: 40.h,
-          child: OutlinedButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (BuildContext ctx) {
-                    return SearchTrainDialog();
-                  });
-            },
-            child: Text(
-              "이미 타고있어요",
-              style: TextStyle(fontSize: 20.sp),
-            ),
-          ),
-        ));
+    // Widget alreadyOnBoardSection = Container(
+    //     alignment: Alignment.center,
+    //     padding: EdgeInsets.only(
+    //       top: 10.h,
+    //       bottom: 10.h,
+    //     ),
+    //     child: SizedBox(
+    //       width: 180.w,
+    //       height: 40.h,
+    //       child: OutlinedButton(
+    //         onPressed: () {
+    //           showDialog(
+    //               context: context,
+    //               barrierDismissible: true,
+    //               builder: (BuildContext ctx) {
+    //                 return SearchTrainDialog();
+    //               });
+    //         },
+    //         child: Text(
+    //           "이미 타고있어요",
+    //           style: TextStyle(fontSize: 20.sp),
+    //         ),
+    //       ),
+    //     ));
 
     // 광고 섹션
     Widget advBoardSection = Container(

@@ -180,6 +180,7 @@ class _CustomSliderState extends State<CustomSlider> {
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
                                       trainNo: int.parse(widget.trainNo),
+                                      direction: widget.direction,
                                       remainTime: widget.remainTime);
                                 })
                           },

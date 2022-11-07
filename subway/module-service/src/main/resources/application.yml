@@ -33,3 +33,10 @@ spring:
 
 
 ---
+
+# redis
+spring:
+  redis:
+    host: 52.79.215.19
+    port: 6379
+    password: o2a4redis

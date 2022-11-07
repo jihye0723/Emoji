@@ -9,11 +9,13 @@ class CustomSlider extends StatefulWidget {
   const CustomSlider(
       {Key? key,
       required this.trainNo,
+      required this.stationName,
       required this.remainTime,
       required this.direction})
       : super(key: key);
 
   final String trainNo;
+  final String stationName;
   final int remainTime;
   final int direction;
 
@@ -180,7 +182,7 @@ class _CustomSliderState extends State<CustomSlider> {
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
                                       trainNo: int.parse(widget.trainNo),
-                                      direction: widget.direction,
+                                      stationName: widget.stationName,
                                       remainTime: widget.remainTime);
                                 })
                           },

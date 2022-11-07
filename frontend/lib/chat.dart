@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'data/station.dart' as station;
+import 'models/station.dart' as station;
 // import 'additional_features.dart';
 
 var Station = station.two;
@@ -61,44 +61,43 @@ class TextChat extends StatelessWidget {
             onPressed: () {
               //경로선택 dialog
               showDialog(
-                context: context,
-                builder: (BuildContext ctx) {
-                  return AlertDialog(
-                    title: Image.asset(
-                      "images/map.png",
-                      height: height * 0.1,
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Text(
-                          "목적지 선택",
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    actionsPadding: const EdgeInsets.only(bottom: 30),
-                    actionsAlignment: MainAxisAlignment.center,
-                    actions: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white, // 텍스트 색 바꾸기
-                          backgroundColor: _color, // 백그라운드로 컬러 설정
-
-                          textStyle: const TextStyle(fontSize: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                  context: context,
+                  builder: (BuildContext ctx) {
+                    return AlertDialog(
+                      title: Image.asset(
+                        "images/map.png",
+                        height: height * 0.1,
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Text(
+                            "목적지 선택",
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                        child: const Text("선택하기"),
-                      )
-                    ],
-                  );
-                }
-              );
+                        ],
+                      ),
+                      actionsPadding: const EdgeInsets.only(bottom: 30),
+                      actionsAlignment: MainAxisAlignment.center,
+                      actions: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white, // 텍스트 색 바꾸기
+                            backgroundColor: _color, // 백그라운드로 컬러 설정
+
+                            textStyle: const TextStyle(fontSize: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                          },
+                          child: const Text("선택하기"),
+                        )
+                      ],
+                    );
+                  });
             },
             icon: const Icon(Icons.pin_drop),
             padding: const EdgeInsets.only(right: 20),
@@ -187,6 +186,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _featureIcon = Icon(Icons.close_sharp);
     });
   }
+
   void _hide() {
     setState(() {
       _visibility = false;
@@ -208,22 +208,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     return Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        child:(
-            TextFormField(
-              onSaved: onSaved,
-              validator: validator,
-              keyboardType: TextInputType.multiline,
-
-              maxLines: 4,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color(0xfff8f8f8),
-                hintText: "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
-                border: OutlineInputBorder(),
-              ),
-            )
-        )
-    );
+        child: (TextFormField(
+          onSaved: onSaved,
+          validator: validator,
+          keyboardType: TextInputType.multiline,
+          maxLines: 4,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Color(0xfff8f8f8),
+            hintText: "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
+            border: OutlineInputBorder(),
+          ),
+        )));
   }
 
   //채팅창 화면
@@ -271,7 +267,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           // 추가 메뉴 버튼들 (자리 양도, 빌런 제보)
           /*
           * 마우스 호버 시에 커서가 변경 되지 않는 것은 '앱'이므로 고치지 않았습니다.
@@ -280,16 +275,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           Visibility(
             visible: _visibility,
             child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.25),
-                        blurRadius: 4,
-                        offset : Offset(0, -4)
-                    )
-                  ]
-              ),
+              decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.25),
+                    blurRadius: 4,
+                    offset: Offset(0, -4))
+              ]),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -309,7 +300,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 // 플러스 버튼
                 IconButton(
                   icon: _featureIcon,
-                  onPressed:() => {_visibility ? _hide() : _show()},
+                  onPressed: () => {_visibility ? _hide() : _show()},
                 ),
 
                 // 텍스트 입력 필드
@@ -434,18 +425,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         showDialog(
             context: context,
             builder: (BuildContext ctx) {
-              double height = MediaQuery
-                  .of(ctx)
-                  .size
-                  .height;
-              double width = MediaQuery
-                  .of(ctx)
-                  .size
-                  .width;
+              double height = MediaQuery.of(ctx).size.height;
+              double width = MediaQuery.of(ctx).size.width;
               return AlertDialog(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular((32.0)))
-                ),
+                    borderRadius: BorderRadius.all(Radius.circular((32.0)))),
                 actionsAlignment: MainAxisAlignment.center,
                 // borderRadius: BorderRadius.circular(20),
                 title: Column(
@@ -453,21 +437,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     Container(
                       alignment: Alignment.centerRight,
                       child: IconButton(
-                          onPressed: (){
+                          onPressed: () {
                             Navigator.of(ctx).pop();
                           },
-                          icon: Icon(
-                              Icons.close_rounded
-                          )
-                      ),
+                          icon: Icon(Icons.close_rounded)),
                     ),
-
                     Image.asset(
                       "assets/images/seat-icon.png",
                       width: width * 0.1,
                       height: width * 0.1,
                     ),
-                    Text('자리 양도', style: TextStyle(fontSize: 24,fontWeight: FontWeight.w800))
+                    Text('자리 양도',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w800))
                   ],
                 ),
                 content: Column(
@@ -484,7 +466,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         });
                       },
                       validator: (val) {
-                        if(val.length < 1) {
+                        if (val.length < 1) {
                           return '간단한 자리 소개를 해주세요!';
                         }
                         return null;
@@ -498,8 +480,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     children: [
                       Container(
                           margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child: Text('앉아계신게 맞나요? 아닐 경우 불이익이 있을 수 있습니다.')
-                      ),
+                          child: Text('앉아계신게 맞나요? 아닐 경우 불이익이 있을 수 있습니다.')),
                       TextButton(
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
@@ -514,16 +495,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           Navigator.of(ctx).pop();
                           showSnackBar(context, '자리 양도를 개최하였습니다.');
                         },
-                        child: SizedBox(
-                            child: const Text("시작하기")
-                        ),
+                        child: SizedBox(child: const Text("시작하기")),
                       ),
                     ],
                   )
                 ],
               );
-            }
-        );
+            });
       },
     );
   }
@@ -548,18 +526,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         showDialog(
             context: context,
             builder: (BuildContext ctx) {
-              double height = MediaQuery
-                  .of(ctx)
-                  .size
-                  .height;
-              double width = MediaQuery
-                  .of(ctx)
-                  .size
-                  .width;
+              double height = MediaQuery.of(ctx).size.height;
+              double width = MediaQuery.of(ctx).size.width;
               return AlertDialog(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular((32.0)))
-                ),
+                    borderRadius: BorderRadius.all(Radius.circular((32.0)))),
                 actionsAlignment: MainAxisAlignment.center,
                 // borderRadius: BorderRadius.circular(20),
                 title: Column(
@@ -567,21 +538,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     Container(
                       alignment: Alignment.centerRight,
                       child: IconButton(
-                          onPressed: (){
+                          onPressed: () {
                             Navigator.of(ctx).pop();
                           },
-                          icon: Icon(
-                              Icons.close_rounded
-                          )
-                      ),
+                          icon: Icon(Icons.close_rounded)),
                     ),
-
                     Image.asset(
                       "assets/images/villain-icon.png",
                       width: width * 0.1,
                       height: width * 0.1,
                     ),
-                    Text('빌런 제보', style: TextStyle(fontSize: 24,fontWeight: FontWeight.w800))
+                    Text('빌런 제보',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w800))
                   ],
                 ),
 
@@ -616,9 +585,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           Navigator.of(ctx).pop();
                           showSnackBar(context, '접수가 완료 되었습니다.');
                         },
-                        child: SizedBox(
-                            child: const Text("😫 또 나타났어요!")
-                        ),
+                        child: SizedBox(child: const Text("😫 또 나타났어요!")),
                       ),
                       TextButton(
                         style: TextButton.styleFrom(
@@ -634,20 +601,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           Navigator.of(ctx).pop();
                           showSnackBar(context, '접수가 완료 되었습니다.');
                         },
-                        child: SizedBox(
-                            child: const Text("😄 사라졌어요!")
-                        ),
+                        child: SizedBox(child: const Text("😄 사라졌어요!")),
                       ),
                     ],
                   )
                 ],
               );
-            }
-        );
+            });
       },
     );
   }
-
 }
 
 // 리스트뷰에 추가될 메시지 위젯

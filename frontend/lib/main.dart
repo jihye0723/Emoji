@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'textchat.dart';
+import 'screens/textchat.dart';
 import 'imagefinal.dart';
 
 // 메인 함수
@@ -42,8 +42,10 @@ class MyApp extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (context) => TextChat(
                                     train: "2221",
-                                    station: "역삼역",
+                                    station: "대림",
                                     rail: "2호선",
+                                    myuserId: "ssafy11",
+                                    mynickName: "집에 가고 싶은 기린",
                                   )));
                     },
                   ),

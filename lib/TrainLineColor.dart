@@ -13,7 +13,7 @@ lineColor(String line) {
       _color = Color(0xff3B9F37);
       break;
     case "3호선":
-      _color = Color(0xff3B9F37);
+      _color = Color(0xffEF7C1C);
       break;
     case "4호선":
       _color = Color(0xff3165A8);

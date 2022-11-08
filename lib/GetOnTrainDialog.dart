@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'TestChatPage.dart';
+import 'NickGenerator.dart';
 
 class GetOnTrainDialog extends StatefulWidget {
   const GetOnTrainDialog(
@@ -269,7 +270,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (context) => TestChatPage(
                                           userId: widget.userId,
-                                          userNick: "닉네임",
+                                          userNick: landumeNick(),
                                           line: widget.line,
                                           trainNo: widget.trainNo,
                                           stationName: widget.stationName,

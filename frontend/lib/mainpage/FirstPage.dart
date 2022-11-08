@@ -1,0 +1,328 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'CustomSlider.dart';
+import 'TrainInfo.dart';
+import 'TrainLineColor.dart';
+
+class FirstPage extends StatefulWidget {
+  const FirstPage({Key? key, required this.userId}) : super(key: key);
+
+  final String userId;
+
+  @override
+  State<StatefulWidget> createState() => _FirstPageState();
+}
+
+class _FirstPageState extends State<FirstPage> {
+  TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
+  String _userId = "";
+  bool _loadedInfo = false;
+  Position? _currentPosition;
+  bool _checkedPosition = false;
+  // String _stationName = "무슨무슨역";
+  int _itemCount = 0;
+
+  RefreshController _controller = RefreshController(initialRefresh: false);
+
+  // [TEST] sample.json 읽어서 json parsing (Done)
+  Future<TrainInfo> loadTrainInfo() async {
+    String jsonString = await rootBundle.loadString('assets/data/sample.json');
+    final jsonResponse = json.decode(jsonString);
+    return TrainInfo.fromJson(jsonResponse);
+  }
+
+  // 현재 위치 조회 (Done)
+  Future<Position> getLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
+  // 페이지 리로드  (Todo)
+  void _onRefresh() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    print("refresh!!!!");
+    getLocation().then((value) => setState(() {
+      _currentPosition = value;
+      _checkedPosition = true;
+    }));
+    loadTrainInfo().then((value) => setState(() {
+      // print(value.stationName + " " + value.trainList.length.toString());
+      _trainInfo = value;
+      _itemCount = (value.trainList.length / 2).round();
+      _loadedInfo = true;
+    }));
+    print("count : " + _itemCount.toString());
+    _controller.refreshCompleted();
+  }
+
+  // 위치 정보 서버로 전달 (Todo)
+  void sendLocationToServer(Position position) {}
+
+  // 서버로부터 받은 역 정보 읽어서 parsing (Todo)
+  void getTrainInfo() {}
+
+  @override
+  void initState() {
+    _controller = new RefreshController();
+    setState(() {
+      _userId = widget.userId;
+    });
+    getLocation().then((value) => setState(() {
+      _currentPosition = value;
+      _checkedPosition = true;
+    }));
+    loadTrainInfo().then((value) => setState(() {
+      // print(value.stationName + " " + value.trainList.length.toString());
+      _trainInfo = value;
+      _loadedInfo = true;
+    }));
+    _onRefresh();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // GPS 정보 받아와서 역 정보 구하면 역 이름 띄워줄 섹션 (사당)
+    Widget stationNameSection = Container(
+      alignment: Alignment.topCenter,
+      padding: EdgeInsets.only(top: 30.h, bottom: 30.h),
+      child: Container(
+        width: 240.w,
+        height: 60.h,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.black,
+            width: 2,
+          ),
+          color: Colors.white,
+        ),
+        child: _loadedInfo
+            ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
+            : Text("로딩중", style: TextStyle(fontSize: 32.sp, color: Colors.red)),
+      ),
+    );
+
+    // 역 정보 받아와서 열차 운행정보 구하면 열차 도착정보 띄워줄 섹션 (2호선, { 낙성대, 2147, 3분 }, { 방배, 2156, 2분 })
+    Widget stationInfoSection(int idx) => Container(
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: 320.w,
+        height: 120.h,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          // border: Border.all(
+          //   color: Colors.red,
+          //   width: 1,
+          // ),
+          // border: Border(
+          //     top: BorderSide(color: Colors.black, width: 1),
+          //     bottom: BorderSide(color: Colors.black, width: 1)),
+          color: Colors.white,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            _trainInfo.trainList.isEmpty
+                ? Container()
+                : CustomSlider(
+              userId: widget.userId,
+              stationName: _trainInfo.stationName,
+              train: _trainInfo.trainList[idx * 2],
+            ),
+            Container(
+              // currentStation
+              child: Container(
+                  width: 50.w,
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _trainInfo.trainList.length == 0
+                          ? Colors.white60
+                          : lineColor(_trainInfo.trainList[idx * 2].line)),
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      _trainInfo.stationName,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10.sp,
+                          color: Colors.white),
+                    ),
+                  )),
+            ),
+            _trainInfo.trainList.length == 0
+                ? Container()
+                : CustomSlider(
+              userId: widget.userId,
+              stationName: _trainInfo.stationName,
+              train: _trainInfo.trainList[idx * 2 + 1],
+            )
+          ],
+        ),
+      ),
+    );
+
+    // 이미 타고 있어요 버튼
+    // Widget alreadyOnBoardSection = Container(
+    //     alignment: Alignment.center,
+    //     padding: EdgeInsets.only(
+    //       top: 10.h,
+    //       bottom: 10.h,
+    //     ),
+    //     child: SizedBox(
+    //       width: 180.w,
+    //       height: 40.h,
+    //       child: OutlinedButton(
+    //         onPressed: () {
+    //           showDialog(
+    //               context: context,
+    //               barrierDismissible: true,
+    //               builder: (BuildContext ctx) {
+    //                 return SearchTrainDialog();
+    //               });
+    //         },
+    //         child: Text(
+    //           "이미 타고있어요",
+    //           style: TextStyle(fontSize: 20.sp),
+    //         ),
+    //       ),
+    //     ));
+
+    // 광고 섹션
+    Widget advBoardSection = Container(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        width: 320.w,
+        height: 60.h,
+        margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Image.asset(
+              'assets/images/train.png',
+              width: 70.w,
+              height: 70.h,
+            ),
+            Text(
+              "광고문의 : A602팀a",
+              style: TextStyle(
+                fontSize: 20.sp,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+
+    return Scaffold(
+      body: Container(
+        width: 1.sw,
+        height: 1.sh,
+        // decoration: BoxDecoration(
+        //     border: Border.all(color: Colors.black, width: 1),
+        //     color: Color.fromARGB(1, 12, 12, 251)),
+        // alignment: Alignment.topCenter,
+        child: Column(
+          // <페이지 구조>
+          // 현재 역 이름
+          // 열차 도착정보 (ListView) --> pull to Refresh 기능 추가
+          // 광고판
+          children: <Widget>[
+            stationNameSection,
+            Expanded(
+                child: Scaffold(
+                  body: SmartRefresher(
+                      enablePullDown: true,
+                      // footer: CustomFooter(
+                      //   builder: ((context, mode) {
+                      //     Widget body;
+                      //     if (mode == LoadStatus.idle) {
+                      //       body = Text("pull up load");
+                      //     } else if (mode == LoadStatus.loading) {
+                      //       body = CupertinoActivityIndicator();
+                      //     } else if (mode == LoadStatus.failed) {
+                      //       body = Text("Load Failed!Click retry!");
+                      //     } else if (mode == LoadStatus.canLoading) {
+                      //       body = Text("release to load more");
+                      //     } else {
+                      //       body = Text("No more Data");
+                      //     }
+                      //     return Container(
+                      //       height: 55.0,
+                      //       child: Center(child: body),
+                      //     );
+                      //   }),
+                      // ),
+                      controller: _controller,
+                      onRefresh: _onRefresh,
+                      child: _itemCount == 0
+                          ? Container()
+                          : ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          padding: EdgeInsets.all(8.w),
+                          itemCount: _itemCount,
+                          itemBuilder: (BuildContext context, int index) {
+                            return stationInfoSection(index);
+                          })),
+                )),
+            // Expanded(
+            //     child: ListView.builder(
+            //         scrollDirection: Axis.vertical,
+            //         padding: EdgeInsets.all(8.w),
+            //         itemCount: 3,
+            //         itemBuilder: (BuildContext context, int index) {
+            //           return stationInfoSection;
+            //         })),
+            // alreadyOnBoardSection, // 사실상 기능 구현 불가능
+            advBoardSection,
+          ],
+        ),
+      ),
+    );
+  }
+}

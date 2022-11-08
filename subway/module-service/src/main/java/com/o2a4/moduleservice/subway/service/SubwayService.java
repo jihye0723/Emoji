@@ -35,6 +35,11 @@ public class SubwayService {
             }
         }
 
+//        Station a = stationRepository.findByStationCodeEquals(data.getStationName());
+//        boolean b = stationRepository.existsByStationCode(data.getStationCode());
+//        boolean c = stationRepository.existsByStationCode("ASDFASDF");
+//        System.out.println("test b : " + b);
+//        System.out.println("test c : " + c);
         List<StationDto> result = subwayAPIClient.realtimeStationArrivalInfo(data.getStationName());
         return result;
     }

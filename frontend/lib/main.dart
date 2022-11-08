@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:practice_01/chatpage/chat.dart';
+import 'package:practice_01/login/loginpage.dart';
+import 'package:practice_01/mainpage/Home.dart';
 import 'package:video_player/video_player.dart';
 
 // 메인 함수
@@ -25,7 +28,10 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: "메인페이지",
-          home: Scaffold()
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: SplashScreen()
         );
       }
     );
@@ -42,6 +48,24 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
+  bool weHaveToken = false;
+
+  void hasToken() async {
+    if (await AuthApi.instance.hasToken()) {
+      try {
+        AccessTokenInfo tokenInfo =
+        await UserApi.instance.accessTokenInfo();
+        weHaveToken = true;
+        print('토큰 유효성 체크 성공 ${tokenInfo.id} ${tokenInfo.expiresIn}');
+      } catch (error) {
+        if (error is KakaoException && error.isInvalidTokenError()) {
+          print('토큰 만료 $error');
+        } else {
+          print('토큰 정보 조회 실패 $error');
+        }
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -50,43 +74,52 @@ class _SplashScreenState extends State<SplashScreen> {
     _controller = VideoPlayerController.asset(
       'assets/images/splash-subway-example1.mp4',
     )
-      ..initialize().then((_) {
-        setState(() {});
-      })
+      ..initialize().then((_) {})
       ..setVolume(0.0);
 
     _playVideo();
-  }
-
-  void _playVideo() async {
-    //playing video
-    _controller.play();
-    //add delay till video is complete
-    await Future.delayed(const Duration(seconds: 4));
-    // navigating to home screen
-    Navigator.pushNamed(context, '/');
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+
+    if (weHaveToken) {
+      /*
+      * 토큰이 있다면, 홈 화면으로 넘어가면서 이메일을 같이 보내줘야 함.
+      */
+      // navigating to home screen
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } else {
+      //토큰이 없다면, 로그인 페이지로 넘겨주어야 한다.
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    }
+  }
+
+  void _playVideo() async {
+    //playing video
+    _controller.play();
+    hasToken();
+    //add delay till video is complete
+    await Future.delayed(const Duration(seconds: 4));
+    dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context, designSize: const Size(360, 800));
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(
-                  _controller,
-                )
-              )
-            : Container(),
-
+        child:AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(
+            _controller,
+          )
+        )
       )
     );
   }

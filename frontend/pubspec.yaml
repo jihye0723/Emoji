@@ -44,6 +44,8 @@ dependencies:
   geolocator: ^9.0.2
   flutter_native_splash: ^2.2.14
   video_player: ^2.2.19
+  pull_to_refresh: ^2.0.0
+  faker: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +61,7 @@ dev_dependencies:
 flutter_native_splash:
   color: "#f9f9f9"
   fullscreen: true
+  android_gravity: center
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

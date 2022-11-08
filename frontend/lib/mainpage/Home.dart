@@ -1,9 +1,7 @@
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'FirstPage.dart';
 import 'SecondPage.dart';
 import 'package:flutter/material.dart';
-import 'CustomSlider.dart';
+import 'package:faker/faker.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -14,18 +12,37 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
+  var faker = Faker();
+  String _email = "";
 
-  static List<Widget> pages = <Widget>[
-    // 하단 내비게이션에 들어갈 페이지 리스트 2개
-    FirstPage(),
-    SecondPage(),
-  ];
+  late List<Widget> pages = [];
 
-  void _onItemTapped(int index) {
+  // static List<Widget> pages = <Widget>[
+  //   // 하단 내비게이션에 들어갈 페이지 리스트 2개
+  //   FirstPage(userId: _email),
+  //   // SecondPage(),
+  // ];
+
+  @override
+  void initState() {
+    // print("pages");
     setState(() {
-      _selectedIndex = index;
+      _email = faker.internet.email();
+      pages = <Widget>[
+        // 하단 내비게이션에 들어갈 페이지 리스트 2개
+        FirstPage(userId: _email),
+        // SecondPage(),
+      ];
     });
+    // print(_email);
+    super.initState();
   }
+
+  // void _onItemTapped(int index) {
+  //   setState(() {
+  //     _selectedIndex = index;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +51,7 @@ class _HomeState extends State<Home> {
         title: const Text("main test"),
       ),
       // 탭 누르는거에 따라서 페이지 전환
-      body: pages[_selectedIndex],
+      body: pages.length > 0 ? pages[_selectedIndex] : Container(),
       // body: CustomSlider(),
       // bottomNavigationBar: BottomNavigationBar(
       //   selectedItemColor: Colors.green,

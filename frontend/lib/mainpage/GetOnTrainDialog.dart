@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-// import 'package:subway/TrainPositionSlider.dart';
+import 'TestChatPage.dart';
+import 'NickGenerator.dart';
 
 class GetOnTrainDialog extends StatefulWidget {
-  const GetOnTrainDialog({Key? key, required this.trainNo}) : super(key: key);
+  const GetOnTrainDialog(
+      {Key? key,
+        required this.userId,
+        required this.trainNo,
+        required this.line,
+        required this.stationName,
+        required this.remainTime})
+      : super(key: key);
 
+  final String userId;
   final int trainNo;
+  final String line;
+  final String stationName;
+  final int remainTime;
 
   @override
   State<StatefulWidget> createState() {
@@ -15,8 +27,8 @@ class GetOnTrainDialog extends StatefulWidget {
 }
 
 class GetOnTrainDialogState extends State<GetOnTrainDialog> {
-  int _trainNo = 0;
   int _position = 1;
+  int _trainNo = 0;
 
   @override
   void initState() {
@@ -39,151 +51,273 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
             // decoration: BoxDecoration(
             //     border: Border.all(color: Colors.orange, width: 1)),
             child: Text(
-              _trainNo.toString() + " 열차",
-            ),
-          ),
-          SizedBox(
-            // width: 200.w,
-            height: 50.h,
-            // child: Container(
-            //   decoration: BoxDecoration(
-            //       border: Border.all(color: Colors.red, width: 1)),
-            // ),
-          ),
-          Container(
-            // decoration: BoxDecoration(
-            //     border: Border.all(color: Colors.orange, width: 1)),
-            child: Text(
-              "핀을 움직여 탑승위치를 설정하세요",
+              widget.trainNo.toString() + " 열차",
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           SizedBox(
             // width: 200.w,
             height: 30.h,
-            // child: Container(
-            //   decoration: BoxDecoration(
-            //       border: Border.all(color: Colors.red, width: 1)),
-            // ),
-          ),
-          // TrainPositionSlider(),
-          Container(
-            // decoration: BoxDecoration(
-            //     border: Border.all(color: Colors.orange, width: 1)),
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 10.h,
-                trackShape: RectangularSliderTrackShape(),
-                // activeTrackColor: Colors.purple.shade800,
-                // inactiveTrackColor: Colors.purple.shade100,
-                activeTrackColor: Colors.grey[300],
-                inactiveTrackColor: Colors.grey[300],
-                thumbShape: RoundSliderThumbShape(
-                  enabledThumbRadius: 14.0,
-                  pressedElevation: 8.0,
+            child: Container(
+              alignment: Alignment.topCenter,
+              child: Text(
+                (widget.remainTime / 60).round() > 0
+                    ? (widget.remainTime / 60).round().toString() + " 분 후 도착"
+                    : "곧 도착",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 9.sp,
                 ),
-                thumbColor: Colors.grey[600],
-                // overlayColor: Colors.pink.withOpacity(0.2),
-                // overlayShape: RoundSliderOverlayShape(overlayRadius: 32.0),
-                overlayShape: SliderComponentShape.noOverlay,
-                tickMarkShape: RoundSliderTickMarkShape(),
-                // activeTickMarkColor: Colors.white,
-                // inactiveTickMarkColor: Colors.white,
-                activeTickMarkColor: Colors.grey[300],
-                inactiveTickMarkColor: Colors.grey[300],
-                valueIndicatorShape: PaddleSliderValueIndicatorShape(),
-                valueIndicatorColor: Colors.grey[600],
-                valueIndicatorTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.sp,
-                ),
-              ),
-              child: Slider(
-                min: 1,
-                max: 10,
-                value: _position.toDouble(),
-                divisions: 10,
-                // label: '${_position}',
-                onChanged: (value) {
-                  setState(() {
-                    _position = value.round();
-                  });
-                },
               ),
             ),
           ),
-          // SliderTheme(
-          //   data: SliderTheme.of(context).copyWith(
-          //     trackHeight: 10.h,
-          //     trackShape: RectangularSliderTrackShape(),
-          //     // activeTrackColor: Colors.purple.shade800,
-          //     // inactiveTrackColor: Colors.purple.shade100,
-          //     activeTrackColor: Colors.grey[300],
-          //     inactiveTrackColor: Colors.grey[300],
-          //     thumbShape: RoundSliderThumbShape(
-          //       enabledThumbRadius: 14.0,
-          //       pressedElevation: 8.0,
-          //     ),
-          //     thumbColor: Colors.grey[600],
-          //     // overlayColor: Colors.pink.withOpacity(0.2),
-          //     // overlayShape: RoundSliderOverlayShape(overlayRadius: 32.0),
-          //     overlayShape: SliderComponentShape.noOverlay,
-          //     tickMarkShape: RoundSliderTickMarkShape(),
-          //     activeTickMarkColor: Colors.white,
-          //     inactiveTickMarkColor: Colors.white,
-          //     // activeTickMarkColor: Colors.grey[300],
-          //     // inactiveTickMarkColor: Colors.grey[300],
-          //     valueIndicatorShape: PaddleSliderValueIndicatorShape(),
-          //     valueIndicatorColor: Colors.grey[600],
-          //     valueIndicatorTextStyle: TextStyle(
-          //       color: Colors.black,
-          //       fontSize: 20.sp,
-          //     ),
-          //   ),
-          //   child: Slider(
-          //     min: 1,
-          //     max: 10,
-          //     value: _position.toDouble(),
-          //     divisions: 10,
-          //     // label: '${_position}',
-          //     onChanged: (value) {
-          //       setState(() {
-          //         _position = value.round();
-          //       });
-          //     },
+          widget.remainTime <= 60
+              ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                // decoration: BoxDecoration(
+                //     border: Border.all(color: Colors.orange, width: 1)),
+                child: Text(
+                  "핀을 움직여 탑승위치를 설정하세요",
+                ),
+              ),
+              SizedBox(
+                // width: 200.w,
+                height: 30.h,
+                // child: Container(
+                //   decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.red, width: 1)),
+                // ),
+              ),
+              // TrainPositionSlider(),
+              Container(
+                // decoration: BoxDecoration(
+                //     border: Border.all(color: Colors.orange, width: 1)),
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 10.h,
+                    trackShape: RectangularSliderTrackShape(),
+                    // activeTrackColor: Colors.purple.shade800,
+                    // inactiveTrackColor: Colors.purple.shade100,
+                    activeTrackColor: Colors.grey[300],
+                    inactiveTrackColor: Colors.grey[300],
+
+                    thumbShape: RoundSliderThumbShape(
+                      enabledThumbRadius: 14.0,
+                      pressedElevation: 8.0,
+                    ),
+                    thumbColor: Colors.grey[600],
+                    // overlayColor: Colors.pink.withOpacity(0.2),
+                    // overlayShape: RoundSliderOverlayShape(overlayRadius: 32.0),
+                    overlayShape: SliderComponentShape.noOverlay,
+                    // tickMarkShape: RoundSliderTickMarkShape(),
+                    // activeTickMarkColor: Colors.white,
+                    // inactiveTickMarkColor: Colors.white,
+                    activeTickMarkColor: Colors.grey[300],
+                    inactiveTickMarkColor: Colors.grey[300],
+                    valueIndicatorShape:
+                    PaddleSliderValueIndicatorShape(),
+                    valueIndicatorColor: Colors.grey[600],
+                    valueIndicatorTextStyle: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                  child: Slider(
+                    min: 1,
+                    max: 10,
+                    value: _position.toDouble(),
+                    divisions: 10,
+                    // label: '${_position}',
+                    onChanged: widget.remainTime <= 60
+                        ? (value) {
+                      setState(() {
+                        _position = value.round();
+                      });
+                    }
+                        : null,
+                  ),
+                ),
+              ),
+              Container(
+                // decoration: BoxDecoration(
+                //     border: Border.all(color: Colors.orange, width: 1)),
+                child: Text("$_position번 칸"),
+              ),
+            ],
+          )
+              : Container(
+            height: 30.h,
+            alignment: Alignment.bottomCenter,
+            padding: EdgeInsets.zero,
+            child: Text(
+              "아직 탑승할 수 없어요!",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          // Container(
+          //   // decoration: BoxDecoration(
+          //   //     border: Border.all(color: Colors.orange, width: 1)),
+          //   child: Text(
+          //     "핀을 움직여 탑승위치를 설정하세요",
           //   ),
           // ),
-          Container(
-            // decoration: BoxDecoration(
-            //     border: Border.all(color: Colors.orange, width: 1)),
-            child: Text("$_position번 칸"),
-          ),
+          // SizedBox(
+          //   // width: 200.w,
+          //   height: 30.h,
+          //   // child: Container(
+          //   //   decoration: BoxDecoration(
+          //   //       border: Border.all(color: Colors.red, width: 1)),
+          //   // ),
+          // ),
+          // // TrainPositionSlider(),
+          // Container(
+          //   // decoration: BoxDecoration(
+          //   //     border: Border.all(color: Colors.orange, width: 1)),
+          //   child: SliderTheme(
+          //     data: SliderTheme.of(context).copyWith(
+          //       trackHeight: 10.h,
+          //       trackShape: RectangularSliderTrackShape(),
+          //       // activeTrackColor: Colors.purple.shade800,
+          //       // inactiveTrackColor: Colors.purple.shade100,
+          //       activeTrackColor: Colors.grey[300],
+          //       inactiveTrackColor: Colors.grey[300],
+          //
+          //       thumbShape: RoundSliderThumbShape(
+          //         enabledThumbRadius: 14.0,
+          //         pressedElevation: 8.0,
+          //       ),
+          //       thumbColor: Colors.grey[600],
+          //       // overlayColor: Colors.pink.withOpacity(0.2),
+          //       // overlayShape: RoundSliderOverlayShape(overlayRadius: 32.0),
+          //       overlayShape: SliderComponentShape.noOverlay,
+          //       // tickMarkShape: RoundSliderTickMarkShape(),
+          //       // activeTickMarkColor: Colors.white,
+          //       // inactiveTickMarkColor: Colors.white,
+          //       activeTickMarkColor: Colors.grey[300],
+          //       inactiveTickMarkColor: Colors.grey[300],
+          //       valueIndicatorShape: PaddleSliderValueIndicatorShape(),
+          //       valueIndicatorColor: Colors.grey[600],
+          //       valueIndicatorTextStyle: TextStyle(
+          //         color: Colors.black,
+          //         fontSize: 20.sp,
+          //       ),
+          //     ),
+          //     child: Slider(
+          //       min: 1,
+          //       max: 10,
+          //       value: _position.toDouble(),
+          //       divisions: 10,
+          //       // label: '${_position}',
+          //       onChanged: _remainTime <= 60
+          //           ? (value) {
+          //               setState(() {
+          //                 _position = value.round();
+          //               });
+          //             }
+          //           : null,
+          //     ),
+          //   ),
+          // ),
+          // Container(
+          //   // decoration: BoxDecoration(
+          //   //     border: Border.all(color: Colors.orange, width: 1)),
+          //   child: Text("$_position번 칸"),
+          // ),
+          // _remainTime > 60
+          //     ? Container(
+          //         height: 30.h,
+          //         alignment: Alignment.bottomCenter,
+          //         padding: EdgeInsets.zero,
+          //         child: Text(
+          //           "아직 탑승할 수 없어요!",
+          //           style: TextStyle(
+          //             color: Colors.red,
+          //             fontSize: 10.sp,
+          //           ),
+          //         ),
+          //       )
+          //     : Container(),
         ],
       ),
       actions: [
         Container(
-          decoration:
-              BoxDecoration(border: Border.all(color: Colors.blue, width: 1)),
-          child: TextButton(
-            style: TextButton.styleFrom(
-                minimumSize: Size.zero, padding: EdgeInsets.zero),
-            onPressed: () {
-              Navigator.of(context).pop();
-              // 채팅방 페이지로 이동시켜주고, 끝나면 토스트 출력
-              Fluttertoast.showToast(
-                msg: " $_trainNo 열차 $_position번 칸에 탑승",
-                fontSize: 16.sp,
-                gravity: ToastGravity.CENTER,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.red,
-                textColor: Colors.white,
-                toastLength: Toast.LENGTH_SHORT,
+          // color: Colors.red,
+          // decoration:
+          //     BoxDecoration(border: Border.all(color: Colors.blue, width: 1)),
+          child: ElevatedButton(
+            // style: ElevatedButton.styleFrom(
+            //     minimumSize: Size.zero, padding: EdgeInsets.zero),
+            onPressed: widget.remainTime <= 60
+                ? () {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext ctx) {
+                  return AlertDialog(
+                    content: Text("$_trainNo 열차 $_position번 칸에 탑승하시나요?"),
+                    actions: <Widget>[
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(ctx).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => TestChatPage(
+                                    userId: widget.userId,
+                                    userNick: landumeNick(),
+                                    line: widget.line,
+                                    trainNo: widget.trainNo,
+                                    stationName: widget.stationName,
+                                    position: _position)));
+                            Fluttertoast.showToast(
+                              msg: " $_trainNo 열차 $_position번 칸에 탑승",
+                              fontSize: 16.sp,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              toastLength: Toast.LENGTH_SHORT,
+                            );
+                          },
+                          child: Text("OK")),
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                          },
+                          child: Text("Cancel"))
+                    ],
+                  );
+                },
               );
-            },
+            }
+                : null,
+
+            // _remainTime <= 60
+            //     ? {
+            //         Navigator.of(context).pop(),
+            //         Fluttertoast.showToast(
+            //           msg: " $_trainNo 열차 $_position번 칸에 탑승",
+            //           fontSize: 16.sp,
+            //           gravity: ToastGravity.CENTER,
+            //           timeInSecForIosWeb: 1,
+            //           backgroundColor: Colors.red,
+            //           textColor: Colors.white,
+            //           toastLength: Toast.LENGTH_SHORT,
+            //         )
+            //       }
+            //     : null;
+            // 채팅방 페이지로 이동시켜주고, 끝나면 토스트 출력
             child: Text(
-              "입장하기",
-              style: TextStyle(
-                fontSize: 20.sp,
-              ),
+              "탑승하기",
+              // style: TextStyle(
+              //   fontSize: 20.sp,
+              // ),
             ),
           ),
         ),

@@ -1,17 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:subway/SearchTrainDialog.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'CustomSlider.dart';
-import 'SearchTrainDialog.dart';
 import 'TrainInfo.dart';
+import 'TrainLineColor.dart';
 
 class FirstPage extends StatefulWidget {
-  const FirstPage({Key? key}) : super(key: key);
+  const FirstPage({Key? key, required this.userId}) : super(key: key);
+
+  final String userId;
 
   @override
   State<StatefulWidget> createState() => _FirstPageState();
@@ -19,10 +22,14 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
+  String _userId = "";
   bool _loadedInfo = false;
   Position? _currentPosition;
   bool _checkedPosition = false;
   // String _stationName = "무슨무슨역";
+  int _itemCount = 0;
+
+  RefreshController _controller = RefreshController(initialRefresh: false);
 
   // [TEST] sample.json 읽어서 json parsing (Done)
   Future<TrainInfo> loadTrainInfo() async {
@@ -70,7 +77,22 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   // 페이지 리로드  (Todo)
-  void reloadPage() {}
+  void _onRefresh() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    print("refresh!!!!");
+    getLocation().then((value) => setState(() {
+      _currentPosition = value;
+      _checkedPosition = true;
+    }));
+    loadTrainInfo().then((value) => setState(() {
+      // print(value.stationName + " " + value.trainList.length.toString());
+      _trainInfo = value;
+      _itemCount = (value.trainList.length / 2).round();
+      _loadedInfo = true;
+    }));
+    print("count : " + _itemCount.toString());
+    _controller.refreshCompleted();
+  }
 
   // 위치 정보 서버로 전달 (Todo)
   void sendLocationToServer(Position position) {}
@@ -78,20 +100,22 @@ class _FirstPageState extends State<FirstPage> {
   // 서버로부터 받은 역 정보 읽어서 parsing (Todo)
   void getTrainInfo() {}
 
-  // 탑승정보 서버로 전달 (Todo)
-  void sendBoardingInfoToServer() {}
-
   @override
   void initState() {
+    _controller = new RefreshController();
+    setState(() {
+      _userId = widget.userId;
+    });
     getLocation().then((value) => setState(() {
-          _currentPosition = value;
-          _checkedPosition = true;
-        }));
+      _currentPosition = value;
+      _checkedPosition = true;
+    }));
     loadTrainInfo().then((value) => setState(() {
-          // print(value.stationName + " " + value.trainList.length.toString());
-          _trainInfo = value;
-          _loadedInfo = true;
-        }));
+      // print(value.stationName + " " + value.trainList.length.toString());
+      _trainInfo = value;
+      _loadedInfo = true;
+    }));
+    _onRefresh();
     super.initState();
   }
 
@@ -120,7 +144,7 @@ class _FirstPageState extends State<FirstPage> {
     );
 
     // 역 정보 받아와서 열차 운행정보 구하면 열차 도착정보 띄워줄 섹션 (2호선, { 낙성대, 2147, 3분 }, { 방배, 2156, 2분 })
-    Widget stationInfoSection = Container(
+    Widget stationInfoSection(int idx) => Container(
       alignment: Alignment.topCenter,
       child: Container(
         width: 320.w,
@@ -139,10 +163,12 @@ class _FirstPageState extends State<FirstPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            CustomSlider(
-              trainNo: "2147",
-              remainTime: 7777,
-              direction: 1,
+            _trainInfo.trainList.isEmpty
+                ? Container()
+                : CustomSlider(
+              userId: widget.userId,
+              stationName: _trainInfo.stationName,
+              train: _trainInfo.trainList[idx * 2],
             ),
             Container(
               // currentStation
@@ -150,22 +176,27 @@ class _FirstPageState extends State<FirstPage> {
                   width: 50.w,
                   height: 50.h,
                   decoration: BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0x7f32a23c)),
+                      shape: BoxShape.circle,
+                      color: _trainInfo.trainList.length == 0
+                          ? Colors.white60
+                          : lineColor(_trainInfo.trainList[idx * 2].line)),
                   child: Container(
                     alignment: Alignment.center,
                     child: Text(
-                      "사당",
+                      _trainInfo.stationName,
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10.sp,
-                      ),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10.sp,
+                          color: Colors.white),
                     ),
                   )),
             ),
-            CustomSlider(
-              trainNo: "2156",
-              remainTime: 33,
-              direction: 0,
+            _trainInfo.trainList.length == 0
+                ? Container()
+                : CustomSlider(
+              userId: widget.userId,
+              stationName: _trainInfo.stationName,
+              train: _trainInfo.trainList[idx * 2 + 1],
             )
           ],
         ),
@@ -173,30 +204,30 @@ class _FirstPageState extends State<FirstPage> {
     );
 
     // 이미 타고 있어요 버튼
-    Widget alreadyOnBoardSection = Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.only(
-          top: 10.h,
-          bottom: 10.h,
-        ),
-        child: SizedBox(
-          width: 180.w,
-          height: 40.h,
-          child: OutlinedButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (BuildContext ctx) {
-                    return SearchTrainDialog();
-                  });
-            },
-            child: Text(
-              "이미 타고있어요",
-              style: TextStyle(fontSize: 20.sp),
-            ),
-          ),
-        ));
+    // Widget alreadyOnBoardSection = Container(
+    //     alignment: Alignment.center,
+    //     padding: EdgeInsets.only(
+    //       top: 10.h,
+    //       bottom: 10.h,
+    //     ),
+    //     child: SizedBox(
+    //       width: 180.w,
+    //       height: 40.h,
+    //       child: OutlinedButton(
+    //         onPressed: () {
+    //           showDialog(
+    //               context: context,
+    //               barrierDismissible: true,
+    //               builder: (BuildContext ctx) {
+    //                 return SearchTrainDialog();
+    //               });
+    //         },
+    //         child: Text(
+    //           "이미 타고있어요",
+    //           style: TextStyle(fontSize: 20.sp),
+    //         ),
+    //       ),
+    //     ));
 
     // 광고 섹션
     Widget advBoardSection = Container(
@@ -232,30 +263,62 @@ class _FirstPageState extends State<FirstPage> {
       body: Container(
         width: 1.sw,
         height: 1.sh,
-        decoration: BoxDecoration(
-            border: Border.all(color: Colors.black, width: 1),
-            color: Color.fromARGB(1, 12, 12, 251)),
-        alignment: Alignment.topCenter,
+        // decoration: BoxDecoration(
+        //     border: Border.all(color: Colors.black, width: 1),
+        //     color: Color.fromARGB(1, 12, 12, 251)),
+        // alignment: Alignment.topCenter,
         child: Column(
           // <페이지 구조>
           // 현재 역 이름
-          // 열차 도착정보 + 이미 (ListView)
+          // 열차 도착정보 (ListView) --> pull to Refresh 기능 추가
           // 광고판
           children: <Widget>[
             stationNameSection,
             Expanded(
-                child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    padding: EdgeInsets.all(8.w),
-                    itemCount: 3,
-                    itemBuilder: (BuildContext context, int index) {
-                      return stationInfoSection;
-                    })),
-            alreadyOnBoardSection,
-            // child: ListView(
-            //   // 동적 바인딩 하기 전에 테스트용 여러개 집어넣어봤음
-            //   children: [stationInfoSection, alreadyOnBoardSection],
-            // ),
+                child: Scaffold(
+                  body: SmartRefresher(
+                      enablePullDown: true,
+                      // footer: CustomFooter(
+                      //   builder: ((context, mode) {
+                      //     Widget body;
+                      //     if (mode == LoadStatus.idle) {
+                      //       body = Text("pull up load");
+                      //     } else if (mode == LoadStatus.loading) {
+                      //       body = CupertinoActivityIndicator();
+                      //     } else if (mode == LoadStatus.failed) {
+                      //       body = Text("Load Failed!Click retry!");
+                      //     } else if (mode == LoadStatus.canLoading) {
+                      //       body = Text("release to load more");
+                      //     } else {
+                      //       body = Text("No more Data");
+                      //     }
+                      //     return Container(
+                      //       height: 55.0,
+                      //       child: Center(child: body),
+                      //     );
+                      //   }),
+                      // ),
+                      controller: _controller,
+                      onRefresh: _onRefresh,
+                      child: _itemCount == 0
+                          ? Container()
+                          : ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          padding: EdgeInsets.all(8.w),
+                          itemCount: _itemCount,
+                          itemBuilder: (BuildContext context, int index) {
+                            return stationInfoSection(index);
+                          })),
+                )),
+            // Expanded(
+            //     child: ListView.builder(
+            //         scrollDirection: Axis.vertical,
+            //         padding: EdgeInsets.all(8.w),
+            //         itemCount: 3,
+            //         itemBuilder: (BuildContext context, int index) {
+            //           return stationInfoSection;
+            //         })),
+            // alreadyOnBoardSection, // 사실상 기능 구현 불가능
             advBoardSection,
           ],
         ),

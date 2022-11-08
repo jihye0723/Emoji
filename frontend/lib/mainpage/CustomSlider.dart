@@ -3,19 +3,20 @@ import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'TrainInfo.dart';
 import 'GetOnTrainDialog.dart';
 
 class CustomSlider extends StatefulWidget {
   const CustomSlider(
       {Key? key,
-      required this.trainNo,
-      required this.remainTime,
-      required this.direction})
+        required this.userId,
+        required this.stationName,
+        required this.train})
       : super(key: key);
 
-  final String trainNo;
-  final int remainTime;
-  final int direction;
+  final String userId;
+  final String stationName;
+  final Train train;
 
   @override
   _CustomSliderState createState() => _CustomSliderState();
@@ -69,7 +70,7 @@ class _CustomSliderState extends State<CustomSlider> {
     print("rv = $_reverseSliderValue");
     print("rt = $_remainTime");
 
-    if (widget.direction == 1) {
+    if (widget.train.direction == 1) {
       print("clicked left");
     } else {
       print("clicked right");
@@ -95,9 +96,9 @@ class _CustomSliderState extends State<CustomSlider> {
       // print(image);
       setState(() {
         customImage = image;
-        _remainTime = (widget.remainTime / 60).round();
+        _remainTime = (widget.train.remainTime / 60).round();
 
-        _sliderValue = calcSliderValue(_remainTime, widget.direction);
+        _sliderValue = calcSliderValue(_remainTime, widget.train.direction);
         _reverseSliderValue = 9 - _sliderValue;
 
         _sliderButtonPaddingLeft = calcPadding(_sliderValue);
@@ -179,14 +180,18 @@ class _CustomSliderState extends State<CustomSlider> {
                                 barrierDismissible: true,
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
-                                      trainNo: int.parse(widget.trainNo));
+                                      userId: widget.userId,
+                                      trainNo: int.parse(widget.train.trainNo),
+                                      line: widget.train.line,
+                                      stationName: widget.stationName,
+                                      remainTime: widget.train.remainTime);
                                 })
                           },
                           child: Container(
-                              // decoration: BoxDecoration(
-                              //   border: Border.all(color: Colors.black, width: 1),
-                              // ),
-                              ),
+                            // decoration: BoxDecoration(
+                            //   border: Border.all(color: Colors.black, width: 1),
+                            // ),
+                          ),
                         ),
                       ),
                       // TextButton(
@@ -247,15 +252,15 @@ class SliderThumbImage extends SliderComponentShape {
   @override
   void paint(PaintingContext context, Offset center,
       {required Animation<double> activationAnimation,
-      required Animation<double> enableAnimation,
-      required bool isDiscrete,
-      required TextPainter labelPainter,
-      required RenderBox parentBox,
-      required SliderThemeData sliderTheme,
-      required TextDirection textDirection,
-      required double value,
-      required double textScaleFactor,
-      required Size sizeWithOverflow}) {
+        required Animation<double> enableAnimation,
+        required bool isDiscrete,
+        required TextPainter labelPainter,
+        required RenderBox parentBox,
+        required SliderThemeData sliderTheme,
+        required TextDirection textDirection,
+        required double value,
+        required double textScaleFactor,
+        required Size sizeWithOverflow}) {
     final canvas = context.canvas;
     final imageWidth = image.width;
     final imageHeight = image.height;

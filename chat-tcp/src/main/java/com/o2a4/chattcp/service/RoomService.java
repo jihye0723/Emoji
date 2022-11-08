@@ -25,7 +25,6 @@ public class RoomService {
     static String sPrefix = "server:";
 
     public void roomIn(Channel channel, Transfer trans) {
-        // TODO 입장 처리 - Map에 채널ID, 채널 저장 & Redis에 유저-채널-채널id 저장
         String userId = trans.getUserId();
 
         redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
@@ -35,7 +34,6 @@ public class RoomService {
 
                     // 열차 채팅방에 채널 추가
                     tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
-                    log.info("맵 배열 : {}", tcgRepo.getTrainChannelGroupMap().get(cg).toArray().toString());
                     // 채널Id 채널 맵에 추가
                     cidcRepo.getChannelIdChannelMap().put(channelId, channel);
 
@@ -57,12 +55,9 @@ public class RoomService {
                         cg -> {
                             String channelId = channel.id().asShortText();
 
-                            // 열차 채팅방에서 채널 제거
-                            log.info("BEFORE MAP SIZE : {}",tcgRepo.getTrainChannelGroupMap().get(cg).toArray().length);
+                            // 열차 채팅방에서 채널 제거 (close하면 알아서 group에서 제거됨)
                             channel.close();
-                            log.info("AFTER MAP SIZE : {}",tcgRepo.getTrainChannelGroupMap().get(cg).toArray().length);
-//                            tcgRepo.getTrainChannelGroupMap().get(cg);
-                            // 채널Id 채널 맵에 추가
+                            // 채널Id 채널 맵에서 제거
                             cidcRepo.getChannelIdChannelMap().remove(channelId);
 
                             return redisTemplate.opsForHash().put(uPrefix+userId, "channel", channelId).doOnSubscribe(
@@ -76,11 +71,11 @@ public class RoomService {
     }
 
     public void seatStart(Transfer trans) {
-
+        // TODO 자리양도 시작
     }
 
-    public void seatEnd(String openUserId, String catchUserId) {
-
+    public void seatEnd(Transfer trans) {
+        // TODO 자리양도 끝
     }
 
     public void villainOn(Transfer trans) {

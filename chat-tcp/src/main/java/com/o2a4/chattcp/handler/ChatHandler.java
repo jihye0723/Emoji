@@ -1,6 +1,7 @@
 package com.o2a4.chattcp.handler;
 
 import com.o2a4.chattcp.proto.TransferOuterClass;
+import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ChatHandler extends ChannelInboundHandlerAdapter {
     private final RoomService roomService;
+    private final MessageService messageService;
 
     // 핸들러가 생성될 때 호출되는 메소드
     @Override
@@ -50,13 +52,13 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
         switch (trans.getType()) {
             case "msg":
                 log.info("메세지 : {}", trans.getContent());
+                String msg = messageService.receiveMessage(trans);
+                messageService.sendMessage(trans, msg);
                 break;
             case "room-in":
-                log.info("채팅방 넣어주세요 USERID : {}", trans.getUserId());
                 roomService.roomIn(ctx.channel(), trans);
                 break;
             case "room-out":
-                log.info("CHAT ROOM OUT USERID : {}", trans.getUserId());
                 roomService.roomOut(ctx.channel(), trans);
                 break;
             case "seat-start":
@@ -65,20 +67,15 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                 roomService.seatStart(trans);
                 break;
             case "villain-on":
-                log.info("빌런 탑승! 어떤 열차에 있는 User? : {}", trans.getUserId());
                 roomService.villainOn(trans);
                 break;
             case "villain-off":
-                log.info("빌런 탈출! 어떤 열차에 있는 User? : {}", trans.getUserId());
                 roomService.villainOff(trans);
                 break;
             default:
                 log.info("WRONG TYPE : {}", trans.getType());
                 break;
         }
-
-//        final ChannelFuture f = ctx.writeAndFlush(trans);
-//        f.addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override

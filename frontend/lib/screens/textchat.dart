@@ -28,7 +28,6 @@ class TextChat extends StatefulWidget {
 
   //현재역 찾기
   late String _info = "";
-
   late String _destination = "역삼";
 
   @override
@@ -46,7 +45,7 @@ class _TextChatState extends State<TextChat> {
   //목적지 설정을 위한 데이터
   late List<String> rain;
   late int direction;
-  Timer? _timer = null;
+  Timer? _timer;
   late int point = 0;
 
   //시작..
@@ -59,9 +58,9 @@ class _TextChatState extends State<TextChat> {
 
     //시간마다 정보변경
     setState(() {
-      _timer = Timer.periodic(Duration(seconds: 3), (timer) {
+      _timer = Timer.periodic(Duration(seconds: 10), (timer) {
         test();
-        print(widget._info);
+        //print(widget._info);
         if (widget._info == widget._destination) {
           _timer?.cancel();
         }
@@ -73,18 +72,26 @@ class _TextChatState extends State<TextChat> {
   void test() {
     if (direction == 0) {
       if (point + 1 >= rain.length) {
-        widget._info = rain[0];
+        setState(() {
+          widget._info = rain[0];
+        });
         point = 0;
       } else {
-        widget._info = rain[point + 1];
+        setState(() {
+          widget._info = rain[point + 1];
+        });
         point++;
       }
     } else {
       if (point - 1 < 0) {
-        widget._info = rain[rain.length - 1];
+        setState(() {
+          widget._info = rain[rain.length - 1];
+        });
         point = rain.length - 1;
       } else {
-        widget._info = rain[point - 1];
+        setState(() {
+          widget._info = rain[point - 1];
+        });
         point--;
       }
     }
@@ -111,17 +118,29 @@ class _TextChatState extends State<TextChat> {
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios),
-            padding: const EdgeInsets.only(left: 10)),
+            padding: EdgeInsets.only(left: 10.w)),
         centerTitle: true,
         elevation: 0,
-        title: Container(
-          width: (width * 0.3).w,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          //전광판
-          child: MyStatefulWidget(text: widget._info, color: Colors.white),
+        title: Stack(
+          children: [
+            Container(
+              width: (width * 0.35).w,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              //전광판
+              child: MyStatefulWidget(text: widget._info, color: Colors.white),
+              //child: Text(widget._info),
+            ),
+            Positioned(
+              top: 100.h,
+              child: SizedBox(
+                width: 350.w,
+                height: 100.h,
+              ),
+            ),
+          ],
         ),
         backgroundColor: _color,
         actions: <Widget>[
@@ -334,12 +353,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   //애니메이션 용ㅎ
   late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 2),
+    duration: const Duration(seconds: 5),
     vsync: this,
   )..repeat(reverse: false);
   late final Animation<Offset> _offsetAnimation = Tween<Offset>(
-    begin: Offset(-0.03.w, 0),
-    end: Offset(0.48.w, 0),
+    begin: Offset(-0.8.w, 0),
+    end: Offset(0.8.w, 0),
   ).animate(CurvedAnimation(
     parent: _controller,
     curve: Curves.linear,
@@ -363,10 +382,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     return SlideTransition(
       position: _offsetAnimation,
       child: Padding(
-        padding: EdgeInsets.all(6.w),
+        padding: EdgeInsets.all(5.w),
         child: Text(
           widget.text,
           style: TextStyle(color: widget.color),
+          overflow: TextOverflow.fade,
         ),
       ),
     );

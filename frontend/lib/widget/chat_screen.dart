@@ -63,18 +63,21 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     try {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
+      //소켓 연결하고 들어왔다 알려주기-----------------------------------------
+      final date =
+          DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+      Uint8List initMessage =
+          testMethod("room-in", "들어갑니다", widget.myId, widget.myName, date)
+              .writeToBuffer();
+
+      //socket.add(initMessage);
+      Transfer testmessage = Transfer.fromBuffer(initMessage);
+
+      print(testmessage);
     } catch (e) {
       makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
     }
-
-    //소켓 연결하고 들어왔다 알려주기-----------------------------------------
-    final date =
-        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
-
-    Uint8List initMessage =
-        testMethod("init", "init", widget.myId, widget.myName, date)
-            .writeToBuffer();
-    socket.add(initMessage);
 
     /*------------------------------------------------------------------*/
 
@@ -318,12 +321,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final date =
         DateFormat('yyy-MM-ddn HH:mm:ss').format(DateTime.now()).toString();
 
-    Uint8List tcpmessage =
-        testMethod("msg", text, widget.myId, widget.myName, date)
-            .writeToBuffer();
+    Transfer tcpmessage =
+        testMethod("msg", text, widget.myId, widget.myName, date);
 
+    String test =
+        testMethod("msg", text, widget.myId, widget.myName, date).toString();
+    //print(socket.encoding.encode(test));
     //서버로 전송
-    socket.add(tcpmessage);
+    //socket.write(tcpmessage.writeToBuffer());
+    socket.write(tcpmessage.toBuilder().writeToBuffer());
+    //socket.cast();
+    //print(socket.);
 
     //Transfer exam = Transfer.fromBuffer(tcpmessage);
     //print(tcpmessage);
@@ -374,8 +382,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   //TCP채팅 ip,port -> api로 얻어와야함
   void setting() {
-    ip = "172.17.112.1";
-    port = 7000;
+    ip = "10.0.2.2";
+    port = 8102;
   }
 
   /*----------------------나갈 때----------------------------*/
@@ -386,9 +394,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
     Uint8List closemessage =
-        testMethod("close", "close", widget.myId, widget.myName, date)
+        testMethod("room-out", "나갑니당", widget.myId, widget.myName, date)
             .writeToBuffer();
-    socket.add(closemessage);
+    //socket.add(closemessage);
     //print(Transfer.fromBuffer(closemessage));
 
     /*-------------------------------------------------*/

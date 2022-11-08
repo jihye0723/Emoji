@@ -1,18 +1,23 @@
 package com.o2a4.chattcp.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.scheduler.Schedulers;
 import reactor.kafka.receiver.KafkaReceiver;
+import reactor.kafka.receiver.ReceiverOptions;
 import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderOptions;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,16 +37,29 @@ public class KafkaConfiguration {
     // producer 옵션
     private Map<String, Object> getProducerProps() {
         return new HashMap<String, Object>(){{
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
+            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:9092");
             put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
             put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
             put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000); // 전송 시간 제한 : 1000ms
         }};
     }
 
-//    // receiver
-//    @Bean("kafkaReceiver")
-//    public KafkaReceiver<Integer, String> kafkaReceiver() throws Exception{
-//
-//    }
+    @Bean("kafkaReceiver")
+    public KafkaReceiver<Integer, String> kafkaReceiver() throws Exception{
+        ReceiverOptions<Integer, String> receiverOptions =
+                ReceiverOptions.<Integer,String>create(getConsumerProps())
+                        .subscription(Collections.singleton("chats"));
+        return KafkaReceiver.create(receiverOptions);
+    }
+
+    // consumer 옵션
+    private Map<String, Object> getConsumerProps(){
+        return new HashMap<String, Object>(){{
+            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:9092");
+            put(ConsumerConfig.GROUP_ID_CONFIG, "foo");
+            put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
+            put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
+        }};
+    }
 }

@@ -21,7 +21,7 @@ public class KafkaService {
                 .then()
                 // 에러 없이 전송이 완료 되었을 경우
                 .thenReturn("message send success")
-                // 에러가 발생했을 경우
+                // 에러가 발생했을 경우//
                 .onErrorResume(e -> Mono.just(e.getMessage()));
     }
 }

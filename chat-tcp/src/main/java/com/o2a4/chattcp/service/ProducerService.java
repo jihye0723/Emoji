@@ -15,7 +15,7 @@ public class ProducerService {
    private final KafkaService kafkaService;
    
    public Mono<String> produceMessage(String message){
-      log.info("Kafka Sender result : Topic >> [{}], message >> [{}]", "chat", message );
+      log.info("Kafka Sender result : Topic >> [{}], message >> [{}]", "chats", message );
       return kafkaService.send(message);
 
    }

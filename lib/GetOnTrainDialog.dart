@@ -6,12 +6,14 @@ import 'TestChatPage.dart';
 class GetOnTrainDialog extends StatefulWidget {
   const GetOnTrainDialog(
       {Key? key,
+      required this.userId,
       required this.trainNo,
       required this.line,
       required this.stationName,
       required this.remainTime})
       : super(key: key);
 
+  final String userId;
   final int trainNo;
   final String line;
   final String stationName;
@@ -266,7 +268,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                   Navigator.of(ctx).pop();
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (context) => TestChatPage(
-                                          userId: "아이디",
+                                          userId: widget.userId,
                                           userNick: "닉네임",
                                           line: widget.line,
                                           trainNo: widget.trainNo,

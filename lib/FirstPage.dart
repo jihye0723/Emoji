@@ -12,7 +12,9 @@ import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
 
 class FirstPage extends StatefulWidget {
-  const FirstPage({Key? key}) : super(key: key);
+  const FirstPage({Key? key, required this.userId}) : super(key: key);
+
+  final String userId;
 
   @override
   State<StatefulWidget> createState() => _FirstPageState();
@@ -20,6 +22,7 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
+  String _userId = "";
   bool _loadedInfo = false;
   Position? _currentPosition;
   bool _checkedPosition = false;
@@ -75,7 +78,7 @@ class _FirstPageState extends State<FirstPage> {
 
   // 페이지 리로드  (Todo)
   void _onRefresh() async {
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     print("refresh!!!!");
     getLocation().then((value) => setState(() {
           _currentPosition = value;
@@ -100,6 +103,9 @@ class _FirstPageState extends State<FirstPage> {
   @override
   void initState() {
     _controller = new RefreshController();
+    setState(() {
+      _userId = widget.userId;
+    });
     getLocation().then((value) => setState(() {
           _currentPosition = value;
           _checkedPosition = true;
@@ -157,9 +163,10 @@ class _FirstPageState extends State<FirstPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                _trainInfo.trainList.length == 0
+                _trainInfo.trainList.isEmpty
                     ? Container()
                     : CustomSlider(
+                        userId: widget.userId,
                         stationName: _trainInfo.stationName,
                         train: _trainInfo.trainList[idx * 2],
                       ),
@@ -187,6 +194,7 @@ class _FirstPageState extends State<FirstPage> {
                 _trainInfo.trainList.length == 0
                     ? Container()
                     : CustomSlider(
+                        userId: widget.userId,
                         stationName: _trainInfo.stationName,
                         train: _trainInfo.trainList[idx * 2 + 1],
                       )

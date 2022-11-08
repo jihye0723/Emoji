@@ -7,9 +7,14 @@ import 'package:subway/TrainInfo.dart';
 import 'GetOnTrainDialog.dart';
 
 class CustomSlider extends StatefulWidget {
-  const CustomSlider({Key? key, required this.stationName, required this.train})
+  const CustomSlider(
+      {Key? key,
+      required this.userId,
+      required this.stationName,
+      required this.train})
       : super(key: key);
 
+  final String userId;
   final String stationName;
   final Train train;
 
@@ -175,6 +180,7 @@ class _CustomSliderState extends State<CustomSlider> {
                                 barrierDismissible: true,
                                 builder: (BuildContext ctx) {
                                   return GetOnTrainDialog(
+                                      userId: widget.userId,
                                       trainNo: int.parse(widget.train.trainNo),
                                       line: widget.train.line,
                                       stationName: widget.stationName,

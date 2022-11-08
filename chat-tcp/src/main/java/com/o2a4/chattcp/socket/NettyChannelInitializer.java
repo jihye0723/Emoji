@@ -1,22 +1,18 @@
 package com.o2a4.chattcp.socket;
 
-import com.o2a4.chattcp.config.NettyConfiguration;
 import com.o2a4.chattcp.handler.ChatHandler;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +32,8 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
         // 뒤이어 처리할 디코더, 로거 및 핸들러 추가
         pipeline
                 //ProtoBuf Decoder
+                // Flutter랑 연결할때 tag가 다르다, 중간에 짤렸다, end-group 태그가 다르다 여러가지
+//                .addLast(new LengthFieldBasedFrameDecoder())
                 .addLast(new ProtobufVarint32FrameDecoder())
                 .addLast(new ProtobufDecoder(TransferOuterClass.Transfer.getDefaultInstance()))
                 //Logger, Event Handler

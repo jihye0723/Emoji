@@ -52,6 +52,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
         switch (trans.getType()) {
             case "msg":
                 log.info("메세지 : {}", trans.getContent());
+                // TODO 다시 클라이언트로 에러메세지
                 String msg = messageService.receiveMessage(trans);
                 messageService.sendMessage(trans, msg);
                 break;

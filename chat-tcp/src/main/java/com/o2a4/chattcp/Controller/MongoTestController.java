@@ -1,18 +1,13 @@
 package com.o2a4.chattcp.Controller;
 
 
-import com.o2a4.chattcp.data.Chats;
-import com.o2a4.chattcp.data.ChatsRepository;
-import com.o2a4.chattcp.service.ChatsService;
 import com.o2a4.chattcp.service.KafkaService;
-import com.o2a4.chattcp.service.ProducerService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/mongoTest")
@@ -23,7 +18,7 @@ public class MongoTestController {
 //    private ChatsService chatsService;
 //
     @Autowired
-    private ProducerService producerService;
+    private KafkaService kafkaService;
 //
 //    @GetMapping
 //    public void MongoTest(){
@@ -31,10 +26,16 @@ public class MongoTestController {
 //   }
 
 
-   @GetMapping
-    public void KafkaTest(){
-       Mono<String> result = producerService.produceMessage("kafka test");
+   @GetMapping("/{message}")
+    public void KafkaTest(@PathVariable String message){
+       kafkaService.send(message);
 
-       System.out.println(result);
+//       System.out.println(result);
    }
+
+   @GetMapping("/consume")
+    public void KafkaConsumeTest(){
+
+   }
+
 }

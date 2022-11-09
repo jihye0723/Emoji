@@ -24,6 +24,8 @@ public class KafkaMessageReceiver {
     public void start(KafkaReceiver<Integer,String> receiver){
         receiver.receive().subscribe(record ->{
             log.info("Kafka Receiver result : Topic >> [{}], message >> [{}], Offset >> [{}]", record.topic(), record.value(), record.receiverOffset());
+
+
         });
     }
 

@@ -42,6 +42,7 @@ dependencies {
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	implementation 'org.apache.kafka:kafka-streams'
 	implementation 'org.springframework.kafka:spring-kafka'
+	implementation 'org.springframework.kafka:spring-kafka-dist:2.9.0'
 
 
 	compileOnly 'org.projectlombok:lombok'

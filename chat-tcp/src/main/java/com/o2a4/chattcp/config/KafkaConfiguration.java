@@ -1,5 +1,6 @@
 package com.o2a4.chattcp.config;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.Producer;
@@ -37,9 +38,10 @@ public class KafkaConfiguration {
     // producer 옵션
     private Map<String, Object> getProducerProps() {
         return new HashMap<String, Object>(){{
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:9092");
+            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:8892");
             put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
             put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+//            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
             put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000); // 전송 시간 제한 : 1000ms
         }};
     }
@@ -55,7 +57,7 @@ public class KafkaConfiguration {
     // consumer 옵션
     private Map<String, Object> getConsumerProps(){
         return new HashMap<String, Object>(){{
-            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:9092");
+            put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:8892");
             put(ConsumerConfig.GROUP_ID_CONFIG, "foo");
             put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
             put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

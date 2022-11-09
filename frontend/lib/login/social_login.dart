@@ -1,3 +1,3 @@
 abstract class SocialLogin {
-  Future<bool> login();
+  Future login();
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:practice_01/chatpage/chat.dart';
@@ -48,13 +49,13 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
+  // static final storage = new FlutterSecureStorage();
   bool weHaveToken = false;
 
   void hasToken() async {
     if (await AuthApi.instance.hasToken()) {
       try {
-        AccessTokenInfo tokenInfo =
-        await UserApi.instance.accessTokenInfo();
+        AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
         weHaveToken = true;
         print('토큰 유효성 체크 성공 ${tokenInfo.id} ${tokenInfo.expiresIn}');
       } catch (error) {
@@ -80,32 +81,31 @@ class _SplashScreenState extends State<SplashScreen> {
     _playVideo();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-
-    if (weHaveToken) {
-      /*
-      * 토큰이 있다면, 홈 화면으로 넘어가면서 이메일을 같이 보내줘야 함.
-      */
-      // navigating to home screen
-      Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-      // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    } else {
-      //토큰이 없다면, 로그인 페이지로 넘겨주어야 한다.
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    }
-  }
-
   void _playVideo() async {
     //playing video
     _controller.play();
     hasToken();
     //add delay till video is complete
     await Future.delayed(const Duration(seconds: 4));
+    // 종료가 되지 않는 오류발생하여 일단 dispose() 넣어 놓음.
     dispose();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+
+    if (weHaveToken) {
+      // navigating to home screen
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } else {
+      //토큰이 없다면, 로그인 페이지로 넘겨주어야 한다.
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    }
   }
 
   @override

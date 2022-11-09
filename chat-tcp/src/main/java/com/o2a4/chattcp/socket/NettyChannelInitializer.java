@@ -5,7 +5,6 @@ import com.o2a4.chattcp.proto.TransferOuterClass;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -22,6 +21,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChatHandler chatHandler;
 
+
     @Value("${server.netty.logLevel}")
     private String logLevel;
 
@@ -32,8 +32,6 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
         // 뒤이어 처리할 디코더, 로거 및 핸들러 추가
         pipeline
                 //ProtoBuf Decoder
-                // Flutter랑 연결할때 tag가 다르다, 중간에 짤렸다, end-group 태그가 다르다 여러가지
-//                .addLast(new LengthFieldBasedFrameDecoder())
                 .addLast(new ProtobufVarint32FrameDecoder())
                 .addLast(new ProtobufDecoder(TransferOuterClass.Transfer.getDefaultInstance()))
                 //Logger, Event Handler

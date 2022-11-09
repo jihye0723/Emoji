@@ -19,9 +19,12 @@ public class FilterLoader {
         // TODO 비속어 데이터 로드
         Map<String, String> map = new HashMap<>();
 
-        // 여기 수정
-       map.put("","");
+        map.put("ㅆㅂ", "ㅆㅂ");
+        map.put("ㄱㅅㄲ", "ㄱㅅㄲ");
+        map.put("ㄱㅆㅂ", "ㄱㅆㅂ");
+        map.put("ㄱㅆㅂㅅㄲ", "ㄱㅆㅂㅅㄲ");
 
+        // 비속어 필터링용 맵 세팅
         filterRepository.getFilterTrie().build(map);
     }
 }

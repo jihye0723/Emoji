@@ -3,14 +3,11 @@ package com.o2a4.chattcp.handler;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -46,13 +43,14 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object data){
+    public void channelRead(ChannelHandlerContext ctx, Object data) {
         TransferOuterClass.Transfer trans = (TransferOuterClass.Transfer) data;
 
+        // TODO 에러나면 다시 클라이언트로 에러메세지
         switch (trans.getType()) {
             case "msg":
                 log.info("메세지 : {}", trans.getContent());
-                // TODO 에러나면 다시 클라이언트로 에러메세지
+                // TODO 받기 보내기 테스트~
                 String msg = messageService.receiveMessage(trans);
                 messageService.sendMessage(trans, msg);
                 break;
@@ -63,6 +61,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                 roomService.roomOut(ctx.channel(), trans);
                 break;
             case "seat-start":
+                // TODO 자리양도
                 String userId = trans.getUserId();
                 log.info("자리양도 시작 : {}", userId);
                 roomService.seatStart(trans);

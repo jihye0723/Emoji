@@ -64,6 +64,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
       //소켓 연결하고 들어왔다 알려주기-----------------------------------------
+      //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
+      makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
+
       final date =
           DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
@@ -71,54 +74,74 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           testMethod("room-in", "들어갑니다", widget.myId, widget.myName, date)
               .writeToBuffer();
 
-      //socket.add(initMessage);
-      Transfer testmessage = Transfer.fromBuffer(initMessage);
+      int leng = initMessage.length;
+      int msgByteLen = 1;
+      var header = ByteData(msgByteLen);
+      header.setUint8(0, leng);
 
-      print(testmessage);
+      var sendmessage =
+          header.buffer.asUint8List() + initMessage.buffer.asUint8List();
+
+      socket.add(sendmessage);
     } catch (e) {
       makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
+      //뒤로가기?
     }
 
     /*------------------------------------------------------------------*/
 
-    //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
-    makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
-
     // 서버에서 채팅날아오면 받기
-    socket.listen((List<int> event) {
-      //print(utf8.decode(event));
-      Transfer testmessage = Transfer.fromBuffer(test);
-      //print(testmessage);
+    socket.listen((Uint8List data) {
+      //print(data);
 
-      // 채팅을 위한것이면 채팅에 저장하기
-      if (testmessage.type == "msg") {
-        makeMessage(
-            testmessage.content, testmessage.nickName, testmessage.userId);
+      var serverdata = data.getRange(1, data.length);
 
-        //자리양도 이벤트 받았을대 띄워주기
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("자리 양도 이벤트가 발생하였습니다"),
-          duration: Duration(seconds: 5),
-          backgroundColor: widget.color,
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: '참가!',
-            disabledTextColor: Colors.white,
-            textColor: Colors.white,
-            onPressed: () {
-              print(testmessage.userId);
-            },
-          ),
-        ));
+      //print(serverdata);
+
+      List<int> nowlist = serverdata.toList();
+      Transfer receive = Transfer.fromBuffer(nowlist);
+
+      if (receive.userId != widget.myId) {
+        if (receive.type == "room-in") {
+          makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
+        }
+
+        if (receive.type == "room-out") {
+          makeMessage("${receive.nickName}님이 퇴장하셨습니다", "alert", "Manager");
+        }
+
+        if (receive.type == "msg") {
+          makeMessage(receive.content, receive.nickName, receive.userId);
+        }
+
+        if (receive.type == "seat-start") {
+          //자리양도 이벤트 받았을대 띄워주기
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("자리 양도 이벤트가 발생하였습니다"),
+            duration: Duration(seconds: 5),
+            backgroundColor: widget.color,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: '참가!',
+              disabledTextColor: Colors.white,
+              textColor: Colors.white,
+              onPressed: () {
+                print(receive.userId);
+              },
+            ),
+          ));
+        }
+
+        if (receive.type == "villain-on") {
+          //빌런 탑승
+          makeMessage(receive.content, receive.nickName, receive.userId);
+        }
+
+        if (receive.type == "villain-off") {
+          //빌런 하차
+          makeMessage(receive.content, receive.nickName, receive.userId);
+        }
       }
-
-      // if (testmessage.type == "msg") {
-      //   makeMessage(testmessage.content, testmessage.userId, 0);
-      // }
-
-      //자리양도일때 채팅방에 가운데 띄워주기 버튼도 추가해야하고 그안에 양도를 특정할 수 있는 데이터도 같이 보내야함.
-
-      //빌런은 열차번호 보내줘야한다.
     });
   }
 
@@ -167,19 +190,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     message.animationController.forward();
   }
 
-  // 자리 양도 기능에서, 개최자의 자리 소개 시에 key 값을 지정함으로써 폼 내부의 TextFormField 값을 저장하고 validation 을 진행하는데 사용한다.
-  final formKey = GlobalKey<FormState>();
-
-  // 자리 양도 기능에서, 개최자의 자리 소개말 변수 선언
-  String introduce = "";
-
   // 자리 양도 기능에서, 개최자의 자리 소개말 함수 선언
   Widget renderTextFormField({
     required FormFieldSetter onSaved,
     required FormFieldValidator validator,
   }) {
     assert(validator != null);
-
+    assert(onSaved != null);
     return Container(
         margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
         child: (TextFormField(
@@ -319,19 +336,21 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     //보내는 시간
     final date =
-        DateFormat('yyy-MM-ddn HH:mm:ss').format(DateTime.now()).toString();
+        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
     Transfer tcpmessage =
-        testMethod("msg", text, widget.myId, widget.myName, date);
+        testMethod("room-in", text, widget.myId, widget.myName, date);
 
-    String test =
-        testMethod("msg", text, widget.myId, widget.myName, date).toString();
-    //print(socket.encoding.encode(test));
-    //서버로 전송
-    //socket.write(tcpmessage.writeToBuffer());
-    socket.write(tcpmessage.toBuilder().writeToBuffer());
-    //socket.cast();
-    //print(socket.);
+    int leng = tcpmessage.writeToBuffer().length;
+    //int msgByteLen = 1;
+    var header = ByteData(1);
+    header.setUint8(0, leng);
+
+    var mymessage = header.buffer.asUint8List() +
+        tcpmessage.writeToBuffer().buffer.asUint8List();
+
+    socket.add(mymessage);
+    //print(mss);
 
     //Transfer exam = Transfer.fromBuffer(tcpmessage);
     //print(tcpmessage);
@@ -393,11 +412,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final date =
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
-    Uint8List closemessage =
-        testMethod("room-out", "나갑니당", widget.myId, widget.myName, date)
+    Uint8List initMessage =
+        testMethod("room-out", "나갑니다", widget.myId, widget.myName, date)
             .writeToBuffer();
-    //socket.add(closemessage);
-    //print(Transfer.fromBuffer(closemessage));
+
+    int leng = initMessage.length;
+    int msgByteLen = 1;
+    var header = ByteData(msgByteLen);
+    header.setUint8(0, leng);
+
+    var sendmessage =
+        header.buffer.asUint8List() + initMessage.buffer.asUint8List();
+
+    socket.add(sendmessage);
 
     /*-------------------------------------------------*/
 
@@ -410,6 +437,30 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     print("disconnected");
     super.dispose();
   }
+
+  void createseat(String text) {
+    final date =
+        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+    Uint8List seat =
+        testMethod("seat-start", text, widget.myId, widget.myName, date)
+            .writeToBuffer();
+
+    int leng = seat.length;
+    int msgByteLen = 1;
+    var header = ByteData(msgByteLen);
+    header.setUint8(0, leng);
+
+    var sendmessage = header.buffer.asUint8List() + seat.buffer.asUint8List();
+
+    socket.add(sendmessage);
+  }
+
+  // 자리 양도 기능에서, 개최자의 자리 소개 시에 key 값을 지정함으로써 폼 내부의 TextFormField 값을 저장하고 validation 을 진행하는데 사용한다.
+  final formKey = GlobalKey<FormState>();
+
+// 자리 양도 기능에서, 개최자의 자리 소개말 변수 선언
+  String introduce = "";
 
   // 자리 양도 버튼
   Widget seatHandoverButton() {
@@ -433,84 +484,92 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             builder: (BuildContext ctx) {
               double height = MediaQuery.of(ctx).size.height;
               double width = MediaQuery.of(ctx).size.width;
-              return AlertDialog(
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular((32.0)))),
-                actionsAlignment: MainAxisAlignment.center,
-                // borderRadius: BorderRadius.circular(20),
-                title: Column(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                          onPressed: () {
-                            Navigator.of(ctx).pop();
-                          },
-                          icon: const Icon(Icons.close_rounded)),
-                    ),
-                    Image.asset(
-                      "assets/images/seat-icon.png",
-                      width: (width * 0.1).w,
-                      height: (width * 0.1).h,
-                    ),
-                    Text('자리 양도',
-                        style: TextStyle(
-                            fontSize: 24.sp, fontWeight: FontWeight.w800))
-                  ],
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "자리의 위치를 간단하게 설명해주세요!",
-                      textAlign: TextAlign.center,
-                    ),
-                    renderTextFormField(
-                      onSaved: (val) {
-                        setState(() {
-                          introduce = val;
-                        });
-                      },
-                      validator: (val) {
-                        if (val.length < 1) {
-                          return '간단한 자리 소개를 해주세요!';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-                actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
-                actions: [
-                  Column(
+              return SingleChildScrollView(
+                child: AlertDialog(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular((32.0)))),
+                  actionsAlignment: MainAxisAlignment.center,
+                  // borderRadius: BorderRadius.circular(20),
+                  title: Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10.h),
-                        child: const Text(
-                          '앉아계신게 맞나요? \n아닐 경우 불이익이 있을 수 있습니다.',
-                          textAlign: TextAlign.center,
-                        ),
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                            },
+                            icon: const Icon(Icons.close_rounded)),
                       ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
-                          foregroundColor: Colors.white,
-                          backgroundColor: const Color(0xff747f00),
-                          // 백그라운드로 컬러 설정
-                          textStyle: TextStyle(fontSize: 16.sp),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
+                      Image.asset(
+                        "assets/images/seat-icon.png",
+                        width: (width * 0.1).w,
+                        height: (width * 0.1).h,
+                      ),
+                      Text('자리 양도',
+                          style: TextStyle(
+                              fontSize: 24.sp, fontWeight: FontWeight.w800))
+                    ],
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "자리의 위치를 간단하게 설명해주세요!",
+                        textAlign: TextAlign.center,
+                      ),
+                      Form(
+                        key: formKey,
+                        child: renderTextFormField(
+                          onSaved: (val) {
+                            print(val);
+                            setState(() {
+                              introduce = val;
+                            });
+                          },
+                          validator: (val) {
+                            if (val.length < 1) {
+                              return '간단한 자리 소개를 해주세요!';
+                            }
+                            return null;
+                          },
                         ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
-                        },
-                        child: const SizedBox(child: Text("시작하기")),
                       ),
                     ],
-                  )
-                ],
+                  ),
+                  actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
+                  actions: [
+                    Column(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10.h),
+                          child: const Text(
+                            '앉아계신게 맞나요? \n아닐 경우 불이익이 있을 수 있습니다.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xff747f00),
+                            // 백그라운드로 컬러 설정
+                            textStyle: TextStyle(fontSize: 16.sp),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            print(introduce);
+                            createseat(introduce);
+                            snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
+                          },
+                          child: const SizedBox(child: Text("시작하기")),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               );
             });
       },
@@ -652,82 +711,3 @@ class ChatMessage extends StatelessWidget {
     );
   }
 }
-
-//테스트용..
-List<int> test = [
-  10,
-  3,
-  109,
-  115,
-  103,
-  18,
-  4,
-  116,
-  101,
-  115,
-  116,
-  26,
-  10,
-  103,
-  107,
-  115,
-  119,
-  111,
-  116,
-  109,
-  100,
-  57,
-  54,
-  34,
-  29,
-  236,
-  182,
-  156,
-  234,
-  183,
-  188,
-  237,
-  149,
-  152,
-  234,
-  184,
-  176,
-  32,
-  236,
-  139,
-  171,
-  236,
-  157,
-  128,
-  32,
-  237,
-  152,
-  184,
-  235,
-  158,
-  145,
-  236,
-  157,
-  180,
-  42,
-  19,
-  235,
-  132,
-  136,
-  235,
-  138,
-  148,
-  32,
-  235,
-  136,
-  132,
-  234,
-  181,
-  172,
-  236,
-  157,
-  184,
-  234,
-  176,
-  128
-];

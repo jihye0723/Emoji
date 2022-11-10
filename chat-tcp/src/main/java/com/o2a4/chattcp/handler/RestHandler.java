@@ -61,20 +61,22 @@ public class RestHandler {
         if (false) {
             return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
         }
-
+        // TODO Error Gracefully,,,,
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
                 // 없었다면 body를 사용
                 .switchIfEmpty(req.bodyToMono(Bridge.class))
                 // body가 없으면
                 .switchIfEmpty(Mono.error(new IllegalStateException("No User Info in Request")))
                 // 서버에서 찾을 수 없어서 request body로 변환된 경우에만 통과
-                .map(i -> {
-                    if (i instanceof Bridge) return i;
-                    else throw new IllegalArgumentException("중복된 유저입니다");
+                .flatMap(i -> {
+                    if (i instanceof Bridge) return Mono.just(i);
+                    else return Mono.empty();
                 })
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("중복된 유저입니다")))
                 // 정상적으로 body에서 데이터를 불러왔다면
                 .flatMap(data -> {
                     // 2 열차 확인
+                    log.info("뭐지 브릿지 {}", data);
                     log.info("CHECK TRAIN");
                     String trainId = ((Bridge) data).getData();
 

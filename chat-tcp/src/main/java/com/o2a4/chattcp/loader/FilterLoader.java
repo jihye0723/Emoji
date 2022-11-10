@@ -2,9 +2,12 @@ package com.o2a4.chattcp.loader;
 
 import com.o2a4.chattcp.repository.FilterRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +20,29 @@ public class FilterLoader {
     @PostConstruct
     public void loadFilter() {
         // TODO 비속어 데이터 로드
+        ClassPathResource resource = new ClassPathResource("data/FwordList.txt");
         Map<String, String> map = new HashMap<>();
+
+        FileInputStream fis = null;
+
+        try {
+            fis = new FileInputStream(resource.getPath());
+
+            byte[] byteBuffer = new byte[fis.available()];
+            while(fis.read(byteBuffer) > 0) {
+
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(fis != null) {
+                    fis.close();
+                }
+            }catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         map.put("ㅆㅂ", "ㅆㅂ");
         map.put("ㄱㅅㄲ", "ㄱㅅㄲ");

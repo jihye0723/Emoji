@@ -1,6 +1,5 @@
 package com.o2a4.chattcp.service;
 
-import com.o2a4.chattcp.proto.TransferOuterClass;
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.FilterRepository;
@@ -28,12 +27,11 @@ public class MessageService {
         // FIXME 공백이랑 숫자 처리 -> 배열을 같은 크기로 만들어서 문자열 위치를 매핑하고, 필요없는 부분 정규표현식으로 다 삭제하고 필터링?
 
         StringBuilder sb = new StringBuilder();
-//        String test = "ㅆ ㅂ"
-        String test = "이ㅆㅂ ㅆ12ㅂ ㄱㅅㄲㅆㅂ ㄱㅆㅂㅅㄲ";   // 이* ㅆ12ㅂ * *
+        String target = trans.getContent();
         LinkedList<Integer[]> output = new LinkedList<>();
 
-//        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(test);
-        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().parseText(test);
+//        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
+        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().parseText(target);
 
         // 비속어가 있다면
         if (res != null) {
@@ -56,13 +54,13 @@ public class MessageService {
                 int end = interval[1];
 
                 // 비속어 시작 전까지 그대로 붙이고 비속어 파트는 *로 대체
-                sb.append(test, ptr, start).append("*");
+                sb.append(target, ptr, start).append("*");
                 // 비속어 끝(exclusive)을 다음 시작점으로 지정
                 ptr = end;
             }
 
-            if (ptr < test.length()) {
-                sb.append(test, ptr, test.length());
+            if (ptr < target.length()) {
+                sb.append(target, ptr, target.length());
             }
         }
 

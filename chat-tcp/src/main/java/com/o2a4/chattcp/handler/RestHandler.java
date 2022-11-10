@@ -4,6 +4,7 @@ import com.o2a4.chattcp.decoder.JwtDecoder;
 import com.o2a4.chattcp.model.Bridge;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
+import com.o2a4.chattcp.service.AuthService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -40,6 +40,7 @@ public class RestHandler {
 
     private final TrainChannelGroupRepository tcgRepo;
     private final ChannelIdChannelRepository cidcRepo;
+    private final AuthService authService;
 
     public Mono<ServerResponse> roomIn(ServerRequest req) {
         /* 방 입장 요청
@@ -58,9 +59,10 @@ public class RestHandler {
         String userId = jwtDecoder.decode(token);
 
         // 인증서버 보낸 결과가 유효하지 않은 사용자라면
-        if (false) {
+        if (authService.getAuth(token)) {
             return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
         }
+
         // TODO Error Gracefully,,,,
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
                 // 없었다면 body를 사용

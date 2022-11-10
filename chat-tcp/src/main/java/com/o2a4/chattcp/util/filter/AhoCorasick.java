@@ -1,4 +1,4 @@
-package com.o2a4.chattcp.util;
+package com.o2a4.chattcp.util.filter;
 
 import java.util.*;
 /**

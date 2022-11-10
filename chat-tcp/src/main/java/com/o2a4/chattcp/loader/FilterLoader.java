@@ -23,6 +23,7 @@ public class FilterLoader {
         map.put("ㄱㅅㄲ", "ㄱㅅㄲ");
         map.put("ㄱㅆㅂ", "ㄱㅆㅂ");
         map.put("ㄱㅆㅂㅅㄲ", "ㄱㅆㅂㅅㄲ");
+        map.put("ㅆㅂㅅㄲ", "ㅆㅂㅅㄲ");
 
         // 비속어 필터링용 맵 세팅
         filterRepository.getFilterTrie().build(map);

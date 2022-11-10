@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -149,8 +150,6 @@ public class RestHandler {
                         // 서버에서 클라이언트의 채널 닫음
                         cidcRepo.getChannelIdChannelMap().get(channelId).close();
                     }
-                    // FIXME 로직을 tcp 쪽으로 다 넘길지 여기서 할 지 생각을 해봐야할듯
-                    // 채널그룹이 있는데 사람이 tcp 연결전에 나간 경우 / 채널그룹을 새로 만들었는데 tcp 연결전에 나간경우
 
                     // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거
                     ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);

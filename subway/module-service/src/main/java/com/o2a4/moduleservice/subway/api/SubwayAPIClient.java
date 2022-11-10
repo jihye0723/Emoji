@@ -51,6 +51,14 @@ public class SubwayAPIClient {
             Iterator<StationDto> it = stationDtos.iterator();
             while (it.hasNext()) {
                 StationDto item = it.next();
+
+                if(Integer.parseInt(item.getBtrainNo()) % 2 == 0)   {
+                    item.setUpdnLine("0");
+                }
+                else {
+                    item.setUpdnLine("1");
+                }
+
                 if (item.getArvlCd().equals("2")) {
                     it.remove();
                 }

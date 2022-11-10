@@ -80,7 +80,10 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                 String winnerId = roomService.seatStart(userId);
                 log.info("자리양도 당첨 : {}",  winnerId);
 
-                // 자리양도 시작한 사람 : userId , 당첨 : winnerId
+                if(winnerId.equals("nobody")){
+                     // 자리양도 신청한 사람 없음
+                }
+
                 break;
             case "villain-on":
                 roomService.villainOn(trans);

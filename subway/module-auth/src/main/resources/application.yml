@@ -2,13 +2,14 @@
 spring:
   data:
     mongodb:
-      host: localhost
+      #      uri: mongodb://localhost:27017/subway
+      #      host: localhost
+      host: 52.79.215.19
       port: 27017
       authentication-database: admin
-      username: sub
-      password: sub1
-      database: test
-#      uri: mongodb: //localhost:27017/test
+      database: o2a4
+      username: o2a4
+      password: o2a4602
 
 ---
 
@@ -19,15 +20,21 @@ spring:
 ---
 
 # port
-spring:
-  server:
-    port: 8081
+server:
+  port: 8081
 
 ---
 
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+---
+
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+
+---
 
 # mysql
 #spring.datasource.url=jdbc:mysql://localhost:3306/sample?autoReconnect=true

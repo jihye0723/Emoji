@@ -10,7 +10,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class StationDto {
+public class StationDto implements Comparable<StationDto> {
     /* ordkey는 다음과 같이 구성되어 있습니다.
     - 상하행 코드: 숫자 1자리
     - 순번 코드: 숫자 1자리
@@ -36,6 +36,20 @@ public class StationDto {
     private String arvlMsg2;    // 첫번째 도착 메세지 (전역 진입, 전역 도착 등)
     private String arvlMsg3;    // 두번째 도착 메세지 (종합운동장 도착, 12분 후 (광명사거리) 등)
 
+    @Override
+    public int compareTo(StationDto stationDto) {
+        int compareSubwayId = this.subwayId.compareTo(stationDto.getSubwayId());
+        int compareUpdnLine = this.updnLine.compareTo(stationDto.getUpdnLine());
+        int compareOrdkey = this.ordkey.compareTo(stationDto.getOrdkey());
+
+        if(compareSubwayId == 0)    {
+            if(compareUpdnLine == 0)    {
+                return compareOrdkey;
+            }
+            else return compareUpdnLine;
+        }
+        return compareSubwayId;
+    }
 
 
 //        "rowNum": 3,

@@ -5,11 +5,15 @@ import com.o2a4.moduleservice.subway.document.Station;
 import com.o2a4.moduleservice.subway.dto.StationDto;
 import com.o2a4.moduleservice.subway.repository.StationRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-//@Slf4j
+@Slf4j
 @Component
 @AllArgsConstructor
 @Service
@@ -28,13 +32,24 @@ public class SubwayService {
         for (Station s:list) {
             double distanceMeter = distance(latitude, longtitude, s.getLatitude(), s.getLongitude(), "meter");
 
-            if(distanceMeter <= 20) {
+            if(distanceMeter <= 100) {
                 data = s;
                 break;
             }
         }
 
-        List<StationDto> result = subwayAPIClient.realtimeStationArrivalInfo(data.getStationName());
+//        Station a = stationRepository.findByStationCodeEquals(data.getStationName());
+//        boolean b = stationRepository.existsByStationCode(data.getStationCode());
+//        boolean c = stationRepository.existsByStationCode("ASDFASDF");
+//        System.out.println("test b : " + b);
+//        System.out.println("test c : " + c);
+        List<StationDto> result = new ArrayList<>() ;
+        if(data.getStationName() != null) {
+            result = subwayAPIClient.realtimeStationArrivalInfo(data.getStationName());
+            Collections.sort(result);
+        }
+        else
+            result = null;
         return result;
     }
 

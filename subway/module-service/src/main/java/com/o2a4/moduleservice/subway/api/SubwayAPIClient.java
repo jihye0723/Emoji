@@ -47,14 +47,18 @@ public class SubwayAPIClient {
             stationDtos = objectMapper.readValue(jsonSting, new TypeReference<List<StationDto>>() {});//Event[].class);
 //            System.out.println(resultMap.getBody());
 //            System.out.println(resultMap.getBody().getClass().getName());
-            for ( StationDto s:stationDtos
-                 ) {
-                System.out.println(s.toString());
-
-            }
+            
             Iterator<StationDto> it = stationDtos.iterator();
             while (it.hasNext()) {
                 StationDto item = it.next();
+
+                if(Integer.parseInt(item.getBtrainNo()) % 2 == 0)   {
+                    item.setUpdnLine("0");
+                }
+                else {
+                    item.setUpdnLine("1");
+                }
+
                 if (item.getArvlCd().equals("2")) {
                     it.remove();
                 }

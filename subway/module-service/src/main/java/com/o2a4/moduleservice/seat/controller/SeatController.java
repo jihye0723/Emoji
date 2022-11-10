@@ -45,7 +45,7 @@ public class SeatController {
         Long size= redisTemplate.opsForList().size(key);
         if(size==1) {
             // 참가한 사람 없는 것
-            return "nobody";
+            return null;
         }
         else {
             // 참가자 목록 얻어오기 : list

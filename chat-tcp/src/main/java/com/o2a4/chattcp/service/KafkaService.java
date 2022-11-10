@@ -32,13 +32,9 @@ public class KafkaService {
 //    }
 
     public void send(String msg){
-        JSONObject message = new JSONObject();
-        message.put("userid", "ssafy1");
-        message.put("content", "2호선 빌런 나타남 ! ");
-        message.put("send_at" , "20221110-11:10:12");
         Flux<SenderRecord<String, Object, Integer>> outboundFlux =
                 Flux.range(1,1)
-                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , message.toJSONString()),i) );
+                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , msg),i) );
 
         kafkaSender.send(outboundFlux).subscribe();
 

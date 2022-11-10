@@ -41,9 +41,6 @@ public class KafkaMessageReceiver {
                 String content= jsonObject.get("content").toString();
                 String send_at= jsonObject.get("send_at").toString();
 
-                System.out.println(userid);
-                System.out.println(content);
-                System.out.println(send_at);
 
                 Chats chats=  Chats.builder().userid(userid).content(content).sendTime(send_at).build();
                 chatsRepository.save(chats);

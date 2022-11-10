@@ -1,5 +1,6 @@
 package com.o2a4.chattcp.handler;
 
+import com.o2a4.chattcp.model.Seats;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import com.o2a4.chattcp.service.KafkaService;
 import com.o2a4.chattcp.service.MessageService;
@@ -14,6 +15,7 @@ import org.json.simple.JSONObject;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
@@ -77,12 +79,13 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
             case "seat-start":
                 String userId = trans.getUserId();
                 log.info("자리양도 시작 : {}", userId);
-                String winnerId = roomService.seatStart(userId);
-                log.info("자리양도 당첨 : {}",  winnerId);
+//                String winnerId= roomService.seatStart(userId).toString();
+//                Mono<String> string  = roomService.seatStart(userId);
+//                log.info("뭐임 ? " , seats)
+//                log.info("자리양도 당첨 : {}",  winnerId);
 
-                if(winnerId.equals("nobody")){
-                     // 자리양도 신청한 사람 없음
-                }
+//                if(winnerId!=null){
+//                }
 
                 break;
             case "villain-on":

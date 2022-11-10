@@ -1,5 +1,6 @@
 package com.o2a4.chattcp.service;
 
+import com.o2a4.chattcp.model.Seats;
 import com.o2a4.chattcp.proto.TransferOuterClass;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
@@ -7,10 +8,14 @@ import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -19,7 +24,6 @@ public class RoomService {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final TrainChannelGroupRepository tcgRepo;
     private final ChannelIdChannelRepository cidcRepo;
-    private final WebClient webClient;
 
     static String uPrefix = "user:";
     static String tPrefix = "train:";
@@ -71,13 +75,22 @@ public class RoomService {
                 .subscribe();
     }
 
-    public String seatStart(String userId) {
+    public void seatStart(String userId) {
         // TODO 자리양도 시작
-        // userId : 자리양도 시작한 사용자 아이디
-        String winnerId = webClient.get().uri("/seat/"+userId).retrieve().bodyToMono(String.class).block();
-        log.info("자리양도 당첨자 id :" + winnerId );
-        return winnerId;
+//         userId : 자리양도 시작한 사용자 아이디
+        WebClient webClient = WebClient.create();
+        Mono<String> res =  webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class);
 
+        res.subscribe(response-> System.out.println("결과과ㅣ돚과 ㅈㄷ괏ㅂ : " + response));
+//        log.info(res.toString());
+
+//        return res;
+        //        return webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class).block();
+//        return webClient.get().uri("http://localhost:8082/seat/"+userId).exchange().flatMap(response -> {
+//            log.info("뭐야무어ㅑ", response);
+//            return response.bodyToMono(Seats.class);
+//        });
+//        return winnerId;
     }
 
     public void seatEnd(Transfer trans) {

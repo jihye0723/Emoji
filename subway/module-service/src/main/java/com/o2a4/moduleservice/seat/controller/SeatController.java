@@ -22,8 +22,7 @@ public class SeatController {
     // 채팅서버로부터 양도자 id 받아서, redis 생성 > 5초 후 1명 뽑아서 양도자id + 당첨자id 보내주기
     // WebClient 로 통신하면 될듯 ?
     @GetMapping("/{userid}")
-    public Map<String,String> seatCompeteOpen(@PathVariable String userid) throws InterruptedException {
-        log.info(userid);
+    public String seatCompeteOpen(@PathVariable String userid) throws InterruptedException {
         // userid : 자리 양도한 사람 아이디
         String key = "seat:"+userid; // ex) key = seat:ssafy
         // redis 생성
@@ -41,21 +40,28 @@ public class SeatController {
             Thread.sleep(6000);
         }catch(InterruptedException e){
             e.printStackTrace();
+            log.info("thread sleep fail");
         }
         Long size= redisTemplate.opsForList().size(key);
-        // 참가자 목록 얻어오기 : list
-        List<String> list= redisTemplate.opsForList().range(key, 1, size-1);
+        if(size==1) {
+            // 참가한 사람 없는 것
+            return "nobody";
+        }
+        else {
+            // 참가자 목록 얻어오기 : list
+            List<String> list = redisTemplate.opsForList().range(key, 1, size - 1);
 
-        Random random = new Random();
-        int randomIndex = random.nextInt(list.size());
-        String win_id = list.get(randomIndex);
+            Random random = new Random();
+            int randomIndex = random.nextInt(list.size());
+            String win_id = list.get(randomIndex);
 
-        Map<String, String> map = new HashMap<>();
-        map.put("UserId", userid);
-        map.put("WinnerId", win_id);
-        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
+//        Map<String, String> map = new HashMap<>();
+//        map.put("UserId", userid);
+//        map.put("WinnerId", win_id);
+//        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
 
-        return map;
+            return win_id;
+        }
     }
 
     // 자리양도 주최한 사람 + 자리양도 신청한 신청자

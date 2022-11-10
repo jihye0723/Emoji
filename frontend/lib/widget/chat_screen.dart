@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 import '/models/Transfer.pb.dart';
-
+import '/http/chathttp.dart' as http;
 import '/utils/snackbar.dart' as snackbar;
 
 import 'make_message.dart' as message;
@@ -54,35 +54,76 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Socket socket;
 
   //TCP서버용
-  String ip = "";
+  late Future<dynamic> portname;
+  String ip = "10.0.2.2";
   int port = 0;
+
+  ///             initState    채팅부분 포트랑,ip 가져오기
+  @override
+  void initState() {
+    super.initState();
+
+    //내아이디 전역으로 사용
+    myuserId = widget.myId;
+
+    chatNode = FocusNode();
+
+    //알아낸 주소로 입장 설정 -> 소켓까지 연결
+    findroom();
+  }
+
+  void findroom() async {
+    // 아이디와 열차정보로 포트주소 알아내기
+    portname = http.enterRoom("ssafy11", "S8888-1");
+    var temp = await portname;
+
+    //받아온 포트 적용
+    port = int.parse(temp);
+    if (port == -1) {
+      //중복된 사용자 에러 처리... 어찌할지
+      print("error");
+    } else {
+      //채팅 생성
+      create();
+    }
+  }
+
+  /*----------------------나갈 때----------------------------*/
+  @override
+  void dispose() {
+    // 메시지가 생성될 때마다 animationController 가 생성/부여 되었으므로 모든 메시지로부터 animationController 해제
+    for (ChatMessage message in _message) {
+      message.animationController.dispose();
+    }
+    chatNode.dispose();
+
+    //소켓 연결되어있는 상태일때만
+    if (port != -1) {
+      //서버에 나간다고 알려주고 나가기
+      print("hi");
+      tcpsend("room-out", "나갑니다", widget.myId, widget.myName);
+      socket.close();
+    }
+
+    print("disconnected");
+    super.dispose();
+  }
 
   //--------------------tcp 서버연결부분------------------------------------
   ////// 서버 연결되면 들어왔다고 알려주는 메시지 전송하고, 연결이 성공적으로 되면 채팅이 가능하도록 채팅창을 막던지. 로딩창을 유지하던지 하자.
   void create() async {
+    print(port);
+
     try {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
+
       //소켓 연결하고 들어왔다 알려주기-----------------------------------------
       //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
       makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
 
-      final date =
-          DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
-
-      Uint8List initMessage =
-          testMethod("room-in", "들어갑니다", widget.myId, widget.myName, date)
-              .writeToBuffer();
-
-      int leng = initMessage.length;
-      int msgByteLen = 1;
-      var header = ByteData(msgByteLen);
-      header.setUint8(0, leng);
-
-      var sendmessage =
-          header.buffer.asUint8List() + initMessage.buffer.asUint8List();
-
-      socket.add(sendmessage);
+      //서버에 전송
+      //tcpsend("room-in", "들어갑니다.", widget.myId, widget.myName);
     } catch (e) {
       makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
       //뒤로가기?
@@ -92,18 +133,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // 서버에서 채팅날아오면 받기
     socket.listen((Uint8List data) {
-      //print(data);
-
       var serverdata = data.getRange(1, data.length);
-
-      //print(serverdata);
 
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
 
-      if (receive.userId != widget.myId) {
+      if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
-          makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
+          showResult(receive.userId, receive.content);
+          //makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
         }
 
         if (receive.type == "room-out") {
@@ -111,6 +149,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "msg") {
+          //showResult();
           makeMessage(receive.content, receive.nickName, receive.userId);
         }
 
@@ -147,6 +186,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   // 텍스트필드 제어용 컨트롤러
   final TextEditingController _textController = TextEditingController();
+
+//자리양도 컨트롤러
+  final TextEditingController _seatController = TextEditingController();
 
   // 텍스트필드에 입력된 데이터의 존재 여부
   bool _isComposing = false;
@@ -188,29 +230,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     // 위젯의 애니메이션 효과 발생
     message.animationController.forward();
-  }
-
-  // 자리 양도 기능에서, 개최자의 자리 소개말 함수 선언
-  Widget renderTextFormField({
-    required FormFieldSetter onSaved,
-    required FormFieldValidator validator,
-  }) {
-    assert(validator != null);
-    assert(onSaved != null);
-    return Container(
-        margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
-        child: (TextFormField(
-          onSaved: onSaved,
-          validator: validator,
-          keyboardType: TextInputType.multiline,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            filled: true,
-            fillColor: Color(0xfff8f8f8),
-            hintText: "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
-            border: OutlineInputBorder(),
-          ),
-        )));
   }
 
   /*------------------채팅창 화면-------------------*/
@@ -333,27 +352,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _handleSubmitted(String text) {
     // 텍스트 필드의 내용 삭제
     _textController.clear();
-
-    //보내는 시간
-    final date =
-        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
-
-    Transfer tcpmessage =
-        testMethod("room-in", text, widget.myId, widget.myName, date);
-
-    int leng = tcpmessage.writeToBuffer().length;
-    //int msgByteLen = 1;
-    var header = ByteData(1);
-    header.setUint8(0, leng);
-
-    var mymessage = header.buffer.asUint8List() +
-        tcpmessage.writeToBuffer().buffer.asUint8List();
-
-    socket.add(mymessage);
-    //print(mss);
-
-    //Transfer exam = Transfer.fromBuffer(tcpmessage);
-    //print(tcpmessage);
+    print(text);
+    //tcpsend("msg", text, widget.myId, widget.myName);
+    //테스트용
+    tcpsend("room-in", text, widget.myId, widget.myName);
 
     FocusScope.of(context).requestFocus(chatNode);
 
@@ -384,80 +386,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // 위젯의 애니메이션 효과 발생
     message.animationController.forward();
   }
-
-  ///             initState    채팅부분 포트랑,ip 가져오기
-  @override
-  void initState() {
-    super.initState();
-    myuserId = widget.myId;
-    chatNode = FocusNode();
-
-    //서버 포트 설정
-    setting();
-
-    //소켓 연결
-    create();
-  }
-
-  //TCP채팅 ip,port -> api로 얻어와야함
-  void setting() {
-    ip = "10.0.2.2";
-    port = 8102;
-  }
-
-  /*----------------------나갈 때----------------------------*/
-  @override
-  void dispose() {
-    // 서버에서 나갈때 메세지 보내주기
-    final date =
-        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
-
-    Uint8List initMessage =
-        testMethod("room-out", "나갑니다", widget.myId, widget.myName, date)
-            .writeToBuffer();
-
-    int leng = initMessage.length;
-    int msgByteLen = 1;
-    var header = ByteData(msgByteLen);
-    header.setUint8(0, leng);
-
-    var sendmessage =
-        header.buffer.asUint8List() + initMessage.buffer.asUint8List();
-
-    socket.add(sendmessage);
-
-    /*-------------------------------------------------*/
-
-    // 메시지가 생성될 때마다 animationController 가 생성/부여 되었으므로 모든 메시지로부터 animationController 해제
-    for (ChatMessage message in _message) {
-      message.animationController.dispose();
-    }
-    chatNode.dispose();
-    socket.close();
-    print("disconnected");
-    super.dispose();
-  }
-
-  void createseat(String text) {
-    final date =
-        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
-
-    Uint8List seat =
-        testMethod("seat-start", text, widget.myId, widget.myName, date)
-            .writeToBuffer();
-
-    int leng = seat.length;
-    int msgByteLen = 1;
-    var header = ByteData(msgByteLen);
-    header.setUint8(0, leng);
-
-    var sendmessage = header.buffer.asUint8List() + seat.buffer.asUint8List();
-
-    socket.add(sendmessage);
-  }
-
-  // 자리 양도 기능에서, 개최자의 자리 소개 시에 key 값을 지정함으로써 폼 내부의 TextFormField 값을 저장하고 validation 을 진행하는데 사용한다.
-  final formKey = GlobalKey<FormState>();
 
 // 자리 양도 기능에서, 개최자의 자리 소개말 변수 선언
   String introduce = "";
@@ -517,23 +445,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         "자리의 위치를 간단하게 설명해주세요!",
                         textAlign: TextAlign.center,
                       ),
-                      Form(
-                        key: formKey,
-                        child: renderTextFormField(
-                          onSaved: (val) {
-                            print(val);
-                            setState(() {
-                              introduce = val;
-                            });
-                          },
-                          validator: (val) {
-                            if (val.length < 1) {
-                              return '간단한 자리 소개를 해주세요!';
-                            }
-                            return null;
-                          },
+                      Padding(padding: EdgeInsets.only(top: 20.h)),
+                      TextField(
+                        controller: _seatController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 4,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Color(0xfff8f8f8),
+                          hintText:
+                              "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
+                          border: OutlineInputBorder(),
                         ),
-                      ),
+                      )
                     ],
                   ),
                   actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
@@ -560,9 +485,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           ),
                           onPressed: () {
                             Navigator.of(ctx).pop();
+                            setState(() {
+                              introduce = _seatController.text;
+                            });
                             print(introduce);
-                            createseat(introduce);
+                            tcpsend("seat-start", introduce, widget.myId,
+                                widget.myName);
                             snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
+                            _seatController.clear();
                           },
                           child: const SizedBox(child: Text("시작하기")),
                         ),
@@ -574,6 +504,62 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             });
       },
     );
+  }
+
+  //자리양도결과
+  void showResult(String id, String detail) {
+    showDialog(
+        context: context,
+        //barrierDismissible - Dialog를 제외한 다른 화면 터치 x
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SingleChildScrollView(
+            child: AlertDialog(
+              // RoundedRectangleBorder - Dialog 화면 모서리 둥글게 조절
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0)),
+              //Dialog Main Title
+              title: Column(
+                children: <Widget>[
+                  (id == myuserId)
+                      ? Text(
+                          "당첨!",
+                          style: TextStyle(fontSize: 25.sp),
+                        )
+                      : Text(
+                          "다음기회에..",
+                          style: TextStyle(fontSize: 25.sp),
+                        )
+                ],
+              ),
+              //
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
+                    height: 300.h,
+                    width: 300.w,
+                    child: Image.asset("assets/images/celebrating.png"),
+                  ),
+                  Text(
+                    detail,
+                    style: TextStyle(fontSize: 18.sp),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text("확인"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   // 빌런 제보 버튼
@@ -680,6 +666,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             });
       },
     );
+  }
+
+  //TCP서버에 메시지 보내는 메소드
+  void tcpsend(String type, String text, String id, String nick) {
+    final date =
+        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+    Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
+
+    int leng = message.length;
+    int msgByteLen = 1;
+    var header = ByteData(msgByteLen);
+    header.setUint8(0, leng);
+
+    var sendmessage =
+        header.buffer.asUint8List() + message.buffer.asUint8List();
+
+    print(sendmessage.length);
+    print(sendmessage);
+    socket.add(sendmessage);
+    socket.flush();
   }
 }
 

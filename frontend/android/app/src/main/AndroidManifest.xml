@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.practice_01">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
    <application
         android:label="지하철 수비대"
         android:name="${applicationName}"
@@ -31,4 +34,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+
+    
 </manifest>
+

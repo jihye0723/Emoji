@@ -9,9 +9,9 @@ import 'GetOnTrainDialog.dart';
 class CustomSlider extends StatefulWidget {
   const CustomSlider(
       {Key? key,
-        required this.userId,
-        required this.stationName,
-        required this.train})
+      required this.userId,
+      required this.stationName,
+      required this.train})
       : super(key: key);
 
   final String userId;
@@ -182,16 +182,16 @@ class _CustomSliderState extends State<CustomSlider> {
                                   return GetOnTrainDialog(
                                       userId: widget.userId,
                                       trainNo: int.parse(widget.train.trainNo),
-                                      line: widget.train.line,
+                                      line: widget.train.line!,
                                       stationName: widget.stationName,
                                       remainTime: widget.train.remainTime);
                                 })
                           },
                           child: Container(
-                            // decoration: BoxDecoration(
-                            //   border: Border.all(color: Colors.black, width: 1),
-                            // ),
-                          ),
+                              // decoration: BoxDecoration(
+                              //   border: Border.all(color: Colors.black, width: 1),
+                              // ),
+                              ),
                         ),
                       ),
                       // TextButton(
@@ -252,15 +252,15 @@ class SliderThumbImage extends SliderComponentShape {
   @override
   void paint(PaintingContext context, Offset center,
       {required Animation<double> activationAnimation,
-        required Animation<double> enableAnimation,
-        required bool isDiscrete,
-        required TextPainter labelPainter,
-        required RenderBox parentBox,
-        required SliderThemeData sliderTheme,
-        required TextDirection textDirection,
-        required double value,
-        required double textScaleFactor,
-        required Size sizeWithOverflow}) {
+      required Animation<double> enableAnimation,
+      required bool isDiscrete,
+      required TextPainter labelPainter,
+      required RenderBox parentBox,
+      required SliderThemeData sliderTheme,
+      required TextDirection textDirection,
+      required double value,
+      required double textScaleFactor,
+      required Size sizeWithOverflow}) {
     final canvas = context.canvas;
     final imageWidth = image.width;
     final imageHeight = image.height;

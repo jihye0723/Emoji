@@ -1,9 +1,9 @@
 {
-  "station": "사당",
-  "stationLine": [
+  "stationName": "사당",
+  "stationList": [
     {
-      "line": "2호선",
-      "trainList": [
+      "stationLine": "2호선",
+      "arrival": [
         {
           "line": "2호선",
           "direction": 0,

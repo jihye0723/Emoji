@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:practice_01/mainpage/APIResponse.dart';
+import 'package:practice_01/mainpage/JsonReform.dart';
+import 'package:practice_01/mainpage/LineCodeToName.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'CustomSlider.dart';
 import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
+import 'package:http/http.dart' as http;
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key, required this.userId}) : super(key: key);
@@ -21,7 +24,8 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
-  TrainInfo _trainInfo = TrainInfo(stationName: "stationName", trainList: []);
+  TrainInfo _trainInfo = TrainInfo(stationName: "", trainList: []);
+  APIResponse _apiResponse = APIResponse(realtimeArrivalList: []);
   String _userId = "";
   bool _loadedInfo = false;
   Position? _currentPosition;
@@ -79,43 +83,80 @@ class _FirstPageState extends State<FirstPage> {
   // 페이지 리로드  (Todo)
   void _onRefresh() async {
     await Future.delayed(const Duration(milliseconds: 100));
+    // setState(() {
+    //   _loadedInfo = false;
+    // });
     print("refresh!!!!");
-    getLocation().then((value) => setState(() {
-      _currentPosition = value;
-      _checkedPosition = true;
-    }));
-    loadTrainInfo().then((value) => setState(() {
-      // print(value.stationName + " " + value.trainList.length.toString());
-      _trainInfo = value;
-      _itemCount = (value.trainList.length / 2).round();
-      _loadedInfo = true;
-    }));
-    print("count : " + _itemCount.toString());
+    // loadTrainInfo().then((value) => setState(() {
+    //       _trainInfo = value;
+    //       _itemCount = (value.trainList.length / 2).round();
+    //       _loadedInfo = true;
+    //     }));
+    // // print("count : " + _itemCount.toString());
+
+    sendLocationToServer(_currentPosition);
     _controller.refreshCompleted();
   }
 
   // 위치 정보 서버로 전달 (Todo)
-  void sendLocationToServer(Position position) {}
+  void sendLocationToServer(Position? position) {
+    if (position == null) {
+      print("position is NULL in sendLocationToServer");
+      setState(() {
+        _loadedInfo = false;
+        // _apiResponse = TrainInfo(stationName: "stationName", trainList: []);
+      });
+    } else {
+      Uri uri = Uri.http("10.0.2.2:8082", "/subway/station", {
+        "latitude": position.latitude.toString(),
+        "longtitude": position.longitude.toString()
+      });
 
-  // 서버로부터 받은 역 정보 읽어서 parsing (Todo)
-  void getTrainInfo() {}
+      http.post(uri).then((data) {
+        print("요청 결과 : ${data.body.toString()}");
+        dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
+        // for (dynamic item in jsonParsed) {
+        //   print(item);
+        // }
+        List<APITrain> temp = [];
+        for (dynamic item in jsonParsed) {
+          print(item.runtimeType);
+          temp.add(APITrain.fromJson(item));
+        }
+        TrainInfo ti = jsonReform(temp);
+        // print("jsonParsed : $jsonParsed");
+
+        setState(() {
+          _loadedInfo = true;
+          // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
+          _trainInfo = ti;
+          _itemCount = (ti.trainList.length / 2).floor();
+
+          // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
+          print("after setState DATA LENGTH : ${_trainInfo.trainList.length}");
+          for (Train item in _trainInfo.trainList) {
+            print(item.toString());
+          }
+        });
+      });
+    }
+  }
 
   @override
   void initState() {
-    _controller = new RefreshController();
+    _controller = RefreshController();
     setState(() {
       _userId = widget.userId;
     });
-    getLocation().then((value) => setState(() {
-      _currentPosition = value;
-      _checkedPosition = true;
-    }));
-    loadTrainInfo().then((value) => setState(() {
-      // print(value.stationName + " " + value.trainList.length.toString());
-      _trainInfo = value;
-      _loadedInfo = true;
-    }));
-    _onRefresh();
+    getLocation().then((value) {
+      print("init 에서 getLocation 한 결과확인 : $value");
+      print("init 에서 sendLocationToServer 실행");
+      setState(() {
+        _currentPosition = value;
+        _checkedPosition = true;
+      });
+      sendLocationToServer(_currentPosition);
+    });
     super.initState();
   }
 
@@ -144,90 +185,54 @@ class _FirstPageState extends State<FirstPage> {
     );
 
     // 역 정보 받아와서 열차 운행정보 구하면 열차 도착정보 띄워줄 섹션 (2호선, { 낙성대, 2147, 3분 }, { 방배, 2156, 2분 })
-    Widget stationInfoSection(int idx) => Container(
-      alignment: Alignment.topCenter,
-      child: Container(
-        width: 320.w,
-        height: 120.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          // border: Border.all(
-          //   color: Colors.red,
-          //   width: 1,
-          // ),
-          // border: Border(
-          //     top: BorderSide(color: Colors.black, width: 1),
-          //     bottom: BorderSide(color: Colors.black, width: 1)),
-          color: Colors.white,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            _trainInfo.trainList.isEmpty
-                ? Container()
-                : CustomSlider(
-              userId: widget.userId,
-              stationName: _trainInfo.stationName,
-              train: _trainInfo.trainList[idx * 2],
+    Widget stationInfoSection(int idx, TrainInfo ti) => Container(
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: 320.w,
+            height: 120.h,
+            alignment: Alignment.center,
+            // decoration: BoxDecoration(
+            //   color: Colors.white,
+            // ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                ti.trainList.isEmpty
+                    ? Text("Empty")
+                    : CustomSlider(
+                        userId: widget.userId,
+                        stationName: ti.stationName,
+                        train: ti.trainList[idx * 2],
+                      ),
+                Container(
+                    width: 50.w,
+                    height: 50.h,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ti.trainList.isEmpty
+                            ? Colors.white60
+                            : lineColor(ti.trainList[idx * 2].line!)),
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: Text(
+                        lineCodeName[ti.trainList[idx * 2].line] ?? "으악",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10.sp,
+                            color: Colors.white),
+                      ),
+                    )),
+                ti.trainList.isEmpty
+                    ? Text("TrainList is Empty")
+                    : CustomSlider(
+                        userId: widget.userId,
+                        stationName: ti.stationName,
+                        train: ti.trainList[(idx * 2) + 1],
+                      )
+              ],
             ),
-            Container(
-              // currentStation
-              child: Container(
-                  width: 50.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _trainInfo.trainList.length == 0
-                          ? Colors.white60
-                          : lineColor(_trainInfo.trainList[idx * 2].line)),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      _trainInfo.stationName,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10.sp,
-                          color: Colors.white),
-                    ),
-                  )),
-            ),
-            _trainInfo.trainList.length == 0
-                ? Container()
-                : CustomSlider(
-              userId: widget.userId,
-              stationName: _trainInfo.stationName,
-              train: _trainInfo.trainList[idx * 2 + 1],
-            )
-          ],
-        ),
-      ),
-    );
-
-    // 이미 타고 있어요 버튼
-    // Widget alreadyOnBoardSection = Container(
-    //     alignment: Alignment.center,
-    //     padding: EdgeInsets.only(
-    //       top: 10.h,
-    //       bottom: 10.h,
-    //     ),
-    //     child: SizedBox(
-    //       width: 180.w,
-    //       height: 40.h,
-    //       child: OutlinedButton(
-    //         onPressed: () {
-    //           showDialog(
-    //               context: context,
-    //               barrierDismissible: true,
-    //               builder: (BuildContext ctx) {
-    //                 return SearchTrainDialog();
-    //               });
-    //         },
-    //         child: Text(
-    //           "이미 타고있어요",
-    //           style: TextStyle(fontSize: 20.sp),
-    //         ),
-    //       ),
-    //     ));
+          ),
+        );
 
     // 광고 섹션
     Widget advBoardSection = Container(
@@ -263,10 +268,6 @@ class _FirstPageState extends State<FirstPage> {
       body: Container(
         width: 1.sw,
         height: 1.sh,
-        // decoration: BoxDecoration(
-        //     border: Border.all(color: Colors.black, width: 1),
-        //     color: Color.fromARGB(1, 12, 12, 251)),
-        // alignment: Alignment.topCenter,
         child: Column(
           // <페이지 구조>
           // 현재 역 이름
@@ -276,49 +277,20 @@ class _FirstPageState extends State<FirstPage> {
             stationNameSection,
             Expanded(
                 child: Scaffold(
-                  body: SmartRefresher(
-                      enablePullDown: true,
-                      // footer: CustomFooter(
-                      //   builder: ((context, mode) {
-                      //     Widget body;
-                      //     if (mode == LoadStatus.idle) {
-                      //       body = Text("pull up load");
-                      //     } else if (mode == LoadStatus.loading) {
-                      //       body = CupertinoActivityIndicator();
-                      //     } else if (mode == LoadStatus.failed) {
-                      //       body = Text("Load Failed!Click retry!");
-                      //     } else if (mode == LoadStatus.canLoading) {
-                      //       body = Text("release to load more");
-                      //     } else {
-                      //       body = Text("No more Data");
-                      //     }
-                      //     return Container(
-                      //       height: 55.0,
-                      //       child: Center(child: body),
-                      //     );
-                      //   }),
-                      // ),
-                      controller: _controller,
-                      onRefresh: _onRefresh,
-                      child: _itemCount == 0
-                          ? Container()
-                          : ListView.builder(
+              body: SmartRefresher(
+                  enablePullDown: true,
+                  controller: _controller,
+                  onRefresh: _onRefresh,
+                  child: _itemCount == 0
+                      ? Text("count is 0")
+                      : ListView.builder(
                           scrollDirection: Axis.vertical,
                           padding: EdgeInsets.all(8.w),
                           itemCount: _itemCount,
                           itemBuilder: (BuildContext context, int index) {
-                            return stationInfoSection(index);
+                            return stationInfoSection(index, _trainInfo);
                           })),
-                )),
-            // Expanded(
-            //     child: ListView.builder(
-            //         scrollDirection: Axis.vertical,
-            //         padding: EdgeInsets.all(8.w),
-            //         itemCount: 3,
-            //         itemBuilder: (BuildContext context, int index) {
-            //           return stationInfoSection;
-            //         })),
-            // alreadyOnBoardSection, // 사실상 기능 구현 불가능
+            )),
             advBoardSection,
           ],
         ),

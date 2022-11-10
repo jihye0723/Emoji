@@ -40,6 +40,10 @@ class MyApp extends StatelessWidget {
 }
 
 // 스플래시 스크린을 띄우는 동안, 토큰이 있는지 확인하기
+/*
+* To do..
+*   Access 토큰 만료되었으면, Refresh 토큰이 유효한지 확인하고 재발급 받는 로직 필요.
+* */
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -49,23 +53,14 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
-  // static final storage = new FlutterSecureStorage();
-  bool weHaveToken = false;
+  String? userAccessToken;
+  static final storage = FlutterSecureStorage();
 
-  void hasToken() async {
-    if (await AuthApi.instance.hasToken()) {
-      try {
-        AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
-        weHaveToken = true;
-        print('토큰 유효성 체크 성공 ${tokenInfo.id} ${tokenInfo.expiresIn}');
-      } catch (error) {
-        if (error is KakaoException && error.isInvalidTokenError()) {
-          print('토큰 만료 $error');
-        } else {
-          print('토큰 정보 조회 실패 $error');
-        }
-      }
-    }
+  // 저장되어 있는 유저의 accessToken 을 확인한다.
+  getUserToken() async {
+    //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
+    userAccessToken = await storage.read(key: 'accessToken');
+    return userAccessToken;
   }
 
   @override
@@ -78,34 +73,38 @@ class _SplashScreenState extends State<SplashScreen> {
       ..initialize().then((_) {})
       ..setVolume(0.0);
 
+    //비동기로 getUserToken 함수를 실행하여 Secure Storage 정보를 불러오는 작업.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getUserToken();
+    });
+
     _playVideo();
   }
 
   void _playVideo() async {
     //playing video
     _controller.play();
-    hasToken();
     //add delay till video is complete
     await Future.delayed(const Duration(seconds: 4));
-    // 종료가 되지 않는 오류발생하여 일단 dispose() 넣어 놓음.
-    dispose();
+
+    // 이미 저장되어 있는 AccessToken 이 존재한다면,
+    if (userAccessToken != null) {
+      // 홈 화면으로 이동하게 된다.
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+    }
+    // 저장되어 있는 AccessToken 이 존재하지 않는다면,
+    else {
+      // 로그인 페이지로 이동하게 된다.
+      Navigator.of(context).pop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-
-    if (weHaveToken) {
-      // navigating to home screen
-      Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-      // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    } else {
-      //토큰이 없다면, 로그인 페이지로 넘겨주어야 한다.
-      Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    }
   }
 
   @override

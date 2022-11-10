@@ -8,15 +8,17 @@ import 'package:http/http.dart' as http;
 class KakaoLogin implements SocialLogin {
 
   // url:8081/oauth/kakao-login?access-token=
+  // 여기서 tkn 은 카카오톡에서 받아온 access token 을 뜻함.
   _postRequest(String tkn) async {
     // String baseUrl = 'http://localhost:8081/oauth/kakao-login?';
     // baseUrl += 'access-token=$tkn';
 
-    // 안드로이드 에뮬레이터가 localhost대신 10.0.2.2를 사용하므로.
+    // 안드로이드 에뮬레이터가 localhost대신 10.0.2.2를 사용하므로,
     var uri = Uri.http('10.0.2.2:8081', '/oauth/kakao-login', { 'access-token' : tkn });
 
     var res = await http.post(uri);
     return res;
+
   }
 
   @override

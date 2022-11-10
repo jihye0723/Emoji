@@ -1,37 +1,57 @@
 package com.o2a4.chattcp.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.reactivestreams.Publisher;
+import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
-import reactor.kafka.sender.SenderResult;
+
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class KafkaService {
 
     private final KafkaSender<String, Object> kafkaSender;
 
-//    public void send(String message){
+//    public void send(String msg){
+////        JSONObject message = new JSONObject();
+////        message.put("userid", "ssafy");
+////        message.put("content", "시끄러워용");
+////        message.put("send_at" , "20221110-11:10:12");
 //        Flux<SenderRecord<String, Object, Integer>> outboundFlux =
 //                Flux.range(1,1)
-//                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , "kafkaTesting"),i) );
+//                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , msg),i) );
 //
 //        kafkaSender.send(outboundFlux).subscribe();
+//
+//
 //    }
 
-    public void send(String message){
+    public void send(String msg){
+        JSONObject message = new JSONObject();
+        message.put("userid", "ssafy1");
+        message.put("content", "2호선 빌런 나타남 ! ");
+        message.put("send_at" , "20221110-11:10:12");
         Flux<SenderRecord<String, Object, Integer>> outboundFlux =
                 Flux.range(1,1)
-                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , message),i) );
+                        .map(i -> SenderRecord.create(new ProducerRecord<>("chats", null , message.toJSONString()),i) );
 
         kafkaSender.send(outboundFlux).subscribe();
+
+
     }
+//    private final KafkaTemplate<String, ChatsMessage> kafkaTemplate;
+//
+//    @Autowired
+//    public KafkaService(KafkaTemplate<String, ChatsMessage> kafkaTemplate) {
+//        this.kafkaTemplate = kafkaTemplate;
+//    }
+//    public void send(ChatsMessage chatsMessage){
+//        kafkaTemplate.send("chats", chatsMessage);
+//    }
 
 }

@@ -1,10 +1,6 @@
 package com.o2a4.chattcp.config;
-
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.o2a4.chattcp.model.ChatsMessage;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -12,6 +8,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
+
 import reactor.core.scheduler.Schedulers;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverOptions;
@@ -23,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@EnableKafka
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConfiguration {
@@ -66,4 +65,38 @@ public class KafkaConfiguration {
             put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
         }};
     }
+
+
+//    @Bean
+//    public ProducerFactory<String, ChatsMessage> producerFactory(){
+//        Map<String, Object> config= new HashMap<>();
+//        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  "52.79.215.19:8892");
+//        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+//        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+//        return new DefaultKafkaProducerFactory<>(config);
+//    }
+//
+//    @Bean
+//    public KafkaTemplate<String, ChatsMessage> kafkaTemplate(){
+//        return new KafkaTemplate<>(producerFactory());
+//    }
+//
+//    @Bean
+//    public ConsumerFactory<String, ChatsMessage> consumerFactory(){
+//        Map<String, Object> config= new HashMap<>();
+//        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "52.79.215.19:8892");
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, "foo");
+//
+//        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(com.o2a4.chattcp.model.ChatsMessage.class));
+//
+//    }
+//
+//    @Bean
+//    public ConcurrentKafkaListenerContainerFactory<String, ChatsMessage> kafkaListener(){
+//        ConcurrentKafkaListenerContainerFactory<String, ChatsMessage> factory
+//                = new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(consumerFactory());
+//        return factory;
+//
+//    }
 }

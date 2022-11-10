@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
@@ -18,7 +19,7 @@ public class RoomService {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final TrainChannelGroupRepository tcgRepo;
     private final ChannelIdChannelRepository cidcRepo;
-
+    private final WebClient webClient;
 
     static String uPrefix = "user:";
     static String tPrefix = "train:";
@@ -70,8 +71,13 @@ public class RoomService {
                 .subscribe();
     }
 
-    public void seatStart(Transfer trans) {
+    public String seatStart(String userId) {
         // TODO 자리양도 시작
+        // userId : 자리양도 시작한 사용자 아이디
+        String winnerId = webClient.get().uri("/seat/"+userId).retrieve().bodyToMono(String.class).block();
+        log.info("자리양도 당첨자 id :" + winnerId );
+        return winnerId;
+
     }
 
     public void seatEnd(Transfer trans) {

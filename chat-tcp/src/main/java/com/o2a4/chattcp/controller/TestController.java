@@ -1,6 +1,7 @@
 package com.o2a4.chattcp.controller;
 
 
+import com.o2a4.chattcp.model.Chats;
 import com.o2a4.chattcp.model.ChatsMessage;
 import com.o2a4.chattcp.service.KafkaService;
 import lombok.AllArgsConstructor;
@@ -17,23 +18,19 @@ public class TestController {
 
     @Autowired
     private KafkaService kafkaService;
-//
-//    @GetMapping
-//    public void MongoTest(){
-//        chatsService.mongoTest();
-//   }
 
    @GetMapping("/{message}")
     public void KafkaTest(@PathVariable String message){
-//        ChatsMessage chatsMessage = ChatsMessage.builder().
-//                userId("ssafy").content("뭐하는 친구야 너 ? ")
-//                .send_at("20221109-15:50").build();
         kafkaService.send(message);
     }
 
-    @GetMapping("/consume")
-    public void KafkaConsumeTest(){
 
-    }
+//    @GetMapping
+//    public void KafkaTest(){
+//        ChatsMessage chatsMessage =  ChatsMessage.builder().
+//                userId("ssafy").content("뭐하는 친구야 너 ? ")
+//                .send_at("20221109-15:50").build();
+//        kafkaService.send(chatsMessage);
+//    }
 
 }

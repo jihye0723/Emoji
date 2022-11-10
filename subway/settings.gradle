@@ -1,3 +1,4 @@
 rootProject.name = 'subway'
 
-//include 'module-common', 'module-api', 'module-web'
+include 'module-auth', 'module-service'
+

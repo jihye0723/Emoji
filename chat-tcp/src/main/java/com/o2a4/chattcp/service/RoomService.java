@@ -15,6 +15,7 @@ import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -75,22 +76,20 @@ public class RoomService {
                 .subscribe();
     }
 
-    public void seatStart(String userId) {
+    public Flux<Seats> seatStart(String userId) {
         // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
-        Mono<String> res =  webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class);
-
-        res.subscribe(response-> System.out.println("결과과ㅣ돚과 ㅈㄷ괏ㅂ : " + response));
-//        log.info(res.toString());
-
-//        return res;
-        //        return webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class).block();
-//        return webClient.get().uri("http://localhost:8082/seat/"+userId).exchange().flatMap(response -> {
-//            log.info("뭐야무어ㅑ", response);
-//            return response.bodyToMono(Seats.class);
-//        });
-//        return winnerId;
+//        Mono<String> res =  webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class);
+//
+//        res.subscribe(response-> System.out.println("결과과ㅣ돚과 ㅈㄷ괏ㅂ : " + response));
+        Flux<Seats> seats = webClient.get().uri("http://localhost:8082/seat/" + userId)
+                .retrieve()
+                .bodyToFlux(Seats.class);
+//        String winId = null;
+//        seats.subscribe(seat ->
+//            log.info(seat.getWinnerId()));
+        return seats;
     }
 
     public void seatEnd(Transfer trans) {

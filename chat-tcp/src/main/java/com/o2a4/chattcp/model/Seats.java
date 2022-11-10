@@ -8,4 +8,5 @@ import lombok.ToString;
 @Setter
 public class Seats {
     String winnerId;
+    String userId;
 }

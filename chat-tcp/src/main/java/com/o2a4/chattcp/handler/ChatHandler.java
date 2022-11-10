@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -79,13 +80,12 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
             case "seat-start":
                 String userId = trans.getUserId();
                 log.info("자리양도 시작 : {}", userId);
-//                String winnerId= roomService.seatStart(userId).toString();
-//                Mono<String> string  = roomService.seatStart(userId);
+                Flux<Seats> seatInfo = roomService.seatStart(userId);
 //                log.info("뭐임 ? " , seats)
 //                log.info("자리양도 당첨 : {}",  winnerId);
-
-//                if(winnerId!=null){
-//                }
+                seatInfo.subscribe(seat ->
+                        // 여기서 뭔가 하면 될듯 ?
+                log.info("자리양도 당첨 : {}", seat.getWinnerId()));
 
                 break;
             case "villain-on":

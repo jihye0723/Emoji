@@ -1,6 +1,7 @@
 package com.o2a4.moduleservice.seat.controller;
 
 
+import com.o2a4.moduleservice.seat.dto.Seats;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -22,9 +23,12 @@ public class SeatController {
     // 채팅서버로부터 양도자 id 받아서, redis 생성 > 5초 후 1명 뽑아서 양도자id + 당첨자id 보내주기
     // WebClient 로 통신하면 될듯 ?
     @GetMapping("/{userid}")
-    public String seatCompeteOpen(@PathVariable String userid) throws InterruptedException {
+    public Seats seatCompeteOpen(@PathVariable String userid) throws InterruptedException {
+        Seats seatsInfo = new Seats();
         // userid : 자리 양도한 사람 아이디
+        seatsInfo.setUserId(userid);
         String key = "seat:"+userid; // ex) key = seat:ssafy
+
         // redis 생성
         redisTemplate.opsForList().rightPush(key, "start");
         redisTemplate.expire(key, 180, TimeUnit.SECONDS); // 3분동안 redis 에 저장
@@ -45,7 +49,7 @@ public class SeatController {
         Long size= redisTemplate.opsForList().size(key);
         if(size==1) {
             // 참가한 사람 없는 것
-            return null;
+            seatsInfo.setWinnerId(null);
         }
         else {
             // 참가자 목록 얻어오기 : list
@@ -60,8 +64,9 @@ public class SeatController {
 //        map.put("WinnerId", win_id);
 //        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
 
-            return win_id;
+            seatsInfo.setWinnerId(win_id);
         }
+        return seatsInfo;
     }
 
     // 자리양도 주최한 사람 + 자리양도 신청한 신청자

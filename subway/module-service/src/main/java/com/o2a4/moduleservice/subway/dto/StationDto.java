@@ -39,7 +39,7 @@ public class StationDto implements Comparable<StationDto> {
     @Override
     public int compareTo(StationDto stationDto) {
         int compareSubwayId = this.subwayId.compareTo(stationDto.getSubwayId());
-        int compareUpdnLine = this.updnLine.compareTo(stationDto.getUpdnLine());
+        int compareUpdnLine = stationDto.getUpdnLine().compareTo(this.updnLine);
         int compareOrdkey = this.ordkey.compareTo(stationDto.getOrdkey());
 
         if(compareSubwayId == 0)    {

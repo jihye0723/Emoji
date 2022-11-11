@@ -51,8 +51,8 @@ public class SubwayAPIClient {
             Iterator<StationDto> it = stationDtos.iterator();
             while (it.hasNext()) {
                 StationDto item = it.next();
-
-                if(Integer.parseInt(item.getBtrainNo()) % 2 == 0)   {
+                // 열차번호 마지막 글자(숫자)가 짝수이면, 홀수이면
+                if((item.getBtrainNo().charAt(item.getBtrainNo().length()-1)) % 2 == 0)   {
                     item.setUpdnLine("0");
                 }
                 else {

@@ -5,17 +5,13 @@ import com.o2a4.chattcp.proto.TransferOuterClass;
 import com.o2a4.chattcp.service.KafkaService;
 import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -52,51 +48,60 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object data){
+    public void channelRead(ChannelHandlerContext ctx, Object data) {
         TransferOuterClass.Transfer trans = (TransferOuterClass.Transfer) data;
 
-        switch (trans.getType()) {
-            case "msg":
-                log.info("메세지 : {}", trans.getContent());
-                // TODO 다시 클라이언트로 에러메세지
-                String msg = messageService.receiveMessage(trans);
-                messageService.sendMessage(trans, msg);
+        try {
+            switch (trans.getType()) {
+                case "msg":
+                    log.info("msg in : {}", trans.getContent());
+                    String msg = messageService.receiveMessage(trans);
+                    log.info("msg filtered : {}", msg);
+                    messageService.sendMessage(trans, msg);
 
-                /*kafka 로 메시지 전송 */
-                JSONObject message= new JSONObject();
-                message.put("userid", trans.getUserId()); // 사용자 ID
-                message.put("content", trans.getContent()); // 메시지
-                message.put("send_at", trans.getSendAt());  // 전송 시간
-                String chats = message.toString();
-                kafkaService.send(chats);
+                    /*kafka 로 메시지 전송 */
+                    JSONObject message= new JSONObject();
+                    message.put("userid", trans.getUserId()); // 사용자 ID
+                    message.put("content", trans.getContent()); // 메시지
+                    message.put("send_at", trans.getSendAt());  // 전송 시간
+                    String chats = message.toString();
+                    kafkaService.send(chats);
 
-                break;
-            case "room-in":
-                roomService.roomIn(ctx.channel(), trans);
-                break;
-            case "room-out":
-                roomService.roomOut(ctx.channel(), trans);
-                break;
-            case "seat-start":
-                String userId = trans.getUserId();
-                log.info("자리양도 시작 : {}", userId);
-                Flux<Seats> seatInfo = roomService.seatStart(userId);
-//                log.info("뭐임 ? " , seats)
-//                log.info("자리양도 당첨 : {}",  winnerId);
-                seatInfo.subscribe(seat ->
-                        // 여기서 뭔가 하면 될듯 ?
-                log.info("자리양도 당첨 : {}", seat.getWinnerId()));
+                    break;
 
-                break;
-            case "villain-on":
-                roomService.villainOn(trans);
-                break;
-            case "villain-off":
-                roomService.villainOff(trans);
-                break;
-            default:
-                log.info("WRONG TYPE : {}", trans.getType());
-                break;
+                case "room-in":
+                    log.info("방 입장 : {}", trans.getUserId());
+                    roomService.roomIn(ctx.channel(), trans);
+                    break;
+                case "room-out":
+                    log.info("방 퇴장 : {}", trans.getUserId());
+                    roomService.roomOut(ctx.channel(), trans);
+                    break;
+                case "seat-start":
+                    // TODO 자리양도
+                    String userId = trans.getUserId();
+                    log.info("자리양도 시작 : {}", userId);
+                    Mono<Seats> seatInfo = roomService.seatStart(userId);
+
+                    seatInfo.subscribe(seat ->
+                            // 여기서 뭔가 하면 될듯 ?
+                            log.info("자리양도 당첨 : {}", seat.getWinnerId()));
+
+                    break;
+                case "villain-on":
+                    roomService.villainOn(trans);
+                    break;
+                case "villain-off":
+                    roomService.villainOff(trans);
+                    break;
+                default:
+                    log.info("WRONG TYPE : {}", trans.getType());
+                    throw new IllegalArgumentException("잘못된 타입 전송");
+            }
+        }
+        catch (RuntimeException e) {
+            log.error("에러 발생! {}", e);
+//            messageService.sendMessageToOneByServer(trans, "error", "메세지 처리 또는 기능 동작에 문제가 발생했습니다");
         }
     }
 

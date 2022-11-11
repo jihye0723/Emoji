@@ -76,19 +76,17 @@ public class RoomService {
                 .subscribe();
     }
 
-    public Flux<Seats> seatStart(String userId) {
+    public Mono<Seats> seatStart(String userId) {
         // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
-//        Mono<String> res =  webClient.get().uri("http://localhost:8082/seat/" + userId).retrieve().bodyToMono(String.class);
-//
-//        res.subscribe(response-> System.out.println("결과과ㅣ돚과 ㅈㄷ괏ㅂ : " + response));
-        Flux<Seats> seats = webClient.get().uri("http://localhost:8082/seat/" + userId)
+//        Flux<Seats> seats = webClient.get().uri("http://localhost:8082/seat/" + userId)
+//                .retrieve()
+//                .bodyToFlux(Seats.class);
+        Mono<Seats> seats = webClient.get().uri("http://localhost:8082/seat/" + userId)
                 .retrieve()
-                .bodyToFlux(Seats.class);
-//        String winId = null;
-//        seats.subscribe(seat ->
-//            log.info(seat.getWinnerId()));
+                .bodyToMono(Seats.class);
+
         return seats;
     }
 

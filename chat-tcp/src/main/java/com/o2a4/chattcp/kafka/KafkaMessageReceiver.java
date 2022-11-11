@@ -32,7 +32,7 @@ public class KafkaMessageReceiver {
 //    @KafkaListener(topics = "chats", groupId = "foo")
     public void start(KafkaReceiver<Integer,String> receiver){
         receiver.receive().subscribe(record ->{
-            log.info("Kafka Receiver result : Topic >> [{}], message >> [{}], Offset >> [{}]", record.topic(), record.value(), record.receiverOffset());
+//            log.info("Kafka Receiver result : Topic >> [{}], message >> [{}], Offset >> [{}]", record.topic(), record.value(), record.receiverOffset());
             JSONParser jsonParser = new JSONParser();
             try {
                 // 객체에 담기 ( mongodb로 보낼 )

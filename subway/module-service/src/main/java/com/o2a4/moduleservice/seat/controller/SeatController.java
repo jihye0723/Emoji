@@ -30,8 +30,8 @@ public class SeatController {
         String key = "seat:"+userid; // ex) key = seat:ssafy
 
         // redis 생성
-        redisTemplate.opsForList().rightPush(key, "start");
-        redisTemplate.expire(key, 180, TimeUnit.SECONDS); // 3분동안 redis 에 저장
+//        redisTemplate.opsForList().rightPush(key, "start");
+//        redisTemplate.expire(key, 180, TimeUnit.SECONDS); // 3분동안 redis 에 저장
 //        /*Timer 사용했을 떄 */
 //        Timer t= new Timer();
 //        //redis 에서 한명 뽑기
@@ -46,14 +46,16 @@ public class SeatController {
             e.printStackTrace();
             log.info("thread sleep fail");
         }
-        Long size= redisTemplate.opsForList().size(key);
-        if(size==1) {
-            // 참가한 사람 없는 것
+        //키가 없다면 true , 키가 있으면 false
+        boolean isKeyEmpty= redisTemplate.keys(key).isEmpty();
+
+        if(isKeyEmpty){
             seatsInfo.setWinnerId(null);
         }
         else {
+            Long size= redisTemplate.opsForList().size(key);
             // 참가자 목록 얻어오기 : list
-            List<String> list = redisTemplate.opsForList().range(key, 1, size - 1);
+            List<String> list = redisTemplate.opsForList().range(key, 0, size - 1);
 
             Random random = new Random();
             int randomIndex = random.nextInt(list.size());
@@ -65,6 +67,7 @@ public class SeatController {
 //        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
 
             seatsInfo.setWinnerId(win_id);
+            redisTemplate.expire(key, 5, TimeUnit.SECONDS); // 5초 뒤에 삭제
         }
         return seatsInfo;
     }

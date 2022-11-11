@@ -159,13 +159,14 @@ public class RestHandler {
                         cidcRepo.getChannelIdChannelMap().get(channelId).close();
                     }
 
-                    // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거
-                    ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);
-                    if (cg != null && cg.size() == 0) {
-                        log.info("REMOVE TRAIN {} SERVER", channelGroup);
-                        // 메모리에서 채널그룹 제거
-                        tcgRepo.getTrainChannelGroupMap().remove(channelGroup);
-                    }
+                    // TODO 확인필요
+                    // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거 - channel이 close됐을 때 group이 비면 자동으로 사라지는듯
+//                    ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);
+//                    if (cg != null && cg.size() == 0) {
+//                        log.info("REMOVE TRAIN {} SERVER", channelGroup);
+//                        // 메모리에서 채널그룹 제거
+//                        tcgRepo.getTrainChannelGroupMap().remove(channelGroup);
+//                    }
 
                     return Mono.zip(
                             // Redis에서 유저 정보 제거

@@ -8,14 +8,10 @@ import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -26,6 +22,7 @@ public class RoomService {
     private final TrainChannelGroupRepository tcgRepo;
     private final ChannelIdChannelRepository cidcRepo;
 
+
     static String uPrefix = "user:";
     static String tPrefix = "train:";
     static String sPrefix = "server:";
@@ -34,22 +31,22 @@ public class RoomService {
         String userId = trans.getUserId();
 
         redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
-            .flatMap(
-                cg -> {
-                    String channelId = channel.id().asShortText();
+                .flatMap(
+                        cg -> {
+                            String channelId = channel.id().asShortText();
 
-                    // 열차 채팅방에 채널 추가
-                    tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
-                    // 채널Id 채널 맵에 추가
-                    cidcRepo.getChannelIdChannelMap().put(channelId, channel);
+                            // 열차 채팅방에 채널 추가
+                            tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
+                            // 채널Id 채널 맵에 추가
+                            cidcRepo.getChannelIdChannelMap().put(channelId, channel);
 
-                    return redisTemplate.opsForHash().put(uPrefix+userId, "channel", channelId).doOnSubscribe(
-                        i -> {
-                            log.info("ROOM IN MESSAGE SENDING");
-                            tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
-                        }
-                    );
-                })
+                            return redisTemplate.opsForHash().put(uPrefix+userId, "channel", channelId).doOnSubscribe(
+                                    i -> {
+                                        log.info("ROOM IN MESSAGE SENDING");
+                                        tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
+                                    }
+                            );
+                        })
                 .subscribe();
     }
 
@@ -75,7 +72,6 @@ public class RoomService {
                         })
                 .subscribe();
     }
-
     public Mono<Seats> seatStart(String userId) {
         // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
@@ -89,28 +85,27 @@ public class RoomService {
 
         return seats;
     }
-
     public void seatEnd(Transfer trans) {
         // TODO 자리양도 끝
     }
 
     public void villainOn(Transfer trans) {
         redisTemplate.opsForHash().get("user:" + trans.getUserId(), "channelGroup")
-            .subscribe(cg -> {
-                redisTemplate.opsForHash().increment("train:" + (String) cg, "villain", 1).subscribe();
-                tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
-            });
+                .subscribe(cg -> {
+                    redisTemplate.opsForHash().increment("train:" + (String) cg, "villain", 1).subscribe();
+                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
+                });
     }
 
     public void villainOff(TransferOuterClass.Transfer trans) {
         redisTemplate.opsForHash().get("user:" + trans.getUserId(), "channelGroup")
-            .subscribe(cg -> {
-                redisTemplate.opsForHash().get("train:" + (String) cg, "villain")
-                        .flatMap(num ->
-                                redisTemplate.opsForHash().put("train:" + (String) cg, "villain", Integer.valueOf((String) num)-1))
-                        .subscribe();
+                .subscribe(cg -> {
+                    redisTemplate.opsForHash().get("train:" + (String) cg, "villain")
+                            .flatMap(num ->
+                                    redisTemplate.opsForHash().put("train:" + (String) cg, "villain", Integer.valueOf((String) num)-1))
+                            .subscribe();
 
-                tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
-            });
+                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
+                });
     }
 }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.ws.Response;
@@ -29,31 +30,32 @@ public class SeatController {
         seatsInfo.setUserId(userid);
         String key = "seat:"+userid; // ex) key = seat:ssafy
 
-        // redis 생성
-        redisTemplate.opsForList().rightPush(key, "start");
-        redisTemplate.expire(key, 180, TimeUnit.SECONDS); // 3분동안 redis 에 저장
+//
 //        /*Timer 사용했을 떄 */
 //        Timer t= new Timer();
 //        //redis 에서 한명 뽑기
 //        Winning wt = new Winning(key);
 //        //5(+1)초가 지난후에, 해당 작업 실행
 //        t.schedule(wt, 6000);
+//
+//        /*Thread.sleep 사용했을 때 */
+//        try{
+//            Thread.sleep(6000);
+//        }catch(InterruptedException e){
+//            e.printStackTrace();
+//            log.info("thread sleep fail");
+//        }
+        getTestAsync();
+        //키가 없다면 true , 키가 있으면 false
+        boolean isKeyEmpty= redisTemplate.keys(key).isEmpty();
 
-        /*Thread.sleep 사용했을 때 */
-        try{
-            Thread.sleep(6000);
-        }catch(InterruptedException e){
-            e.printStackTrace();
-            log.info("thread sleep fail");
-        }
-        Long size= redisTemplate.opsForList().size(key);
-        if(size==1) {
-            // 참가한 사람 없는 것
+        if(isKeyEmpty){
             seatsInfo.setWinnerId(null);
         }
         else {
+            Long size= redisTemplate.opsForList().size(key);
             // 참가자 목록 얻어오기 : list
-            List<String> list = redisTemplate.opsForList().range(key, 1, size - 1);
+            List<String> list = redisTemplate.opsForList().range(key, 0, size - 1);
 
             Random random = new Random();
             int randomIndex = random.nextInt(list.size());
@@ -65,6 +67,7 @@ public class SeatController {
 //        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
 
             seatsInfo.setWinnerId(win_id);
+            redisTemplate.expire(key, 5, TimeUnit.SECONDS); // 5초 뒤에 삭제
         }
         return seatsInfo;
     }
@@ -104,5 +107,14 @@ public class SeatController {
 //            log.info("당점자 : " +win_id);
 //        }
 //    } // winning class
+
+    @Async
+    public void getTestAsync() {
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }}
+
 
 }

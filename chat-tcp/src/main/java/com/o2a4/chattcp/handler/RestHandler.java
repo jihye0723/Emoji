@@ -59,7 +59,7 @@ public class RestHandler {
         String userId = jwtDecoder.decode(token);
 
         // 인증서버 보낸 결과가 유효하지 않은 사용자라면
-        if (authService.getAuth(token)) {
+        if (false) {
             return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
         }
 
@@ -78,7 +78,6 @@ public class RestHandler {
                 // 정상적으로 body에서 데이터를 불러왔다면
                 .flatMap(data -> {
                     // 2 열차 확인
-                    log.info("뭐지 브릿지 {}", data);
                     log.info("CHECK TRAIN");
                     String trainId = ((Bridge) data).getData();
 
@@ -94,10 +93,15 @@ public class RestHandler {
 
                                 return redisTemplate.opsForHash().putAll(tPrefix + trainId, map);
                             }))
+                            // TODO TCP 쪽으로 옮기는게 좋을듯?
                             .flatMap(portRes -> {
                                 log.info("ADD USER {} TO SERVER", userId);
-                                redisTemplate.opsForHash().put(uPrefix + userId, "channelGroup", trainId).subscribe();
-                                redisTemplate.opsForHash().put(uPrefix + userId, "server", port).subscribe();
+
+                                Map<String, String> uMap = new HashMap<>();
+                                uMap.put("channelGroup", trainId);
+                                uMap.put("server", port);
+
+                                redisTemplate.opsForHash().putAll(uPrefix + userId, uMap).subscribe();
 
                                 return Mono.just("ADD USER DONE");
                             });

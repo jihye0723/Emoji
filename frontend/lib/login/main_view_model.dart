@@ -27,6 +27,8 @@ class MainViewModel {
 
       // accessToken 을 해독하여 만료일자인 exp 를 알 수 있음 => payload['exp']로 접근.
       Map<String, dynamic> payload = Jwt.parseJwt(accessToken);
+      print(payload);
+      print('페이로드입니다!!!!!!!');
 
       // user = await UserApi.instance.me();
 

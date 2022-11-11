@@ -10,7 +10,7 @@ import 'package:video_player/video_player.dart';
 
 // 메인 함수
 void main() async {
-  KakaoSdk.init(nativeAppKey: '9e8f2d7dc89324523cecae5569e5f764',);
+  KakaoSdk.init(nativeAppKey: '20a57c799c063a61eaa19958e34c58cb',);
   await ScreenUtil.ensureScreenSize();
   runApp(const MyApp());
 }
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 
 // 스플래시 스크린을 띄우는 동안, 토큰이 있는지 확인하기
 /*
-* To do..
+* To do.
 *   Access 토큰 만료되었으면, Refresh 토큰이 유효한지 확인하고 재발급 받는 로직 필요.
 * */
 class SplashScreen extends StatefulWidget {
@@ -89,12 +89,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // 이미 저장되어 있는 AccessToken 이 존재한다면,
     if (userAccessToken != null) {
+      print('저장되어 있는 토큰 발견!!');
       // 홈 화면으로 이동하게 된다.
       Navigator.of(context).pop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
     }
     // 저장되어 있는 AccessToken 이 존재하지 않는다면,
     else {
+      print('저장되어 있는 토큰이 없습니다!!');
       // 로그인 페이지로 이동하게 된다.
       Navigator.of(context).pop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));

@@ -2,6 +2,7 @@ package com.o2a4.moduleservice.seat.controller;
 
 
 import com.o2a4.moduleservice.seat.dto.Seats;
+import com.o2a4.moduleservice.seat.dto.SeatsRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -22,24 +23,32 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SeatController {
 
+    private final SeatsRepository seatsRepository;
+
     private final RedisTemplate<String, String> redisTemplate;
+
 
     /*자리 양도 시작*/
     @GetMapping("/{userId}")
     public void startSeat(@PathVariable String userId) {
-
+        seatsRepository.getSeatUser().add(userId);
+        log.info("자리 양도 시작 [주최자]  :" + seatsRepository.getSeatUser().toString());
     }
 
 
     /*자리 양도 신청*/
     /*{ "userId" : 양도자 id,  "attend_id" : 참가자 id } */
-    @PostMapping
+    @PostMapping("/attend")
     public ResponseEntity<?> attendSeat(@RequestBody Map<String, String> seatMap){
        String attend_id= seatMap.get("attend_id");
        String userId = seatMap.get("userId");
 
        //start_id가 현재 활성화 된 아이디 인지 확인
-
+        boolean HasUser = seatsRepository.getSeatUser().contains(userId);
+        if(!HasUser){
+            // 자리 양도 안한 것
+            return new ResponseEntity<String>("fail", HttpStatus.OK);
+        }
        String key = "seat:"+userId; // ex)seat:ssafy
 
         redisTemplate.opsForList().rightPush(key, attend_id);
@@ -49,8 +58,8 @@ public class SeatController {
 
     /*자리 양도 종료*/
     /*{ "userId" : 양도자 id , "content" : 자리 정보 } */
-    @PostMapping
-    public void finishSeat(@RequestBody Map<String, String> finishInfo){
+    @PostMapping("/finish")
+    public ResponseEntity<?> finishSeat(@RequestBody Map<String, String> finishInfo){
         String userId = finishInfo.get("userId");
         String content = finishInfo.get("content");
 
@@ -64,6 +73,7 @@ public class SeatController {
 
         /*참가자가 없음*/
         if(isKeyEmpty){
+            //당첨자 NULL
             seatsInfo.setWinnerId(null);
         }
         /*참가자가 있음*/
@@ -79,13 +89,14 @@ public class SeatController {
             // redis에서 해당 키 삭제
             redisTemplate.expire(key, 3, TimeUnit.SECONDS);
         }
+        // 자리양도 주최자 mem 에서 삭제
+        seatsRepository.getSeatUser().remove(userId);
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
 
         RestTemplate restTemplate = new RestTemplate();
+        /*----------------여기 짜야함-------------*/
 
-
-
-
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
 }

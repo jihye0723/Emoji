@@ -2,11 +2,12 @@ package com.o2a4.chattcp.handler;
 
 import com.o2a4.chattcp.decoder.JwtDecoder;
 import com.o2a4.chattcp.model.Bridge;
+import com.o2a4.chattcp.model.SeatBridge;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import com.o2a4.chattcp.service.AuthService;
+import com.o2a4.chattcp.service.RoomService;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class RestHandler {
     private final ServerBootstrap serverBootstrap;
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final RoomService roomService;
 
     private final JwtDecoder jwtDecoder;
 
@@ -51,17 +54,10 @@ public class RestHandler {
            2-1 서버 UserCnt 증가
          3. return TCP 포트번호 */
 
-        // TODO 생성하는 모든 데이터에 대해서 expire 설정?
-        // TODO 인증 서버에 보내고
         // TODO token에서 id 디코딩
         // 1. 유효한 사용자 확인
         String token = req.headers().firstHeader("token");
         String userId = jwtDecoder.decode(token);
-
-        // 인증서버 보낸 결과가 유효하지 않은 사용자라면
-        if (false) {
-            return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
-        }
 
         // TODO Error Gracefully,,,,
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
@@ -91,9 +87,9 @@ public class RestHandler {
                                 map.put("server", port);
                                 map.put("villain", "0");
 
-                                return redisTemplate.opsForHash().putAll(tPrefix + trainId, map);
+                                return Mono.zip(redisTemplate.opsForHash().putAll(tPrefix + trainId, map),
+                                        redisTemplate.expire(tPrefix + trainId, Duration.ofHours(18)));
                             }))
-                            // TODO TCP 쪽으로 옮기는게 좋을듯?
                             .flatMap(portRes -> {
                                 log.info("ADD USER {} TO SERVER", userId);
 
@@ -101,15 +97,15 @@ public class RestHandler {
                                 uMap.put("channelGroup", trainId);
                                 uMap.put("server", port);
 
-                                redisTemplate.opsForHash().putAll(uPrefix + userId, uMap).subscribe();
-
-                                return Mono.just("ADD USER DONE");
+                                return Mono.zip(redisTemplate.opsForHash().putAll(uPrefix + userId, uMap),
+                                        redisTemplate.expire(uPrefix + userId, Duration.ofHours(3)));
                             });
                 })
-                .flatMap(i -> {
-                    log.info("INCREASE USER COUNT");
-                    return redisTemplate.opsForValue().increment(sPrefix + port);
-                }).map(i -> {
+//                .flatMap(i -> {
+//                    log.info("INCREASE USER COUNT");
+//                    return redisTemplate.opsForValue().increment(sPrefix + port);
+//                })
+                .map(i -> {
                     log.info("BRIDGE");
                     Bridge res = new Bridge();
 
@@ -122,76 +118,86 @@ public class RestHandler {
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(train, Bridge.class);
     }
 
-    public Mono<ServerResponse> roomOut(ServerRequest req) {
-        /* 방 퇴장 요청
-         ? 1. 유효한 사용자인지 확인 - jwt 토큰
-         2. Redis - 유저 ID 확인해서 방에서 퇴장
-           2-1 서버 UserCnt 감소
-           2-2 User (Hash) 제거
-           2-a CG에 남은 사람이 없다면 : Train 서버 제거, Train CG 제거
-         3. return 성공, 실패 */
+    public Mono<ServerResponse> finishSeat(ServerRequest request) {
+        try {
+            request.bodyToMono(SeatBridge.class).subscribe(data -> roomService.seatEnd(data));
 
-        // TODO 인증 서버에 보내고
-        // TODO token에서 id 디코딩
+            return ServerResponse.accepted().build();
+        } catch (Exception e) {
+            e.printStackTrace();
 
-        // 1. 유효한 사용자 확인
-        String token = req.headers().firstHeader("token");
-        String userId = jwtDecoder.decode(token);
-
-        // 인증서버 보낸 결과가 유효하지 않은 사용자라면
-        if (false) {
-            return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
+            return ServerResponse.status(500).build();
         }
-
-        log.info("GET USER CHANNELGROUP");
-        Mono<Bridge> result = redisTemplate.opsForHash().entries(uPrefix + userId)
-                .collectMap(x -> x.getKey(), x -> x.getValue())
-                .flatMap(map -> {
-                    log.info("REMOVE USER {}", userId);
-                    log.info("MAP VALUES : {}", map.values());
-
-                    String channelId = (String) map.get("channel");
-                    String channelGroup = (String) map.get("channelGroup");
-
-                    // channelId가 null인 경우는 아직 TCP 소켓이 연결 안된 상태
-                    if (channelId != null) {
-                        // 서버에서 클라이언트의 채널 닫음
-                        cidcRepo.getChannelIdChannelMap().get(channelId).close();
-                    }
-
-                    // TODO 확인필요
-                    // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거 - channel이 close됐을 때 group이 비면 자동으로 사라지는듯
-//                    ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);
-//                    if (cg != null && cg.size() == 0) {
-//                        log.info("REMOVE TRAIN {} SERVER", channelGroup);
-//                        // 메모리에서 채널그룹 제거
-//                        tcgRepo.getTrainChannelGroupMap().remove(channelGroup);
-//                    }
-
-                    return Mono.zip(
-                            // Redis에서 유저 정보 제거
-                            redisTemplate.opsForHash().delete(uPrefix + userId).doOnSubscribe(i -> {
-                                log.info("REMOVE USER {} REDIS", userId);
-                            }),
-                            // Redis에서 열차 서버 매핑정보 제거
-                            redisTemplate.opsForHash().delete(tPrefix + channelGroup).doOnSubscribe(i -> {
-                                log.info("REMOVE TRAIN {} REDIS", channelGroup);
-                            }));
-                }).flatMap(i -> {
-                    if (i.getT1() && i.getT2()) {
-                        redisTemplate.opsForValue().decrement(sPrefix + port).subscribe(a -> {
-                            log.info("DECREASE USER COUNT");
-                        });
-                    }
-                    return Mono.just("pass");
-                }).map(i -> {
-                    log.info("MAKE BRIDGE");
-                    Bridge res = new Bridge();
-                    res.setName("result");
-                    res.setData("DONE");
-                    return res;
-                });
-
-        return ServerResponse.ok().body(result, Bridge.class);
     }
+
+//    public Mono<ServerResponse> roomOut(ServerRequest req) {
+//        /* 방 퇴장 요청
+//         ? 1. 유효한 사용자인지 확인 - jwt 토큰
+//         2. Redis - 유저 ID 확인해서 방에서 퇴장
+//           2-1 서버 UserCnt 감소
+//           2-2 User (Hash) 제거
+//           2-a CG에 남은 사람이 없다면 : Train 서버 제거, Train CG 제거
+//         3. return 성공, 실패 */
+//
+//
+//        // 1. 유효한 사용자 확인
+//        String token = req.headers().firstHeader("token");
+//        String userId = jwtDecoder.decode(token);
+//
+//        // 인증서버 보낸 결과가 유효하지 않은 사용자라면
+//        if (false) {
+//            return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
+//        }
+//
+//        log.info("GET USER CHANNELGROUP");
+//        Mono<Bridge> result = redisTemplate.opsForHash().entries(uPrefix + userId)
+//                .collectMap(x -> x.getKey(), x -> x.getValue())
+//                .flatMap(map -> {
+//                    log.info("REMOVE USER {}", userId);
+//                    log.info("MAP VALUES : {}", map.values());
+//
+//                    String channelId = (String) map.get("channel");
+//                    String channelGroup = (String) map.get("channelGroup");
+//
+//                    // channelId가 null인 경우는 아직 TCP 소켓이 연결 안된 상태
+//                    if (channelId != null) {
+//                        // 서버에서 클라이언트의 채널 닫음
+//                        cidcRepo.getChannelIdChannelMap().get(channelId).close();
+//                    }
+//
+//                    // TODO 확인필요
+//                    // 채팅방에 사람이 남았는지 확인하고 없다면 redis에서 제거 - channel이 close됐을 때 group이 비면 자동으로 사라지는듯
+////                    ChannelGroup cg = tcgRepo.getTrainChannelGroupMap().get(channelGroup);
+////                    if (cg != null && cg.size() == 0) {
+////                        log.info("REMOVE TRAIN {} SERVER", channelGroup);
+////                        // 메모리에서 채널그룹 제거
+////                        tcgRepo.getTrainChannelGroupMap().remove(channelGroup);
+////                    }
+//
+//                    return Mono.zip(
+//                            // Redis에서 유저 정보 제거
+//                            redisTemplate.opsForHash().delete(uPrefix + userId).doOnSubscribe(i -> {
+//                                log.info("REMOVE USER {} REDIS", userId);
+//                            }),
+//                            // Redis에서 열차 서버 매핑정보 제거
+//                            redisTemplate.opsForHash().delete(tPrefix + channelGroup).doOnSubscribe(i -> {
+//                                log.info("REMOVE TRAIN {} REDIS", channelGroup);
+//                            }));
+//                }).flatMap(i -> {
+//                    if (i.getT1() && i.getT2()) {
+//                        redisTemplate.opsForValue().decrement(sPrefix + port).subscribe(a -> {
+//                            log.info("DECREASE USER COUNT");
+//                        });
+//                    }
+//                    return Mono.just("pass");
+//                }).map(i -> {
+//                    log.info("MAKE BRIDGE");
+//                    Bridge res = new Bridge();
+//                    res.setName("result");
+//                    res.setData("DONE");
+//                    return res;
+//                });
+//
+//        return ServerResponse.ok().body(result, Bridge.class);
+//    }
 }

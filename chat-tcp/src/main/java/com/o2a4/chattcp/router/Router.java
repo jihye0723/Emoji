@@ -17,8 +17,10 @@ public class Router {
     public RouterFunction<?> restRouter() {
         return RouterFunctions.route()
                 .path("/chat", builder -> builder
-                        .POST("/in", handler::roomIn)
-                        .DELETE("/out", handler::roomOut))
+                        .POST("/in", handler::roomIn))
+//                        .DELETE("/out", handler::roomOut))
+                .path("/seat", builder -> builder
+                        .POST("/finish", handler::finishSeat))
                 .build();
     }
 }

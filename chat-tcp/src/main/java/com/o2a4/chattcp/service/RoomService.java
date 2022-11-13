@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -77,16 +78,16 @@ public class RoomService {
             }).subscribe();
     }
 
-    public Mono<Seats> seatStart(String userId) {
+    public Mono<String> seatStart(String userId) {
         // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
-        Mono<Seats> seats = webClient.get().uri("http://localhost:8082/seat/" + userId)
-                .retrieve()
-                .bodyToMono(Seats.class);
+        Mono<String> res = webClient.get().uri("http://localhost:8082/seat/" + userId)
+                .retrieve().bodyToMono(String.class);
 
-        return seats;
-    }
+//        RestTemplate restTemplate = new RestTemplate();
+//        String res= restTemplate.getForObject("http://localhost:8082/seat/"+userId, String.class);
+        return res;}
 
     public void seatEnd(Transfer trans) {
         // TODO 자리양도 끝

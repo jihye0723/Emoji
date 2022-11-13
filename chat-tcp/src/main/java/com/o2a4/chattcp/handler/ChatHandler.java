@@ -107,14 +107,8 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     amap.put(userId, place);
 
                     log.info("자리양도 시작 : {}", userId);
-                    Mono<Seats> seatInfo = roomService.seatStart(userId);
-
-
-                    seatInfo.subscribe(seat ->{
-                        // 당첨인 사람한테 내용 보내기
-                        // 방에 끝났다는 메시지 보내기
-                        log.info("세팅 위치 : {} / 자리양도 : {} / 당첨자 : {} / 당첨 자리 : {}", place, seat.getUserId(), seat.getWinnerId(), amap.get(seat.getUserId()));
-                    });
+                    Mono<String> res = roomService.seatStart(userId);
+                    res.subscribe();
 
                     break;
                 case "villain-on":

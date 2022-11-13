@@ -1,20 +1,19 @@
 package com.o2a4.chattcp.handler;
 
-import com.o2a4.chattcp.model.Seats;
-import com.o2a4.chattcp.proto.TransferOuterClass;
-import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
-import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
+import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import com.o2a4.chattcp.service.KafkaService;
 import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,30 +58,28 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
 
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[OPEN] Remote Address: " + remoteAddress);
-//        ctx.channel().closeFuture().addListeners();
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) {
+    public void channelInactive(ChannelHandlerContext ctx) {
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[CLOSED] Remote Address: " + remoteAddress);
     }
 
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object data) {
-        TransferOuterClass.Transfer trans = (TransferOuterClass.Transfer) data;
+        Transfer trans = (Transfer) data;
 
         try {
             switch (trans.getType()) {
                 case "msg":
                     log.info("msg in : {}", trans.getContent());
-                    String msg = messageService.receiveMessage(trans);
+                    String msg = messageService.filterMessage(trans.getContent());
                     log.info("msg filtered : {}", msg);
                     messageService.sendMessage(trans, msg);
 
                     /*kafka 로 메시지 전송 */
-                    JSONObject message= new JSONObject();
+                    JSONObject message = new JSONObject();
                     message.put("userid", trans.getUserId()); // 사용자 ID
                     message.put("content", trans.getContent()); // 메시지
                     message.put("send_at", trans.getSendAt());  // 전송 시간
@@ -103,18 +100,20 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     // TODO 자리양도
                     String userId = trans.getUserId();
                     String place = trans.getContent();
-                    Map<String ,String > amap = new HashMap<>();
+                    Map<String, String> amap = new HashMap<>();
                     amap.put(userId, place);
 
                     log.info("자리양도 시작 : {}", userId);
-                    Mono<Seats> seatInfo = roomService.seatStart(userId);
+                    Mono<String> res = roomService.seatStart(userId);
+                    res.subscribe();
 
-
-                    seatInfo.subscribe(seat ->{
-                        // 당첨인 사람한테 내용 보내기
-                        // 방에 끝났다는 메시지 보내기
-                        log.info("세팅 위치 : {} / 자리양도 : {} / 당첨자 : {} / 당첨 자리 : {}", place, seat.getUserId(), seat.getWinnerId(), amap.get(seat.getUserId()));
-                    });
+//                    Mono<Seats> seatInfo = roomService.seatStart(userId);
+//
+//                    seatInfo.subscribe(seat -> {
+//                        // 당첨인 사람한테 내용 보내기
+//                        // 방에 끝났다는 메시지 보내기
+//                        log.info("세팅 위치 : {} / 자리양도 : {} / 당첨자 : {} / 당첨 자리 : {}", place, seat.getUserId(), seat.getWinnerId(), amap.get(seat.getUserId()));
+//                    });
 
                     break;
                 case "villain-on":
@@ -127,10 +126,17 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     log.info("WRONG TYPE : {}", trans.getType());
                     throw new IllegalArgumentException("잘못된 타입 전송");
             }
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("에러 발생! {}", e);
-            messageService.sendMessageToOneByServer(trans, "error", "메세지 처리 또는 기능 동작에 문제가 발생했습니다");
+
+            Transfer.Builder builder = Transfer.newBuilder();
+
+            builder.setType("error")
+                    .setContent("메세지 처리 또는 기능 동작에 문제가 발생했습니다")
+                    .setUserId("SERVER")
+                    .setSendAt(LocalDateTime.now().toString());
+
+            messageService.sendMessageToOne(builder.build(), trans.getUserId());
         }
     }
 

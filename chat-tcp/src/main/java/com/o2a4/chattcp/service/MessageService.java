@@ -23,11 +23,13 @@ public class MessageService {
     private final ChannelIdChannelRepository cidcRepo;
     private final FilterRepository filterRepo;
 
-    public String receiveMessage(Transfer trans) {
+    static String uPrefix = "user:";
+
+    public String filterMessage(String content) {
         // FIXME 공백이랑 숫자 처리 -> 배열을 같은 크기로 만들어서 문자열 위치를 매핑하고, 필요없는 부분 정규표현식으로 다 삭제하고 필터링?
 
         StringBuilder sb = new StringBuilder();
-        String target = trans.getContent();
+        String target = content;
         LinkedList<Integer[]> output = new LinkedList<>();
 
 //        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
@@ -72,38 +74,39 @@ public class MessageService {
 
         Transfer send = Transfer.newBuilder(trans).setContent(msg).build();
 
-        redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
+        redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
                 .subscribe(cg -> {
                     // 열차 채팅방에 사용자의 메세지 전달
-                    log.info("SEND MESSAGE TO ROOM");
+                    log.info("TRANSFER MESSAGE TO ROOM");
                     tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
                 });
     }
 
-    public void sendMessageToOneByServer(Transfer trans, String type, String content) {
-        String userId = trans.getUserId();
-
-        // 전달할 메세지 생성
-        Transfer.Builder builder = serverTrans(type, content);
-
-        redisTemplate.opsForHash().get("user:" + userId, "channel")
+    public void sendMessageToOne(Transfer trans, String userId) {
+        redisTemplate.opsForHash().get(uPrefix + userId, "channel")
                 .subscribe(c -> {
                     // 유저 한 명에게 메시지 전송
                     log.info("SEND MESSAGE TO USER");
-                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(builder);
+                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(trans);
                 });
     }
 
-    public void sendMessageToRoomByServer(String channelGroupId, String type, String content) {
-        // 전달할 메세지 생성
-        Transfer.Builder builder = serverTrans(type, content);
-
+    public void sendMessageToRoom(Transfer trans, String type, String target) {
         // 채팅방에 메시지 전송
-        log.info("SEND MESSAGE TO USER");
-        tcgRepo.getTrainChannelGroupMap().get(channelGroupId).writeAndFlush(builder);
+
+        if (type.equals("userId")) {
+            redisTemplate.opsForHash().get(uPrefix + target, "channelGroup")
+                    .subscribe(cg -> {
+                        log.info("SEND MESSAGE TO ROOM");
+                        tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(trans);
+                    });
+        } else {
+            log.info("SEND MESSAGE TO ROOM");
+            tcgRepo.getTrainChannelGroupMap().get(target).writeAndFlush(trans);
+        }
     }
 
-    private static Transfer.Builder serverTrans(String type, String content) {
+    private static Transfer serverTrans(String type, String content) {
         Transfer.Builder builder = Transfer.newBuilder();
 
         builder.setType(type);
@@ -114,8 +117,6 @@ public class MessageService {
         builder.setNickName("SERVER");
         builder.setSendAt(LocalDateTime.now().toString());
 
-        builder.build();
-
-        return builder;
+        return builder.build();
     }
 }

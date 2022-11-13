@@ -30,12 +30,13 @@ public class SeatController {
 
     /*자리 양도 시작*/
     @GetMapping("/{userId}")
-    public void startSeat(@PathVariable String userId) {
+    public String startSeat(@PathVariable String userId) {
         seatsRepository.getSeatUser().add(userId);
         log.info("자리 양도 시작 [주최자]  :" + seatsRepository.getSeatUser().toString());
+        return "success";
     }
 
-
+/*-------------------이거 왜 오래걸림 ?-------------------------*/
     /*자리 양도 신청*/
     /*{ "userId" : 양도자 id,  "attend_id" : 참가자 id } */
     @PostMapping("/attend")
@@ -94,7 +95,7 @@ public class SeatController {
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
 
         RestTemplate restTemplate = new RestTemplate();
-        /*----------------여기 짜야함-------------*/
+        restTemplate.postForObject("http://localhost:8101/seat/finish", seatsInfo, String.class );
 
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }

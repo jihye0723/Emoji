@@ -2,8 +2,8 @@
 spring:
   data:
     mongodb:
-#      uri: mongodb://localhost:27017/subway
-#      host: localhost
+      #      uri: mongodb://localhost:27017/subway
+      #      host: localhost
       #      host: 52.79.215.19
       host: 172.26.10.110
       port: 27017

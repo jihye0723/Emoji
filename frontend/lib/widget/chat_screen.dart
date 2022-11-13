@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -36,7 +37,7 @@ class ChatScreen extends StatefulWidget {
       {super.key,
       required this.myId,
       required this.myName,
-      required this.color
+      required this.color,
       required this.room});
 
   final String myId;
@@ -79,7 +80,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void findroom() async {
 
     // 아이디와 열차정보로 포트주소 알아내기
-    portname = http.enterRoom(widget.myId, widget.room);
+    //portname = http.enterRoom(widget.myId, widget.room);
+    portname = http.chatroom().getPort(widget.myId, widget.room);
+
     var temp = await portname;
 
     //받아온 포트 적용
@@ -137,7 +140,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     /*------------------------------------------------------------------*/
 
     // 서버에서 채팅날아오면 받기
-    socket.listen((Uint8List data) {
+    socket.listen((Uint8List data,) {
       var serverdata = data.getRange(1, data.length);
 
       List<int> nowlist = serverdata.toList();
@@ -150,7 +153,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           
           //빌런값 초기 설정
           setState(() {
-            villain = Int.parse(receive.comment);
+            villaincount = int.parse(receive.content);
           });
         }
 
@@ -175,8 +178,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               disabledTextColor: Colors.white,
               textColor: Colors.white,
               onPressed: () {
+
                 //누르면 http통신
                 print(receive.userId);
+
               },
             ),
           ));
@@ -213,7 +218,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           makeMessage(receive.content, receive.nickName, receive.userId);
         }
       }
-    });
+    },
+    onError: (error){print(error);},
+      onDone: (){
+        socket.destroy();
+      },
+      cancelOnError: false
+    );
   }
 
   // 텍스트필드 제어용 컨트롤러
@@ -521,10 +532,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               introduce = _seatController.text;
                             });
                             print(introduce);
-                            tcpsend("seat-start", introduce, widget.myId,
-                                widget.myName);
+                            //자리양도 시작했다고 소켓 보내
+                            makeseat(introduce);
                             snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
-                            _seatController.clear();
                           },
                           child: const SizedBox(child: Text("시작하기")),
                         ),
@@ -536,6 +546,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             });
       },
     );
+  }
+
+  void makeseat(String text){
+    tcpsend("seat-start", text, widget.myId,
+        widget.myName);
+    _seatController.clear();
+
+    //10초 딜레이후에 rest보내
+    Timer(Duration( seconds: 10), () {
+      //http 통신하면됨
+
+    });
   }
 
   //자리양도결과
@@ -642,9 +664,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 */
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text(
-                      "지금 열차에 $widget.vailiancount 명의 빌런이 있습니다!",
+                      "지금 열차에 $villaincount 명의 빌런이 있습니다!",
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -686,7 +708,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           Navigator.of(ctx).pop();
                           snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
                           //소켓통신
-                          // tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
+                          //tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
                         },
                         child: const SizedBox(child: Text("😄 사라졌어요!")),
                       ),

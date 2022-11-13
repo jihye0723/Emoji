@@ -282,63 +282,63 @@ class _TextChatState extends State<TextChat> {
   void find() {
     switch (widget.rail) {
       case "1호선":
-        _color = Color(0xff0D347F);
+        _color = Color.fromRGBO(38, 60, 150, 1);
         rain = stationData.one;
         break;
       case "2호선":
-        _color = Color(0xff3B9F37);
+        _color = Color.fromRGBO(60, 180, 74, 1);
         rain = stationData.two;
         break;
       case "3호선":
-        _color = Color(0xff3B9F37);
+        _color = Color.fromRGBO(255, 115, 0, 1);
         rain = stationData.three;
         break;
       case "4호선":
-        _color = Color(0xff3165A8);
+        _color = Color.fromRGBO(44, 158, 222, 1);
         rain = stationData.four;
         break;
       case "5호선":
-        _color = Color(0xff703E8C);
+        _color = Color.fromRGBO(137, 54, 224, 1);
         rain = stationData.five;
         break;
       case "6호선":
-        _color = Color(0xff904D23);
+        _color = Color.fromRGBO(181, 80, 11, 1);
         rain = stationData.six;
         break;
       case "7호선":
-        _color = Color(0xff5B692E);
+        _color = Color.fromRGBO(105, 114, 21, 1);
         rain = stationData.seven;
         break;
       case "8호선":
-        _color = Color(0xffC82363);
+        _color = Color.fromRGBO(229, 30, 110, 1);
         rain = stationData.eight;
         break;
       case "9호선":
-        _color = Color(0xffB39627);
+        _color = Color.fromRGBO(209, 166, 44, 1);
         rain = stationData.nine;
         break;
       case "분당선":
-        _color = Color(0xffDBA829);
+        _color = Color.fromRGBO(255, 206, 51, 1);
         rain = stationData.bundang;
         break;
       case "신분당선":
-        _color = Color(0xff971F2D);
+        _color = Color.fromRGBO(167, 30, 49, 1);
         rain = stationData.newbundang;
         break;
       case "경의중앙선":
-        _color = Color(0xff76B69B);
+        _color = Color.fromRGBO(124, 196, 165, 1);
         rain = stationData.gyeongui;
         break;
       case "경춘선":
-        _color = Color(0xff2D9B76);
+        _color = Color.fromRGBO(8, 175, 123, 1);
         rain = stationData.gyeongchun;
         break;
       case "공항철도":
-        _color = Color(0xff6CA8CE);
+        _color = Color.fromRGBO(115, 182, 228, 1);
         rain = stationData.gonghang;
         break;
       case "에버라인":
-        _color = Color(0xff6FB26C);
+        _color = Color.fromRGBO(119, 195, 113, 1);
         rain = stationData.everline;
         break;
       default:

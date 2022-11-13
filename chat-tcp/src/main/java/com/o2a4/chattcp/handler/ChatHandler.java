@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -99,21 +97,18 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                 case "seat-start":
                     // TODO 자리양도
                     String userId = trans.getUserId();
-                    String place = trans.getContent();
-                    Map<String, String> amap = new HashMap<>();
-                    amap.put(userId, place);
 
                     log.info("자리양도 시작 : {}", userId);
                     Mono<String> res = roomService.seatStart(userId);
-                    res.subscribe();
+                    res.subscribe(
+                            i -> {
+                                if (i != null) {
+                                    log.info("자리양도 시작 요청 완료 : {}", userId);
 
-//                    Mono<Seats> seatInfo = roomService.seatStart(userId);
-//
-//                    seatInfo.subscribe(seat -> {
-//                        // 당첨인 사람한테 내용 보내기
-//                        // 방에 끝났다는 메시지 보내기
-//                        log.info("세팅 위치 : {} / 자리양도 : {} / 당첨자 : {} / 당첨 자리 : {}", place, seat.getUserId(), seat.getWinnerId(), amap.get(seat.getUserId()));
-//                    });
+                                    messageService.sendMessageToRoom(trans, "userId", userId);
+                                }
+                            }
+                    );
 
                     break;
                 case "villain-on":

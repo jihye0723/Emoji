@@ -102,18 +102,24 @@ public class RoomService {
         String winnerId = seat.getWinnerId();
         // 위치 정보에서 비속어 필터링
         String place = messageService.filterMessage(seat.getContent());
+        String time = LocalDateTime.now().toString();
 
         Transfer.Builder builder = Transfer.newBuilder();
 
         builder.setType("seat-win");
         builder.setContent(place);
         builder.setUserId(userId);
-        builder.setSendAt(LocalDateTime.now().toString());
+        builder.setSendAt(time);
 
         // 당첨자 메시지 전송
         messageService.sendMessageToOne(builder.build(), winnerId);
+
+        Transfer.Builder b2 = Transfer.newBuilder(builder.build())
+                .setType("seat-end")
+                .setContent("");
+
         // 채팅방 전체 메시지 전송
-        messageService.sendMessageToRoom(builder.build(), "userId", userId);
+        messageService.sendMessageToRoom(b2.build(), "userId", userId);
     }
 
     public void villainOn(Transfer trans) {

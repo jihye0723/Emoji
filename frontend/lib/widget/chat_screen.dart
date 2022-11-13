@@ -36,11 +36,13 @@ class ChatScreen extends StatefulWidget {
       {super.key,
       required this.myId,
       required this.myName,
-      required this.color});
+      required this.color
+      required this.room});
 
   final String myId;
   final String myName;
   final color;
+  final String room;
 
   @override
   ChatScreenState createState() => ChatScreenState();
@@ -53,6 +55,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late FocusNode chatNode;
   late Socket socket;
 
+  //빌런 상태 확인
+  late int villaincount;
+
   //TCP서버용
   late Future<dynamic> portname;
   String ip = "10.0.2.2";
@@ -62,7 +67,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     //내아이디 전역으로 사용
     myuserId = widget.myId;
 
@@ -73,8 +77,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void findroom() async {
+
     // 아이디와 열차정보로 포트주소 알아내기
-    portname = http.enterRoom("ssafy11", "S8888-1");
+    portname = http.enterRoom(widget.myId, widget.room);
     var temp = await portname;
 
     //받아온 포트 적용
@@ -140,8 +145,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
       if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
-          showResult(receive.userId, receive.content);
-          //makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
+          
+          makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
+          
+          //빌런값 초기 설정
+          setState(() {
+            villain = Int.parse(receive.comment);
+          });
         }
 
         if (receive.type == "room-out") {
@@ -165,10 +175,32 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               disabledTextColor: Colors.white,
               textColor: Colors.white,
               onPressed: () {
+                //누르면 http통신
                 print(receive.userId);
               },
             ),
           ));
+
+          //당첨일때
+          //showResult(receive.userId, receive.content);
+
+          //당첨아닐때
+          /*
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("다음 기회에 도전하세요"),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: '닫기',
+              disabledTextColor: Colors.white,
+              textColor: Colors.white,
+              onPressed: () {
+              },
+            ),
+          ));
+          */
+
         }
 
         if (receive.type == "villain-on") {
@@ -520,16 +552,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(10.0)),
               //Dialog Main Title
               title: Column(
-                children: <Widget>[
-                  (id == myuserId)
-                      ? Text(
+                children: <Widget>[                 
+                      Text(
                           "당첨!",
                           style: TextStyle(fontSize: 25.sp),
-                        )
-                      : Text(
-                          "다음기회에..",
-                          style: TextStyle(fontSize: 25.sp),
-                        )
+                        )                      
                 ],
               ),
               //
@@ -617,7 +644,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   mainAxisSize: MainAxisSize.min,
                   children: const [
                     Text(
-                      "지금 열차에 1명의 빌런이 있습니다!",
+                      "지금 열차에 $widget.vailiancount 명의 빌런이 있습니다!",
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -640,8 +667,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         onPressed: () {
                           Navigator.of(ctx).pop();
                           snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          //소켓통신
+                          // tcpsend("valian-on","등장",widget.myId,widget.myName);
                         },
-                        child: const SizedBox(child: Text("😫 또 나타났어요!")),
+                        child: const SizedBox(child: Text("😫 나타났어요!")),
                       ),
                       TextButton(
                         style: TextButton.styleFrom(
@@ -656,6 +685,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         onPressed: () {
                           Navigator.of(ctx).pop();
                           snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          //소켓통신
+                          // tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
                         },
                         child: const SizedBox(child: Text("😄 사라졌어요!")),
                       ),

@@ -13,6 +13,7 @@ import '../widget/chat_screen.dart';
 class TextChat extends StatefulWidget {
   //노선,열차,현재역
   final String train;
+  final String room;
   final String station;
   final String rail;
   final String myuserId;
@@ -21,6 +22,7 @@ class TextChat extends StatefulWidget {
   TextChat(
       {super.key,
       required this.train,
+      required this.room,
       required this.station,
       required this.rail,
       required this.myuserId,
@@ -48,12 +50,15 @@ class _TextChatState extends State<TextChat> {
   Timer? _timer;
   late int point = 0;
 
+  String roomname = "";
+
   //시작..
   @override
   void initState() {
     super.initState();
     widget._info = widget.station;
     find();
+    makeroom();
     directionM();
 
     //시간마다 정보변경
@@ -66,6 +71,10 @@ class _TextChatState extends State<TextChat> {
         }
       });
     });
+  }
+
+  void makeroom(){
+    roomname = widget.train + "-" + widget.room;
   }
 
   // 지하철 지나가는 거 표현
@@ -237,7 +246,7 @@ class _TextChatState extends State<TextChat> {
       ),
       body: Center(
         child: ChatScreen(
-            myId: widget.myuserId, myName: widget.mynickName, color: _color),
+            myId: widget.myuserId, myName: widget.mynickName, color: _color, room : roomname ),
       ),
     );
   }

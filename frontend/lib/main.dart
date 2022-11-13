@@ -42,10 +42,11 @@ class MyApp extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (context) => TextChat(
                                     train: "2221",
+                                     room : "3", // 몇번째 칸
                                     station: "대림",
                                     rail: "4호선",
                                     myuserId: "ssafy11",
-                                    mynickName: "집에 가고 싶은 기린",
+                                    mynickName: "집에 가고 싶은 기린",                                   
                                   )));
                     },
                   ),

@@ -73,6 +73,9 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         String channelId = ctx.channel().id().asShortText();
 
+        // 얘 말고 더 정확하게 train이나 user를 기준으로 파악해야할듯
+        // Rest에서 Train이랑 User를 생성하니까 만약에 실제로 소켓연결 도중에 실패한다면 train이랑 user가 붕떠서
+        // 다시 유저의 재접속이 불가능한 경우가 생긴다?
         redisTemplate.opsForValue().get(cPrefix + channelId)
                 .flatMap(userId ->
                         Mono.zip(redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),

@@ -57,7 +57,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Socket socket;
 
   //빌런 상태 확인
-  late int villaincount;
+  int villaincount = 0;  //일단 0으로 초기화 시켜두었음.
 
   //TCP서버용
   late Future<dynamic> portname;
@@ -129,6 +129,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //소켓 연결하고 들어왔다 알려주기-----------------------------------------
       //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
       makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
+      /*
+      * 입장과 동시에 villaincount 값을 초기화시켜주어야 함.
+      */
 
       //서버에 전송
       //tcpsend("room-in", "들어갑니다.", widget.myId, widget.myName);
@@ -145,6 +148,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
+      print(receive);
 
       if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
@@ -152,6 +156,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
           
           //빌런값 초기 설정
+          /*
+          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
+          */
           setState(() {
             villaincount = int.parse(receive.content);
           });
@@ -167,7 +174,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "seat-start") {
-          //자리양도 이벤트 받았을대 띄워주기
+          //자리양도 이벤트 받았을 때 띄워주기
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("자리 양도 이벤트가 발생하였습니다"),
             duration: Duration(seconds: 5),
@@ -210,12 +217,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
         if (receive.type == "villain-on") {
           //빌런 탑승
-          makeMessage(receive.content, receive.nickName, receive.userId);
+          snackbar.showSnackBar(context, '새로운 빌런이 나타났어요!', 'villain');
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+          // makeMessage(receive.content, receive.nickName, receive.userId);
         }
 
         if (receive.type == "villain-off") {
           //빌런 하차
-          makeMessage(receive.content, receive.nickName, receive.userId);
+          snackbar.showSnackBar(context, '빌런이 사라졌어요!', 'villain');
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+          // makeMessage(receive.content, receive.nickName, receive.userId);
         }
       }
     },
@@ -534,7 +549,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             print(introduce);
                             //자리양도 시작했다고 소켓 보내
                             makeseat(introduce);
-                            snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
+                            snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.', 'common');
                           },
                           child: const SizedBox(child: Text("시작하기")),
                         ),
@@ -659,9 +674,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   ],
                 ),
 
-                /*
-                * 빌런이 몇 명 있는지 데이터 받아와야 한다. 일단 임의로 틀만 만들어 보았다.
-                */
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -688,9 +700,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
-                          // tcpsend("valian-on","등장",widget.myId,widget.myName);
+                          tcpsend("villain-on", "", widget.myId, widget.myName);
                         },
                         child: const SizedBox(child: Text("😫 나타났어요!")),
                       ),
@@ -706,9 +718,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
-                          //tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
+                          tcpsend("villain-off", "", widget.myId, widget.myName);
                         },
                         child: const SizedBox(child: Text("😄 사라졌어요!")),
                       ),

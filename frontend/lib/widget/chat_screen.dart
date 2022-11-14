@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
+import '../models/chat.dart';
+import '../models/db.dart' as dbhelper;
 import '/models/Transfer.pb.dart';
 import '/http/chathttp.dart' as http;
 import '/utils/snackbar.dart' as snackbar;
@@ -727,6 +729,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
     Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
+
+    var chatmsg = Chat(
+      id : 0,
+      userid : id,
+      content : text,
+      datetime: date
+    );
+
+    dbhelper.DBHelper.insertChat(chatmsg);
 
     int leng = message.length;
     int msgByteLen = 1;

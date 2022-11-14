@@ -46,6 +46,8 @@ dependencies:
   video_player: ^2.2.19
   pull_to_refresh: ^2.0.0
   faker: ^2.0.0
+  flutter_secure_storage: ^6.0.0
+  jwt_decode: ^0.3.1
   http: ^0.13.5
 
 dev_dependencies:

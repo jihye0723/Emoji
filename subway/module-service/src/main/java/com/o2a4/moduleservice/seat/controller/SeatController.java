@@ -33,6 +33,9 @@ public class SeatController {
     public String startSeat(@PathVariable String userId) {
         seatsRepository.getSeatUser().add(userId);
         log.info("자리 양도 시작 [주최자]  :" + seatsRepository.getSeatUser().toString());
+
+        String key = "seat:"+userId; // ex)seat:ssafy
+        redisTemplate.opsForList().rightPush(key, "start");
         return "success";
     }
 
@@ -43,7 +46,6 @@ public class SeatController {
     public ResponseEntity<?> attendSeat(@RequestBody Map<String, String> seatMap){
        String attend_id= seatMap.get("attend_id");
        String userId = seatMap.get("userId");
-
        //start_id가 현재 활성화 된 아이디 인지 확인
         boolean HasUser = seatsRepository.getSeatUser().contains(userId);
         if(!HasUser){
@@ -53,6 +55,7 @@ public class SeatController {
        String key = "seat:"+userId; // ex)seat:ssafy
 
         redisTemplate.opsForList().rightPush(key, attend_id);
+
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }
 
@@ -70,26 +73,26 @@ public class SeatController {
 
         //redis에서 key 값으로 참가리스트 가지고 오기
         String key = "seat:"+userId; // ex)seat:ssafy
-        boolean isKeyEmpty = redisTemplate.keys(key).isEmpty();
-
+//        boolean isKeyEmpty = redisTemplate.keys(key).isEmpty();
+        Long size=  redisTemplate.opsForList().size(key);
         /*참가자가 없음*/
-        if(isKeyEmpty){
+        if(size == 1){
             //당첨자 NULL
             seatsInfo.setWinnerId(null);
         }
         /*참가자가 있음*/
         else{
-            Long size=  redisTemplate.opsForList().size(key);
-            List<String> attendList=  redisTemplate.opsForList().range(key, 0, size-1);
+
+            List<String> attendList=  redisTemplate.opsForList().range(key, 1, size-1);
 
             Random random = new Random();
             int randomIndex = random.nextInt(attendList.size());
             String winnerId = attendList.get(randomIndex);
 
             seatsInfo.setWinnerId(winnerId);
-            // redis에서 해당 키 삭제
-            redisTemplate.expire(key, 3, TimeUnit.SECONDS);
         }
+        // redis에서 해당 키 삭제
+        redisTemplate.expire(key, 3, TimeUnit.SECONDS);
         // 자리양도 주최자 mem 에서 삭제
         seatsRepository.getSeatUser().remove(userId);
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체

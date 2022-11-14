@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:practice_01/mainpage/TrainInfo.dart';
+import '../screens/textchat.dart';
 import 'TestChatPage.dart';
 import 'NickGenerator.dart';
 
@@ -189,13 +190,13 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                   Navigator.of(context).pop();
                                   Navigator.of(ctx).pop();
                                   Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) => TestChatPage(
-                                          userId: widget.userId,
-                                          userNick: landumeNick(),
+                                      builder: (context) => TextChat(
+                                          myuserId: widget.userId,
+                                          mynickName: landumeNick(),
                                           line: widget.train.line,
-                                          trainNo: _trainNo,
+                                          trainNo: _trainNo.toString(),
                                           stationName: widget.stationName,
-                                          position: _position)));
+                                          position: _position.toString())));
                                   Fluttertoast.showToast(
                                     msg: " $_trainNo 열차 $_position번 칸에 탑승",
                                     fontSize: 16.sp,

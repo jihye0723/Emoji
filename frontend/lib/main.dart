@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:practice_01/chatpage/chat.dart';
 import 'package:practice_01/login/loginpage.dart';
 import 'package:practice_01/mainpage/Home.dart';
 import 'package:video_player/video_player.dart';
@@ -68,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     _controller = VideoPlayerController.asset(
-      'assets/images/splash-subway-example1.mp4',
+      'assets/images/metro-rail.mp4',
     )
       ..initialize().then((_) {})
       ..setVolume(0.0);

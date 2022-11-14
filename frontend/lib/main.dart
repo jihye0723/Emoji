@@ -10,7 +10,9 @@ import 'package:video_player/video_player.dart';
 
 // 메인 함수
 void main() async {
-  KakaoSdk.init(nativeAppKey: '20a57c799c063a61eaa19958e34c58cb',);
+  KakaoSdk.init(
+    nativeAppKey: '20a57c799c063a61eaa19958e34c58cb',
+  );
   await ScreenUtil.ensureScreenSize();
   runApp(const MyApp());
 }
@@ -22,20 +24,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(360, 800),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: "메인페이지",
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          home: SplashScreen()
-        );
-      }
-    );
+        designSize: const Size(360, 800),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: "메인페이지",
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              home: SplashScreen());
+        });
   }
 }
 
@@ -99,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen> {
       print('저장되어 있는 토큰이 없습니다!!');
       // 로그인 페이지로 이동하게 된다.
       Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
     }
   }
 
@@ -113,16 +113,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     ScreenUtil.init(context, designSize: const Size(360, 800));
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child:AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(
-            _controller,
-          )
-        )
-      )
-    );
+        backgroundColor: Colors.white,
+        body: Center(
+            child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(
+                  _controller,
+                ))));
   }
 }
-

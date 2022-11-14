@@ -11,22 +11,22 @@ lineCodeName(String? line) {
     case "1003":
       _name = "3호선";
       break;
-    case "4호선":
+    case "1004":
       _name = "4호선";
       break;
-    case "5호선":
+    case "1005":
       _name = "5호선";
       break;
-    case "6호선":
+    case "1006":
       _name = "6호선";
       break;
-    case "7호선":
+    case "1007":
       _name = "7호선";
       break;
-    case "8호선":
+    case "1008":
       _name = "8호선";
       break;
-    case "9호선":
+    case "1009":
       _name = "9호선";
       break;
     case "1075":

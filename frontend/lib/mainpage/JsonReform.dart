@@ -12,7 +12,9 @@ TrainInfo jsonReform(List<APITrain> res) {
   for (int i = 0; i < l; i++) {
     APITrain item = res[i];
 
+    print("JsonReform, subwayId : " + item.subwayId);
     String line = lineCodeName(item.subwayId);
+    print("JsonReform, line : " + line);
     int direction = int.parse(item.updnLine);
     String? trainNo = item.btrainNo;
     int remainTime = int.parse(item.barvlDt);

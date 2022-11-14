@@ -32,15 +32,3 @@ Widget getAvatar(name) {
       return Image.asset("assets/images/bear.png");
   }
 }
-
-String getNick() {
-  var prefix = nick.prefix;
-  var animals = nick.animals;
-
-  int prelen = prefix.length;
-  int anilen = animals.length;
-
-  return prefix[Random().nextInt(prelen)] +
-      " " +
-      animals[Random().nextInt(anilen)];
-}

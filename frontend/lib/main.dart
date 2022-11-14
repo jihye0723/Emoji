@@ -6,7 +6,7 @@ import 'imagefinal.dart';
 
 // 메인 함수
 void main() {
-  runApp(const MaterialApp(
+  runApp(MaterialApp(
     // 디버그 표시를 없앤다.
     debugShowCheckedModeBanner: false,
     home: MyApp(),
@@ -16,7 +16,10 @@ void main() {
 
 // 가장 큰 틀
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+
+  final TextEditingController _id = TextEditingController();
+  final TextEditingController _nick = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,12 @@ class MyApp extends StatelessWidget {
                   child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  TextField(
+                    controller: _id,
+                  ),
+                  TextField(
+                    controller: _nick,
+                  ),
                   ElevatedButton(
                     child: const Text("문자채팅방"),
                     onPressed: () {
@@ -42,11 +51,11 @@ class MyApp extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (context) => TextChat(
                                     train: "2221",
-                                     room : "3", // 몇번째 칸
+                                    room: "3", // 몇번째 칸
                                     station: "대림",
                                     rail: "4호선",
-                                    myuserId: "ssafy11",
-                                    mynickName: "집에 가고 싶은 기린",                                   
+                                    myuserId: _id.text,
+                                    mynickName: _nick.text,
                                   )));
                     },
                   ),

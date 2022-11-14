@@ -88,7 +88,7 @@ public class RestHandler {
                                 map.put("villain", "0");
 
                                 return Mono.zip(redisTemplate.opsForHash().putAll(tPrefix + trainId, map),
-                                        redisTemplate.expire(tPrefix + trainId, Duration.ofHours(18)));
+                                        redisTemplate.expire(tPrefix + trainId, Duration.ofHours(3)));
                             }))
                             .flatMap(portRes -> {
                                 log.info("ADD USER {} TO SERVER", userId);
@@ -118,6 +118,8 @@ public class RestHandler {
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(train, Bridge.class);
     }
 
+    /*
+    * 자리양도 완료 처리 */
     public Mono<ServerResponse> finishSeat(ServerRequest request) {
         try {
             request.bodyToMono(Seats.class).subscribe(data -> roomService.seatEnd(data));

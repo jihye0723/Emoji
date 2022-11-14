@@ -1,28 +1,42 @@
 package com.o2a4.chattcp.handler;
 
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
+import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
+import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import com.o2a4.chattcp.service.KafkaService;
 import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.bag.HashBag;
 import org.json.simple.JSONObject;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.sql.Array;
 import java.time.LocalDateTime;
+import java.util.*;
 
 @Slf4j
 @Component
 @ChannelHandler.Sharable
 @RequiredArgsConstructor
 public class ChatHandler extends ChannelInboundHandlerAdapter {
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final TrainChannelGroupRepository tcgRepo;
+    private final ChannelIdChannelRepository cidcRepo;
     private final RoomService roomService;
     private final MessageService messageService;
     private final KafkaService kafkaService;
+
+    static String uPrefix = "user:";
+    static String cPrefix = "channel:";
+    static String tPrefix = "train:";
 
 //    private final ReactiveRedisTemplate<String, String> redisTemplate;
 //    private final TrainChannelGroupRepository tcgRepo;
@@ -60,6 +74,49 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        String channelId = ctx.channel().id().asShortText();
+
+        redisTemplate.opsForValue().get(cPrefix + channelId)
+            .flatMap(userId ->
+                Mono.zip(redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),
+                                redisTemplate.opsForHash().get(uPrefix + userId, "nickName"))
+                    .flatMap(tuple -> {
+                        log.info("SOCKET CLOSE HANDLE");
+
+                        String cg = (String) tuple.getT1();
+                        String nick = (String) tuple.getT2();
+
+                        // 채널Id 채널 맵에서 제거
+                        cidcRepo.getChannelIdChannelMap().remove(channelId);
+
+                        ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
+
+                        if (channelGroup == null || channelGroup.size() == 0) {
+                            log.info("REMOVE TRAIN {} SERVER", cg);
+                            // 메모리에서 채널그룹 제거
+                            tcgRepo.getTrainChannelGroupMap().remove(cg);
+
+                            redisTemplate.opsForHash().delete(tPrefix + cg).subscribe();
+                        } else {
+                            log.info("ROOM OUT MESSAGE SENDING");
+
+                            Transfer.Builder builder = Transfer.newBuilder();
+
+                            builder.setType("room-out");
+                            builder.setUserId(userId);
+                            builder.setNickName(nick);
+
+                            channelGroup.writeAndFlush(builder.build());
+                        }
+
+                        redisTemplate.opsForHash().delete(uPrefix + userId).subscribe();
+                        redisTemplate.opsForValue().delete(cPrefix + channelId).subscribe();
+
+                        return Mono.empty();
+                    }))
+            .subscribe();
+
+
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[CLOSED] Remote Address: " + remoteAddress);
     }
@@ -92,7 +149,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     break;
                 case "room-out":
                     log.info("방 퇴장 : {}", trans.getUserId());
-                    roomService.roomOut(ctx.channel(), trans);
+                    roomService.roomOut(ctx.channel());
                     break;
                 case "seat-start":
                     // TODO 자리양도
@@ -101,13 +158,13 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     log.info("자리양도 시작 : {}", userId);
                     Mono<String> res = roomService.seatStart(userId);
                     res.subscribe(
-                            i -> {
-                                if (i != null) {
-                                    log.info("자리양도 시작 요청 완료 : {}", userId);
+                        i -> {
+                            if (i != null) {
+                                log.info("자리양도 시작 요청 완료 : {}", userId);
 
-                                    messageService.sendMessageToRoom(trans, "userId", userId);
-                                }
+                                messageService.sendMessageToRoom(trans, "userId", userId);
                             }
+                        }
                     );
 
                     break;

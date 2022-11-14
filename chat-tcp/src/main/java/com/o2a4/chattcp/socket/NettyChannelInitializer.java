@@ -5,6 +5,8 @@ import com.o2a4.chattcp.proto.TransferOuterClass;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -32,6 +34,7 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
         // 뒤이어 처리할 디코더, 로거 및 핸들러 추가
         pipeline
                 //ProtoBuf Decoder
+//                .addLast(new LengthFieldBasedFrameDecoder(65535,0,2))
                 .addLast(new ProtobufVarint32FrameDecoder())
                 .addLast(new ProtobufDecoder(TransferOuterClass.Transfer.getDefaultInstance()))
                 //Logger, Event Handler

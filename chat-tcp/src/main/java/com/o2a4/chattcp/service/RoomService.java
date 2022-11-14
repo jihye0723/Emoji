@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -33,7 +36,7 @@ public class RoomService {
 
     public void roomIn(Channel channel, Transfer trans) {
         String userId = trans.getUserId();
-        redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
+        redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
                 .flatMap(
                         cg -> {
                             String channelId = channel.id().asShortText();
@@ -42,62 +45,47 @@ public class RoomService {
                             tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
                             // 채널Id 채널 맵에 추가
                             cidcRepo.getChannelIdChannelMap().put(channelId, channel);
+                            // 채널Id 유저id Redis에 저장
+                            return redisTemplate.opsForValue().set(cPrefix + channelId, userId)
+                                    .flatMap(i ->
+                                            redisTemplate.expire(cPrefix + channelId, Duration.ofHours(3))
+                                    ).flatMap(i ->
+                                            redisTemplate.opsForHash().get(tPrefix + cg, "villain")
+                                            .flatMap(v -> {
+                                                // Content에 빌런 수 전달
+                                                Transfer send = Transfer.newBuilder(trans).setContent(v.toString()).build();
 
-                            return redisTemplate.opsForHash().get(tPrefix + cg, "villain")
-                                    .flatMap(v -> {
-                                        // Content에 빌런 수 전달
-                                        Transfer send = Transfer.newBuilder(trans).setContent(v.toString()).build();
+                                                Map<String, String> aMap = new HashMap<>();
+                                                aMap.put("channel", channelId);
+                                                aMap.put("nickName", trans.getNickName());
 
-                                        return redisTemplate.opsForHash().put(uPrefix + userId, "channel", channelId)
-                                                .doOnSubscribe(i -> {
-                                                            log.info("ROOM IN MESSAGE SENDING");
-                                                            tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
-                                                        }
-                                                );
-                                    });
+                                                return redisTemplate.opsForHash().putAll(uPrefix + userId, aMap)
+                                                        .doOnSubscribe(a -> {
+                                                                    log.info("ROOM IN MESSAGE SENDING");
+                                                                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+                                                                }
+                                                        );
+                                            }));
 //                            return redisTemplate.opsForValue().set(cPrefix + channelId, userId).flatMap(i -> {})
                         })
                 .subscribe();
     }
 
-    public void roomOut(Channel channel, Transfer trans) {
-        String userId = trans.getUserId();
-        String channelId = channel.id().asShortText();
-
-        redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
-                .flatMap(cg -> {
-                    // 채널Id 채널 맵에서 제거
-                    cidcRepo.getChannelIdChannelMap().remove(channelId);
-                    // 열차 채팅방에서 채널 제거 (close하면 알아서 channelGroup에서 제거됨)
-                    channel.close();
-
-                    ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
-                    if (channelGroup != null && channelGroup.size() == 0) {
-                        log.info("REMOVE TRAIN {} SERVER", cg);
-                        // 메모리에서 채널그룹 제거
-                        tcgRepo.getTrainChannelGroupMap().remove(cg);
-                    } else {
-                        log.info("ROOM OUT MESSAGE SENDING");
-                        channelGroup.writeAndFlush(trans);
-                    }
-
-                    return redisTemplate.opsForHash().delete(uPrefix + userId);
-                }).subscribe();
+    public void roomOut(Channel channel) {
+        channel.close();
     }
 
     public Mono<String> seatStart(String userId) {
-        // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
         Mono<String> res = webClient.get().uri("http://localhost:8082/seat/" + userId)
                 .retrieve().bodyToMono(String.class);
 
-//        RestTemplate restTemplate = new RestTemplate();
-//        String res= restTemplate.getForObject("http://localhost:8082/seat/"+userId, String.class);
         return res;
     }
 
     public void seatEnd(Seats seat) {
+        log.info("자리 양도 종료 호출");
         String userId = seat.getUserId();
         String winnerId = seat.getWinnerId();
         // 위치 정보에서 비속어 필터링

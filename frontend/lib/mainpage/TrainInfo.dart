@@ -19,7 +19,7 @@ class TrainInfo {
 }
 
 class Train {
-  final String? line;
+  final String line;
   final int direction;
   final String trainNo;
   final int remainTime;

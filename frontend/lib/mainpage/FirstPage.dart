@@ -9,7 +9,7 @@ import 'package:practice_01/mainpage/APIResponse.dart';
 import 'package:practice_01/mainpage/JsonReform.dart';
 import 'package:practice_01/mainpage/LineCodeToName.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'CustomSlider.dart';
+import 'TrainArrival.dart';
 import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
 import 'package:http/http.dart' as http;
@@ -25,13 +25,12 @@ class FirstPage extends StatefulWidget {
 
 class _FirstPageState extends State<FirstPage> {
   TrainInfo _trainInfo = TrainInfo(stationName: "", trainList: []);
-  APIResponse _apiResponse = APIResponse(realtimeArrivalList: []);
   String _userId = "";
+  bool _loadedLocation = false;
   bool _loadedInfo = false;
   Position? _currentPosition;
-  bool _checkedPosition = false;
-  // String _stationName = "무슨무슨역";
   int _itemCount = 0;
+  String _stationName = "";
 
   RefreshController _controller = RefreshController(initialRefresh: false);
 
@@ -81,38 +80,57 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   // 페이지 리로드  (Todo)
-  void _onRefresh() async {
+  _onRefresh() async {
+    print("refresh!!!!");
     await Future.delayed(const Duration(milliseconds: 100));
     // setState(() {
     //   _loadedInfo = false;
     // });
-    print("refresh!!!!");
     // loadTrainInfo().then((value) => setState(() {
     //       _trainInfo = value;
     //       _itemCount = (value.trainList.length / 2).round();
     //       _loadedInfo = true;
     //     }));
     // // print("count : " + _itemCount.toString());
-
-    sendLocationToServer(_currentPosition);
+    setState(() {
+      // _trainInfo = TrainInfo(stationName: "", trainList: []);
+      _loadedInfo = false;
+      _itemCount = 0;
+    });
+    await sendLocationToServer();
+    print("onRefresh, stationName : " + _trainInfo.stationName);
     _controller.refreshCompleted();
   }
 
   // 위치 정보 서버로 전달 (Todo)
-  void sendLocationToServer(Position? position) {
-    if (position == null) {
+  sendLocationToServer() async {
+    if (!_loadedLocation) {
+      await getLocation().then((value) {
+        setState(() {
+          _currentPosition = value;
+        });
+      });
+    }
+    if (_currentPosition == null) {
       print("position is NULL in sendLocationToServer");
       setState(() {
-        _loadedInfo = false;
-        // _apiResponse = TrainInfo(stationName: "stationName", trainList: []);
+        _loadedLocation = false;
       });
     } else {
-      Uri uri = Uri.http("10.0.2.2:8082", "/subway/station", {
-        "latitude": position.latitude.toString(),
-        "longtitude": position.longitude.toString()
+      setState(() {
+        _loadedLocation = true;
+      });
+      Uri uri = Uri.http("k7a6021.p.ssafy.io:8082", "/subway/station", {
+        // "latitude": position.latitude.toString(),
+        // "longtitude": position.longitude.toString()
+        "latitude": 37.500643.toString(),
+        "longtitude": 127.036377.toString()
       });
 
-      http.post(uri).then((data) {
+      http.get(uri).then((data) {
+        print("data : $data");
+        print("data.body.length : ${data.body.length}");
+        print("요청 uri : ${uri.toString()}");
         print("요청 결과 : ${data.body.toString()}");
         dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
         // for (dynamic item in jsonParsed) {
@@ -138,13 +156,15 @@ class _FirstPageState extends State<FirstPage> {
             print(item.toString());
           }
         });
+      }).then((value) {
+        print("stationName : " + _trainInfo.stationName);
       });
     }
   }
 
   @override
   void initState() {
-    _controller = RefreshController();
+    _controller = RefreshController(initialRefresh: true);
     setState(() {
       _userId = widget.userId;
     });
@@ -153,9 +173,9 @@ class _FirstPageState extends State<FirstPage> {
       print("init 에서 sendLocationToServer 실행");
       setState(() {
         _currentPosition = value;
-        _checkedPosition = true;
+        _loadedLocation = true;
       });
-      sendLocationToServer(_currentPosition);
+      sendLocationToServer();
     });
     super.initState();
   }
@@ -180,7 +200,7 @@ class _FirstPageState extends State<FirstPage> {
         ),
         child: _loadedInfo
             ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
-            : Text("로딩중", style: TextStyle(fontSize: 32.sp, color: Colors.red)),
+            : Text(""),
       ),
     );
 
@@ -198,8 +218,9 @@ class _FirstPageState extends State<FirstPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 ti.trainList.isEmpty
-                    ? Text("Empty")
-                    : CustomSlider(
+                    ? Text("도착정보가 존재하지 않아요")
+                    // : CustomSlider(
+                    : TrainArrival(
                         userId: widget.userId,
                         stationName: ti.stationName,
                         train: ti.trainList[idx * 2],
@@ -211,11 +232,13 @@ class _FirstPageState extends State<FirstPage> {
                         shape: BoxShape.circle,
                         color: ti.trainList.isEmpty
                             ? Colors.white60
-                            : lineColor(ti.trainList[idx * 2].line!)),
+                            : lineColor(ti.trainList[idx * 2].line)),
                     child: Container(
                       alignment: Alignment.center,
                       child: Text(
-                        lineCodeName[ti.trainList[idx * 2].line] ?? "으악",
+                        // lineCodeName(_trainInfo.trainList[idx * 2].line),
+                        ti.trainList[idx * 2].line + "\n" + ti.stationName,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 10.sp,
@@ -223,8 +246,9 @@ class _FirstPageState extends State<FirstPage> {
                       ),
                     )),
                 ti.trainList.isEmpty
-                    ? Text("TrainList is Empty")
-                    : CustomSlider(
+                    ? Text("도착정보가 존재하지 않아요")
+                    // : CustomSlider(
+                    : TrainArrival(
                         userId: widget.userId,
                         stationName: ti.stationName,
                         train: ti.trainList[(idx * 2) + 1],
@@ -276,21 +300,27 @@ class _FirstPageState extends State<FirstPage> {
           children: <Widget>[
             stationNameSection,
             Expanded(
-                child: Scaffold(
-              body: SmartRefresher(
+              child: Scaffold(
+                body: SmartRefresher(
                   enablePullDown: true,
                   controller: _controller,
                   onRefresh: _onRefresh,
-                  child: _itemCount == 0
-                      ? Text("count is 0")
-                      : ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          padding: EdgeInsets.all(8.w),
-                          itemCount: _itemCount,
-                          itemBuilder: (BuildContext context, int index) {
-                            return stationInfoSection(index, _trainInfo);
-                          })),
-            )),
+                  child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      padding: EdgeInsets.all(8.w),
+                      itemCount: _itemCount,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (!_loadedInfo) {
+                          return Text("Loading Fail");
+                        } else if (_itemCount == 0) {
+                          return Text("There is No Train");
+                        } else {
+                          return stationInfoSection(index, _trainInfo);
+                        }
+                      }),
+                ),
+              ),
+            ),
             advBoardSection,
           ],
         ),

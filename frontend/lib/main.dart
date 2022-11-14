@@ -9,7 +9,9 @@ import 'package:video_player/video_player.dart';
 
 // 메인 함수
 void main() async {
-  KakaoSdk.init(nativeAppKey: '9e8f2d7dc89324523cecae5569e5f764',);
+  KakaoSdk.init(
+    nativeAppKey: '9e8f2d7dc89324523cecae5569e5f764',
+  );
   await ScreenUtil.ensureScreenSize();
   runApp(const MyApp());
 }
@@ -21,20 +23,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(360, 800),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: "메인페이지",
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          home: SplashScreen()
-        );
-      }
-    );
+        designSize: const Size(360, 800),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: "메인페이지",
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              home: SplashScreen());
+        });
   }
 }
 
@@ -53,8 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void hasToken() async {
     if (await AuthApi.instance.hasToken()) {
       try {
-        AccessTokenInfo tokenInfo =
-        await UserApi.instance.accessTokenInfo();
+        AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
         weHaveToken = true;
         print('토큰 유효성 체크 성공 ${tokenInfo.id} ${tokenInfo.expiresIn}');
       } catch (error) {
@@ -95,7 +94,8 @@ class _SplashScreenState extends State<SplashScreen> {
       // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
     } else {
       //토큰이 없다면, 로그인 페이지로 넘겨주어야 한다.
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
     }
   }
 
@@ -112,16 +112,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     ScreenUtil.init(context, designSize: const Size(360, 800));
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child:AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(
-            _controller,
-          )
-        )
-      )
-    );
+        backgroundColor: Colors.white,
+        body: Center(
+            child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(
+                  _controller,
+                ))));
   }
 }
-

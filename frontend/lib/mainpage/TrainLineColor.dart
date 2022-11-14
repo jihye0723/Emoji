@@ -2,7 +2,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-lineColor(String line) {
+lineColor(String? line) {
   Color _color = Colors.white60;
 
   switch (line) {
@@ -47,9 +47,6 @@ lineColor(String line) {
       break;
     case "공항철도":
       _color = Color(0xff6CA8CE);
-      break;
-    case "에버라인":
-      _color = Color(0xff6FB26C);
       break;
     default:
       break;

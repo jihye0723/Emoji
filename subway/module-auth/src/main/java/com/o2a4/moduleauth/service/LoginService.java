@@ -31,13 +31,13 @@ public class LoginService {
     @Transactional
     public TokenInfo kakaoLogin(String accessToken) throws JsonProcessingException {
         // 사용자 정보 읽어오기
-//        Member memberInfo = loginAPIClient.getUserInfo(accessToken);
+        Member memberInfo = loginAPIClient.getUserInfo(accessToken);
 
         // test
-        Member memberInfo = new Member();
-        memberInfo.setKakaoId("ssafy");
-        memberInfo.setEmail("ssafy@google.com");
-        memberInfo.setUuid("a5dedf83-a737-4482-80d4-f04ce346440d");
+//        Member memberInfo = new Member();
+//        memberInfo.setKakaoId("ssafy");
+//        memberInfo.setEmail("ssafy@google.com");
+//        memberInfo.setUuid("a5dedf83-a737-4482-80d4-f04ce346440d");
 
         log.info("1");
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberInfo.getEmail(), memberInfo.getUuid());

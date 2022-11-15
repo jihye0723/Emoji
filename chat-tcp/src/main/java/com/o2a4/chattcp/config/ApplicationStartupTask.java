@@ -15,7 +15,12 @@ public class ApplicationStartupTask implements ApplicationListener<ApplicationRe
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        nettyServerSocket.start();
+        try {
+            nettyServerSocket.start();
+        }
+        finally {
+            nettyServerSocket.stop();
+        }
     }
 
 }

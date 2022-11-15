@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
+import '../models/chat.dart';
+import '../models/db.dart' as dbhelper;
 import '/models/Transfer.pb.dart';
 import '/http/chathttp.dart' as http;
 import '/utils/snackbar.dart' as snackbar;
@@ -60,7 +62,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late int villaincount;
 
   //자리양도 신청 리스트
-  late List<String> attendlist;
+  late List<String> attendlist = [];
 
   // http 통신용
   late Future<dynamic> seatresult;
@@ -148,13 +150,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     socket.listen((
       Uint8List data,
     ) {
-      var serverdata = data.getRange(1, data.length);
+      var serverdata = data.getRange(2, data.length);
 
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
       print(receive);
 
-      if (receive.userId == widget.myId) {
+      if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
 
@@ -172,6 +174,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "msg") {
+          var chatmsg = Chat(
+            userid: receive.userId,
+            content: receive.content,
+            datetime: receive.sendAt,
+          );
+          save(chatmsg);
           //showResult();
           makeMessage(receive.content, receive.nickName, receive.userId);
         }
@@ -211,7 +219,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           setState(() {
             villaincount = int.parse(receive.content);
           });
-          //makeMessage(receive.content, receive.nickName, receive.userId);
         }
 
         if (receive.type == "villain-off") {
@@ -220,10 +227,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           setState(() {
             villaincount = int.parse(receive.content);
           });
-
-          //makeMessage(receive.content, receive.nickName, receive.userId);
         }
       } else if (receive.userId == widget.myId) {
+        if (receive.type == "room-in") {
+          //빌런값 초기 설정
+          /*
+          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
+          */
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+        }
         if (receive.type == "seat-win") {
           for (int i = 0; i < attendlist.length; i++) {
             if (attendlist.elementAt(i) == receive.userId) {
@@ -572,8 +586,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var temp = await attendseat;
 
     Timer(Duration(seconds: 2), () async {
-      if (temp == "OK")
-        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
+      if (temp == "OK") snackbar.showSnackBar(context, '양도 신청 완료', 'common');
     });
   }
 
@@ -582,7 +595,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // tcp서버에 시작한다고 알려주고
     tcpsend("seat-start", "시작", widget.myId, widget.myName);
 
-    snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
+    snackbar.showSnackBar(context, '자리양도가 개최되었습니다.', 'common');
     var temp;
 
     //10초 딜레이후에 rest보내
@@ -595,7 +608,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
     Timer(Duration(seconds: 12), () async {
       if (temp == "OK")
-        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
+        snackbar.showSnackBar(context, '자리양도가 완료되었습니다.', 'common');
     });
 
     _seatController.clear();
@@ -738,10 +751,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(
-                              context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
                           tcpsend("villain-on", "", widget.myId, widget.myName);
+                          snackbar.showSnackBar(
+                              context, '접수가 완료 되었습니다.', 'common');
                         },
                         child: const SizedBox(child: Text("😫 나타났어요!")),
                       ),
@@ -760,7 +773,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           snackbar.showSnackBar(
                               context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
-                          //tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
+                          tcpsend(
+                              "villain-off", "", widget.myId, widget.myName);
                         },
                         child: const SizedBox(child: Text("😄 사라졌어요!")),
                       ),
@@ -778,22 +792,31 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final date =
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
+    var chatmsg = Chat(userid: id, content: text, datetime: date);
+    save(chatmsg);
+
     Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
 
     int leng = message.length;
-    int msgByteLen = 1;
+    int msgByteLen = 2;
     var header = ByteData(msgByteLen);
-    header.setUint8(0, leng);
+    header.setUint16(0, leng);
 
-    var sendmessage =
-        header.buffer.asUint8List() + message.buffer.asUint8List();
+    var sendmessage = header.buffer.asUint8List() + message;
 
     print(sendmessage.length);
     print(sendmessage.runtimeType);
     socket.add(sendmessage);
     //socket.add(message);
-    //socket.flush();
+    socket.flush();
   }
+}
+
+// 메시지 local db 에 저장
+void save(Chat chat) async {
+  await dbhelper.DBHelper.insertChat(chat);
+  print("메시지 저장");
+  print(await dbhelper.DBHelper.getChat());
 }
 
 /*----------------------메세지 만드는 클래스----------------------------*/

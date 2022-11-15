@@ -4,8 +4,9 @@ import '../models/nick_data.dart' as nick;
 
 ///////// 유저 프로필사진만들기위한 것
 Widget getAvatar(name) {
-  String lastname =
-      name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
+  String lastname = name.split(" ")[1];
+  // name[name.length - 3] + name[name.length - 2] + name[name.length - 1];
+
   String animal = lastname.trim();
   switch (animal) {
     case '타조':

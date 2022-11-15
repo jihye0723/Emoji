@@ -47,6 +47,7 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
       defaultZone: http://172.26.12.212:8761/eureka/
 
 ---
@@ -63,4 +64,5 @@ eureka:
 #spring.jpa.database= mysql
 #spring.jpa.database-platform= org.hibernate.dialect.MySQL5InnoDBDialect
 #spring.jpa.defer-datasource-initialization= true
+
 ---

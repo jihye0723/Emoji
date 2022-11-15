@@ -12,6 +12,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  String customFont = 'cafe24_surround';
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +31,16 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('이', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 70),),
-                    Text('름 ', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 50),),
-                    Text('모', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 70),),
-                    Text('를 ', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 50),),
-                    Text('지', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 70),),
-                    Text('하철', style: TextStyle(fontFamily: 'samlip_outline', fontSize: 50),),
+                    Spacer(flex: 1),
+                    Text('이', style: TextStyle(fontFamily: customFont, fontSize: 60),),
+                    Text('름', style: TextStyle(fontFamily: customFont, fontSize: 45),),
+                    Spacer(flex: 1),
+                    Text('모', style: TextStyle(fontFamily: customFont, fontSize: 60),),
+                    Text('를', style: TextStyle(fontFamily: customFont, fontSize: 45),),
+                    Spacer(flex: 1),
+                    Text('지', style: TextStyle(fontFamily: customFont, fontSize: 60),),
+                    Text('하철', style: TextStyle(fontFamily: customFont, fontSize: 45),),
+                    Spacer(flex: 1),
                   ],
                 ),
                 Spacer(flex: 1),

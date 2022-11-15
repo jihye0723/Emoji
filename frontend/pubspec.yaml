@@ -106,6 +106,9 @@ flutter:
     - family: samlip_outline
       fonts:
         - asset: assets/fonts/SDSamliphopangcheTTFOutline.ttf
+    - family: cafe24_surround
+      fonts:
+        - asset: assets/fonts/Cafe24Ssurround.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

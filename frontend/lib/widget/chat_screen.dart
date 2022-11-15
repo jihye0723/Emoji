@@ -797,6 +797,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
 
+    var chatmsg = Chat(userid: id, content: text, datetime: date);
+    save(chatmsg);
+
     int leng = message.length;
     int msgByteLen = 2;
     var header = ByteData(msgByteLen);

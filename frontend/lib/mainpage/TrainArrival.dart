@@ -38,7 +38,7 @@ class _TrainArrivalState extends State<TrainArrival> {
   @override
   void initState() {
     setState(() {
-      _remainTime = (widget.train.remainTime / 60).round();
+      _remainTime = (widget.train.remainTime / 60).floor();
 
       _arrivalInfo = setArrivalInfo(_remainTime);
 

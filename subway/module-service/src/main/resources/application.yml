@@ -18,6 +18,7 @@ spring:
 spring:
   main:
     allow-bean-definition-overriding: true
+
 ---
 
 # port
@@ -41,3 +42,16 @@ spring:
     host: 52.79.215.19
     port: 6379
     password: o2a4redis
+
+---
+
+# eureka
+eureka:
+  instance:
+    appname: module-service
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://172.26.12.212:8761/eureka/

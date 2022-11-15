@@ -6,6 +6,8 @@ spring:
     name: discoverservice
 
 eureka:
+  instance:
+    appname: eureka-server
   client:
     register-with-eureka: false
     fetch-registry: false

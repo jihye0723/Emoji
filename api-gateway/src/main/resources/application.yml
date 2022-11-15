@@ -1,1 +1,29 @@
-
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - name: GlobalFilter
+          agrs:
+          preLogger: true
+          postLogger: true
+      routes:
+        - id: module-auth
+          uri: lb://MODULE-AUTH
+          predicates:
+#            - Path=/oauth/**
+            - name: Path
+              args:
+                patterns: /oauth/**
+            - name: Method
+              args:
+                methods:
+                  - GET, POST
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: recruitlist
+                fallbackUri: forward:/fallbacks/7
+            - name: RewritePath
+              args:
+                regexp: /recruit/(?<path>.*)
+                replacement: /$\{path}

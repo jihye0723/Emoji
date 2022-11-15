@@ -18,30 +18,25 @@ class _KakaoLoginButtonState extends State<KakaoLoginButton> {
   
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('${viewModel.isLogined}'),
-        ElevatedButton(
-          onPressed: () async {
-            await viewModel.login();
-            setState(() {
-            });
-            if (viewModel.isLogined) {
-              Navigator.of(context).pop();
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-            } else {
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)
-            ),
-          ),
-          child: Image.asset('assets/images/icon-kakao-login.png'),
+    return ElevatedButton(
+      onPressed: () async {
+        await viewModel.login();
+        setState(() {
+        });
+        if (viewModel.isLogined) {
+          Navigator.of(context).pop();
+          Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+        } else {
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)
         ),
-      ],
+      ),
+      child: Image.asset('assets/images/icon-kakao-login.png'),
     );
   }
 }

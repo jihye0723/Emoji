@@ -22,6 +22,8 @@ class MainViewModel {
       isLogined = true;
       // jwtToken.body 는 postman 에서의 response.body 와 같은 결과를 출력한다.
       // accessToken 과 refreshToken 을 각각 추출하였다.
+      print(jwtToken.body);
+      print('ddfddfdfdfddfdffdfdf');
       String accessToken = json.decode(jwtToken.body)['accessToken'];
       String refreshToken = json.decode(jwtToken.body)['refreshToken'];
 

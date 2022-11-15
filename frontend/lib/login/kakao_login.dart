@@ -14,7 +14,7 @@ class KakaoLogin implements SocialLogin {
     // baseUrl += 'access-token=$tkn';
 
     // 안드로이드 에뮬레이터가 localhost대신 10.0.2.2를 사용하므로,
-    var uri = Uri.http('10.0.2.2:8081', '/oauth/kakao-login', { 'access-token' : tkn });
+    var uri = Uri.http('k7a6021.p.ssafy.io:8081', '/oauth/kakao-login', { 'access-token' : tkn });
 
     var res = await http.post(uri);
     return res;

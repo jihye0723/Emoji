@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
     //playing video
     _controller.play();
     //add delay till video is complete
-    await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 2));
 
     // 이미 저장되어 있는 AccessToken 이 존재한다면,
     if (userAccessToken != null) {
@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
       print('저장되어 있는 토큰이 없습니다!!');
       // 로그인 페이지로 이동하게 된다.
       Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
     }
   }
 

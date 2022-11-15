@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '/utils/snackbar.dart' as snackbar;
 
 import '../models/station.dart' as stationData;
 import '../widget/chat_screen.dart';
@@ -30,7 +31,7 @@ class TextChat extends StatefulWidget {
 
   //현재역 찾기
   late String _info = "";
-  late String _destination = "역삼";
+  late String _destination = "";
 
   @override
   State<TextChat> createState() => _TextChatState();
@@ -63,17 +64,18 @@ class _TextChatState extends State<TextChat> {
 
     //시간마다 정보변경
     setState(() {
-      _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      _timer = Timer.periodic(Duration(seconds: 90), (timer) {
         test();
         //print(widget._info);
         if (widget._info == widget._destination) {
+          snackbar.showSnackBar(context, '목적지에 도착 예정입니다.', 'common');
           _timer?.cancel();
         }
       });
     });
   }
 
-  void makeroom(){
+  void makeroom() {
     roomname = widget.train + "-" + widget.room;
   }
 
@@ -246,7 +248,10 @@ class _TextChatState extends State<TextChat> {
       ),
       body: Center(
         child: ChatScreen(
-            myId: widget.myuserId, myName: widget.mynickName, color: _color, room : roomname ),
+            myId: widget.myuserId,
+            myName: widget.mynickName,
+            color: _color,
+            room: roomname),
       ),
     );
   }

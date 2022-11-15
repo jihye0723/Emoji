@@ -24,7 +24,7 @@ class DBHelper {
       join(await getDatabasesPath(), 'o2a4.db'),
       onCreate: (db, version){
         return db.execute(
-          "CREATE TABLE chats(id INTEGER PRIMARY KEY, userid text, content TEXT, datetime TEXT)",
+          "CREATE TABLE chats(userid text, content TEXT, datetime TEXT)",
          );
        },
       version : 1,
@@ -39,6 +39,20 @@ class DBHelper {
         chat.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+    }
+
+    static Future<List<Chat>> getChat() async{
+      final Database db = await database;
+
+      final List<Map<String, dynamic>> maps = await db.query('chats');
+
+      return List.generate(maps.length, (i) {
+        return Chat(
+            userid: maps[i]['userid'],
+            content: maps[i]['content'],
+            datetime: maps[i]['datetime'],
+        );
+      });
     }
   }
 

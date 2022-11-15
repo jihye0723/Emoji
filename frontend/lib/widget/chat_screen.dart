@@ -37,10 +37,10 @@ late String myuserId;
 class ChatScreen extends StatefulWidget {
   const ChatScreen(
       {super.key,
-      required this.myId,
-      required this.myName,
-      required this.color,
-      required this.room});
+        required this.myId,
+        required this.myName,
+        required this.color,
+        required this.room});
 
   final String myId;
   final String myName;
@@ -150,9 +150,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
       if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
-          
+
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
-          
+
           //빌런값 초기 설정
           setState(() {
             villaincount = int.parse(receive.content);
@@ -164,6 +164,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "msg") {
+          var chatmsg = Chat(
+            userid : receive.userId,
+            content : receive.content,
+            datetime: receive.sendAt,
+          );
+          save(chatmsg);
           //showResult();
           makeMessage(receive.content, receive.nickName, receive.userId);
         }
@@ -221,11 +227,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
       }
     },
-    onError: (error){print(error);},
-      onDone: (){
-        socket.destroy();
-      },
-      cancelOnError: false
+        onError: (error){print(error);},
+        onDone: (){
+          socket.destroy();
+        },
+        cancelOnError: false
     );
   }
 
@@ -272,6 +278,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     setState(() {
       _message.insert(0, message);
     });
+
 
     // 위젯의 애니메이션 효과 발생
     message.animationController.forward();
@@ -367,7 +374,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     onSubmitted: _isComposing ? _handleSubmitted : null,
                     // 텍스트 필드에 힌트 텍스트 추가
                     decoration:
-                        const InputDecoration.collapsed(hintText: "채팅을 입력하세요"),
+                    const InputDecoration.collapsed(hintText: "채팅을 입력하세요"),
                     focusNode: chatNode,
                   ),
                 ),
@@ -500,7 +507,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           filled: true,
                           fillColor: Color(0xfff8f8f8),
                           hintText:
-                              "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
+                          "예) 저는 파란색 외투를 입고 있고, 빨간색 신발을 신고 있어요. 역삼역에서 내릴게요~",
                           border: OutlineInputBorder(),
                         ),
                       )
@@ -576,11 +583,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(10.0)),
               //Dialog Main Title
               title: Column(
-                children: <Widget>[                 
-                      Text(
-                          "당첨!",
-                          style: TextStyle(fontSize: 25.sp),
-                        )                      
+                children: <Widget>[
+                  Text(
+                    "당첨!",
+                    style: TextStyle(fontSize: 25.sp),
+                  )
                 ],
               ),
               //
@@ -726,18 +733,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   //TCP서버에 메시지 보내는 메소드
   void tcpsend(String type, String text, String id, String nick) {
     final date =
-        DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+    DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
 
     Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
 
     var chatmsg = Chat(
-      id : 0,
-      userid : id,
-      content : text,
-      datetime: date
+        userid : id,
+        content : text,
+        datetime: date
     );
+    save(chatmsg);
 
-    dbhelper.DBHelper.insertChat(chatmsg);
+
 
     int leng = message.length;
     int msgByteLen = 1;
@@ -753,7 +760,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     socket.flush();
   }
 }
-
+// 메시지 local db 에 저장
+void save(Chat chat) async {
+  await dbhelper.DBHelper.insertChat(chat);
+  print("메시지 저장");
+  print(await dbhelper.DBHelper.getChat());
+}
 /*----------------------메세지 만드는 클래스----------------------------*/
 class ChatMessage extends StatelessWidget {
   final String text; // 출력할 메시지
@@ -763,18 +775,18 @@ class ChatMessage extends StatelessWidget {
 
   const ChatMessage(
       {super.key,
-      required this.text,
-      required this.userId,
-      required this.animationController,
-      required this.nickName});
+        required this.text,
+        required this.userId,
+        required this.animationController,
+        required this.nickName});
 
   @override
   Widget build(BuildContext context) {
     // 위젯에 애니메이션을 발생하기 위해 SizeTransition 을 추가
     return SizeTransition(
       sizeFactor:
-          // 사용할 애니메이션 효과 설정
-          CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+      // 사용할 애니메이션 효과 설정
+      CurvedAnimation(parent: animationController, curve: Curves.easeOut),
       axisAlignment: 0.0,
       child: (nickName == "alert")
           ? alarm.alarm(context, nickName, text)

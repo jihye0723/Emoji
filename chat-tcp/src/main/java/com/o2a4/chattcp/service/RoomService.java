@@ -100,7 +100,6 @@ public class RoomService {
         builder.setUserId(userId);
         builder.setSendAt(time);
 
-        // TODO 메시지 안간다
         // 당첨자 메시지 전송
         messageService.sendMessageToOne(builder.build(), winnerId);
 
@@ -135,9 +134,9 @@ public class RoomService {
                 .flatMap(cg ->
                         redisTemplate.opsForHash().get(tPrefix + cg, "villain")
                                 .flatMap(num -> {
-                                    log.info("SEND VILLAIN OFF");
+                                    log.info("SEND VILLAIN OFF - num before : {}", num);
 
-                                    int n = Integer.valueOf(String.valueOf(num));
+                                    int n = Integer.parseInt(String.valueOf(num));
                                     if (n == 0) {
                                         return Mono.empty();
                                     }
@@ -145,7 +144,7 @@ public class RoomService {
                                     Transfer send = Transfer.newBuilder(trans).setContent(String.valueOf(n - 1)).build();
                                     tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
 
-                                    return redisTemplate.opsForHash().put(tPrefix + cg, "villain", n - 1);
+                                    return redisTemplate.opsForHash().put(tPrefix + cg, "villain", String.valueOf(n - 1));
                                 })
                 )
                 .subscribe();

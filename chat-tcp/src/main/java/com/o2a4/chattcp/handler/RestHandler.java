@@ -119,12 +119,16 @@ public class RestHandler {
     }
 
     /*
-    * 자리양도 완료 처리 */
+     * 자리양도 완료 처리 */
     public Mono<ServerResponse> finishSeat(ServerRequest request) {
         try {
-            request.bodyToMono(Seats.class).subscribe(data -> roomService.seatEnd(data));
+            Mono<Seats> req = request.bodyToMono(Seats.class);
 
-            return ServerResponse.accepted().build();
+            return req.flatMap(data -> {
+                roomService.seatEnd(data);
+
+                return ServerResponse.accepted().build();
+            });
         } catch (Exception e) {
             e.printStackTrace();
 

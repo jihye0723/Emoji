@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
+import org.springframework.web.reactive.function.server.ServerResponse;
 
 @RequiredArgsConstructor
 @Configuration
@@ -14,7 +15,7 @@ public class Router {
     private final RestHandler handler;
 
     @Bean
-    public RouterFunction<?> restRouter() {
+    public RouterFunction<ServerResponse> restRouter() {
         return RouterFunctions.route()
                 .path("/chat", builder -> builder
                         .POST("/in", handler::roomIn))

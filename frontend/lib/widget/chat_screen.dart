@@ -61,8 +61,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   //빌런 상태 확인
   late int villaincount;
 
-  //TCP서버용
+  //자리양도 신청 리스트
+  late List<String> attendlist;
+
+  // http 통신용
+  late Future<dynamic> seatresult;
   late Future<dynamic> portname;
+  late Future<dynamic> attendseat;
+
+  //TCP서버용
   String ip = "10.0.2.2";
   int port = 0;
 
@@ -80,7 +87,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   void findroom() async {
-
     // 아이디와 열차정보로 포트주소 알아내기
     //portname = http.enterRoom(widget.myId, widget.room);
     portname = http.chatroom().getPort(widget.myId, widget.room);
@@ -88,12 +94,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var temp = await portname;
 
     //받아온 포트 적용
-    port = int.parse(temp);
-    if (port == -1) {
-      //중복된 사용자 에러 처리... 어찌할지
-      print("error");
-    } else {
-      //채팅 생성
+    if (temp != null) {
+      port = int.parse(temp);
       create();
     }
   }
@@ -108,10 +110,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     chatNode.dispose();
 
     //소켓 연결되어있는 상태일때만
-    if (port != -1) {
+    if (port != 0) {
       //서버에 나간다고 알려주고 나가기
       print("hi");
-      tcpsend("room-out", "나갑니다", widget.myId, widget.myName);
+      tcpsend("room-out", "", widget.myId, widget.myName);
       socket.close();
     }
 
@@ -131,9 +133,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //소켓 연결하고 들어왔다 알려주기-----------------------------------------
       //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
       makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
+      /*
+      * 입장과 동시에 villaincount 값을 초기화시켜주어야 함.
+      */
 
       //서버에 전송
-      //tcpsend("room-in", "들어갑니다.", widget.myId, widget.myName);
+      tcpsend("room-in", "", widget.myId, widget.myName);
     } catch (e) {
       makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
       //뒤로가기?
@@ -142,18 +147,23 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     /*------------------------------------------------------------------*/
 
     // 서버에서 채팅날아오면 받기
-    socket.listen((Uint8List data,) {
+    socket.listen((
+      Uint8List data,
+    ) {
       var serverdata = data.getRange(1, data.length);
 
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
+      print(receive);
 
       if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
-
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
 
           //빌런값 초기 설정
+          /*
+          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
+          */
           setState(() {
             villaincount = int.parse(receive.content);
           });
@@ -175,7 +185,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "seat-start") {
-          //자리양도 이벤트 받았을대 띄워주기
+          //자리양도 이벤트 받았을 때 띄워주기
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("자리 양도 이벤트가 발생하였습니다"),
             duration: Duration(seconds: 5),
@@ -186,53 +196,56 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               disabledTextColor: Colors.white,
               textColor: Colors.white,
               onPressed: () {
-
                 //누르면 http통신
-                print(receive.userId);
-
+                attend(context, receive.userId);
               },
             ),
           ));
-
-          //당첨일때
-          //showResult(receive.userId, receive.content);
-
-          //당첨아닐때
-          /*
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("다음 기회에 도전하세요"),
-            duration: Duration(seconds: 1),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            action: SnackBarAction(
-              label: '닫기',
-              disabledTextColor: Colors.white,
-              textColor: Colors.white,
-              onPressed: () {
-              },
-            ),
-          ));
-          */
-
         }
 
+        if (receive.type == "seat-end") {
+          if (attendlist.isNotEmpty) {
+            for (int i = 0; i < attendlist.length; i++) {
+              if (attendlist.elementAt(i) == receive.userId) {
+                attendlist.removeAt(i);
+                showResult("당첨되지 않았습니다", false);
+              }
+            }
+          }
+        }
         if (receive.type == "villain-on") {
           //빌런 탑승
-          makeMessage(receive.content, receive.nickName, receive.userId);
+          snackbar.showSnackBar(context, '새로운 빌런이 나타났어요!', 'villain');
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+          //makeMessage(receive.content, receive.nickName, receive.userId);
         }
 
         if (receive.type == "villain-off") {
           //빌런 하차
-          makeMessage(receive.content, receive.nickName, receive.userId);
+          snackbar.showSnackBar(context, '빌런이 사라졌어요!', 'villain');
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+
+          //makeMessage(receive.content, receive.nickName, receive.userId);
+        }
+      } else if (receive.userId == widget.myId) {
+        if (receive.type == "seat-win") {
+          for (int i = 0; i < attendlist.length; i++) {
+            if (attendlist.elementAt(i) == receive.userId) {
+              attendlist.removeAt(i);
+            }
+          }
+          showResult(receive.content, true);
         }
       }
-    },
-        onError: (error){print(error);},
-        onDone: (){
-          socket.destroy();
-        },
-        cancelOnError: false
-    );
+    }, onError: (error) {
+      print(error);
+    }, onDone: () {
+      socket.destroy();
+    }, cancelOnError: false);
   }
 
   // 텍스트필드 제어용 컨트롤러
@@ -407,7 +420,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     print(text);
     //tcpsend("msg", text, widget.myId, widget.myName);
     //테스트용
-    tcpsend("room-in", text, widget.myId, widget.myName);
+    tcpsend("msg", text, widget.myId, widget.myName);
 
     FocusScope.of(context).requestFocus(chatNode);
 
@@ -542,8 +555,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             });
                             print(introduce);
                             //자리양도 시작했다고 소켓 보내
-                            makeseat(introduce);
-                            snackbar.showSnackBar(context, '자리 양도를 개최하였습니다.');
+                            makeseat(context, introduce);
+                            snackbar.showSnackBar(
+                                context, '자리 양도를 개최하였습니다.', 'common');
                           },
                           child: const SizedBox(child: Text("시작하기")),
                         ),
@@ -557,20 +571,47 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  void makeseat(String text){
-    tcpsend("seat-start", text, widget.myId,
-        widget.myName);
-    _seatController.clear();
+  //자리양도 참석
+  void attend(BuildContext context, String id) async {
+    //리스트에 추가
+    attendlist.add(id);
 
-    //10초 딜레이후에 rest보내
-    Timer(Duration( seconds: 10), () {
-      //http 통신하면됨
+    attendseat = http.chatroom().attend(widget.myId, widget.myId, id);
 
+    var temp = await attendseat;
+
+    Timer(Duration(seconds: 2), () async {
+      if (temp == "OK")
+        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
     });
   }
 
+  //자리양도 만들기
+  void makeseat(BuildContext context, String text) {
+    // tcp서버에 시작한다고 알려주고
+    tcpsend("seat-start", "시작", widget.myId, widget.myName);
+
+    snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
+    var temp;
+
+    //10초 딜레이후에 rest보내
+    Timer(Duration(seconds: 10), () async {
+      //http 통신으로 끝났다고 알려줌
+      seatresult = http.chatroom().finish(widget.myId, widget.myId, text);
+      temp = await seatresult;
+
+      //print(temp);
+    });
+    Timer(Duration(seconds: 12), () async {
+      if (temp == "OK")
+        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
+    });
+
+    _seatController.clear();
+  }
+
   //자리양도결과
-  void showResult(String id, String detail) {
+  void showResult(String detail, bool result) {
     showDialog(
         context: context,
         //barrierDismissible - Dialog를 제외한 다른 화면 터치 x
@@ -584,10 +625,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               //Dialog Main Title
               title: Column(
                 children: <Widget>[
-                  Text(
-                    "당첨!",
-                    style: TextStyle(fontSize: 25.sp),
-                  )
+                  (result == true)
+                      ? Text(
+                          "당첨!",
+                          style: TextStyle(fontSize: 25.sp),
+                        )
+                      : Text(
+                          "다음기회에..",
+                          style: TextStyle(fontSize: 25.sp),
+                        )
                 ],
               ),
               //
@@ -595,12 +641,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
-                    height: 300.h,
-                    width: 300.w,
-                    child: Image.asset("assets/images/celebrating.png"),
-                  ),
+                  (result == true)
+                      ? Container(
+                          padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
+                          height: 300.h,
+                          width: 300.w,
+                          child: Image.asset("assets/images/celebrating.png"),
+                        )
+                      : Container(
+                          padding: EdgeInsets.only(top: 10.h, bottom: 10.h),
+                          height: 300.h,
+                          width: 300.w,
+                          child: Image.asset("assets/images/lose.png"),
+                        ),
                   Text(
                     detail,
                     style: TextStyle(fontSize: 18.sp),
@@ -668,9 +721,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   ],
                 ),
 
-                /*
-                * 빌런이 몇 명 있는지 데이터 받아와야 한다. 일단 임의로 틀만 만들어 보았다.
-                */
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -697,9 +747,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          snackbar.showSnackBar(
+                              context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
-                          // tcpsend("valian-on","등장",widget.myId,widget.myName);
+                          tcpsend("villain-on", "", widget.myId, widget.myName);
                         },
                         child: const SizedBox(child: Text("😫 나타났어요!")),
                       ),
@@ -715,7 +766,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(context, '접수가 완료 되었습니다.');
+                          snackbar.showSnackBar(
+                              context, '접수가 완료 되었습니다.', 'common');
                           //소켓통신
                           //tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
                         },
@@ -755,9 +807,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         header.buffer.asUint8List() + message.buffer.asUint8List();
 
     print(sendmessage.length);
-    print(sendmessage);
+    print(sendmessage.runtimeType);
     socket.add(sendmessage);
-    socket.flush();
+    //socket.add(message);
+    //socket.flush();
   }
 }
 // 메시지 local db 에 저장

@@ -1,3 +1,9 @@
+spring:
+  application:
+    name: module-service
+
+---
+
 # mongo
 spring:
   data:

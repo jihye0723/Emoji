@@ -35,6 +35,20 @@ spring:
 jwt:
   secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
 
+
+---
+
+# eureka
+eureka:
+  instance:
+    appname: module-auth
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://172.26.12.212:8761/eureka/
+
 ---
 
 # mysql

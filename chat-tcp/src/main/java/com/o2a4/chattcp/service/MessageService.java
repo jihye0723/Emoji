@@ -94,7 +94,6 @@ public class MessageService {
 
     public void sendMessageToRoom(Transfer trans, String type, String target) {
         // 채팅방에 메시지 전송
-
         if (type.equals("userId")) {
             redisTemplate.opsForHash().get(uPrefix + target, "channelGroup")
                     .subscribe(cg -> {

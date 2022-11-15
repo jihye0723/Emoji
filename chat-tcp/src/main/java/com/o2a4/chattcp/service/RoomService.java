@@ -100,15 +100,34 @@ public class RoomService {
         builder.setUserId(userId);
         builder.setSendAt(time);
 
-        // 당첨자 메시지 전송
-        messageService.sendMessageToOne(builder.build(), winnerId);
-
         Transfer.Builder b2 = Transfer.newBuilder(builder.build())
                 .setType("seat-end")
                 .setContent("");
 
-        // 채팅방 전체 메시지 전송
-        messageService.sendMessageToRoom(b2.build(), "userId", userId);
+        // TODO 버퍼가 두개 붙은게 먼저 전송되고 두 번쨰 전송은 하나의 메시지만 전달이 됨. 왜 두개가 합쳐지지?
+
+        // 이 형태는 2개 합친거 한번에 전송
+        // 당첨자 메시지 전송
+        redisTemplate.opsForHash().get(uPrefix + winnerId, "channel")
+                .doOnNext(c -> {
+                    // 유저 한 명에게 메시지 전송
+                    log.info("SEND MESSAGE TO USER");
+                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(builder.build());
+                }).flatMap(c ->
+                    redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
+                ).doOnNext(cg -> {
+                    // 채팅방에 메시지 전송
+                    log.info("SEND MESSAGE TO ROOM");
+                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(b2.build());
+                })
+                .subscribe();
+
+        // 이 형태는 2개 합친거 -> 뒤에거 전송
+//        // 당첨자 메시지 전송
+//        messageService.sendMessageToOne(builder.build(), winnerId);
+//
+//        // 채팅방 전체 메시지 전송
+//        messageService.sendMessageToRoom(b2.build(), "userId", userId);
     }
 
     public void villainOn(Transfer trans) {

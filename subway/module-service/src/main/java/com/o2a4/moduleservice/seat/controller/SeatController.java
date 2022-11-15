@@ -2,11 +2,16 @@ package com.o2a4.moduleservice.seat.controller;
 
 
 import com.o2a4.moduleservice.seat.dto.Seats;
+import com.o2a4.moduleservice.seat.dto.SeatsRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.xml.ws.Response;
 import java.util.*;
@@ -18,91 +23,84 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SeatController {
 
+    private final SeatsRepository seatsRepository;
+
     private final RedisTemplate<String, String> redisTemplate;
 
-    // 채팅서버로부터 양도자 id 받아서, redis 생성 > 5초 후 1명 뽑아서 양도자id + 당첨자id 보내주기
-    // WebClient 로 통신하면 될듯 ?
-    @GetMapping("/{userid}")
-    public Seats seatCompeteOpen(@PathVariable String userid) throws InterruptedException {
-        Seats seatsInfo = new Seats();
-        // userid : 자리 양도한 사람 아이디
-        seatsInfo.setUserId(userid);
-        String key = "seat:"+userid; // ex) key = seat:ssafy
 
-        // redis 생성
+    /*자리 양도 시작*/
+    @GetMapping("/{userId}")
+    public String startSeat(@PathVariable String userId) {
+        seatsRepository.getSeatUser().add(userId);
+        log.info("자리 양도 시작 [주최자]  :" + seatsRepository.getSeatUser().toString());
+
+        String key = "seat:"+userId; // ex)seat:ssafy
         redisTemplate.opsForList().rightPush(key, "start");
-        redisTemplate.expire(key, 180, TimeUnit.SECONDS); // 3분동안 redis 에 저장
-//        /*Timer 사용했을 떄 */
-//        Timer t= new Timer();
-//        //redis 에서 한명 뽑기
-//        Winning wt = new Winning(key);
-//        //5(+1)초가 지난후에, 해당 작업 실행
-//        t.schedule(wt, 6000);
-
-        /*Thread.sleep 사용했을 때 */
-        try{
-            Thread.sleep(6000);
-        }catch(InterruptedException e){
-            e.printStackTrace();
-            log.info("thread sleep fail");
-        }
-        Long size= redisTemplate.opsForList().size(key);
-        if(size==1) {
-            // 참가한 사람 없는 것
-            seatsInfo.setWinnerId(null);
-        }
-        else {
-            // 참가자 목록 얻어오기 : list
-            List<String> list = redisTemplate.opsForList().range(key, 1, size - 1);
-
-            Random random = new Random();
-            int randomIndex = random.nextInt(list.size());
-            String win_id = list.get(randomIndex);
-
-//        Map<String, String> map = new HashMap<>();
-//        map.put("UserId", userid);
-//        map.put("WinnerId", win_id);
-//        log.info("당첨자 id : " + win_id +", 양도자 id : "+ userid);
-
-            seatsInfo.setWinnerId(win_id);
-        }
-        return seatsInfo;
+        return "success";
     }
 
-    // 자리양도 주최한 사람 + 자리양도 신청한 신청자
-    // 신청자 id redis 에 넣기
-    @PostMapping
-    public void seatAttend(@RequestBody Map<String, String> seatMap){
-        // 참가신청한 사용자 아이디
-        String attend_id = seatMap.get("attend_id");
-        // 자리양도 시작한 사용자 아이디
-        String start_id = seatMap.get("start_id");
-        //log.info("참가자 : " + attend_id + " , 양도자 : "+ start_id);
-
-        // userid : 자리 양도한 사람 아이디
-        String key = "seat:"+start_id; // ex) key = seat:ssafy
+/*-------------------이거 왜 오래걸림 ?-------------------------*/
+    /*자리 양도 신청*/
+    /*{ "userId" : 양도자 id,  "attend_id" : 참가자 id } */
+    @PostMapping("/attend")
+    public ResponseEntity<?> attendSeat(@RequestBody Map<String, String> seatMap){
+       String attend_id= seatMap.get("attend_id");
+       String userId = seatMap.get("userId");
+       //start_id가 현재 활성화 된 아이디 인지 확인
+        boolean HasUser = seatsRepository.getSeatUser().contains(userId);
+        if(!HasUser){
+            // 자리 양도 안한 것
+            return new ResponseEntity<String>("fail", HttpStatus.OK);
+        }
+       String key = "seat:"+userId; // ex)seat:ssafy
 
         redisTemplate.opsForList().rightPush(key, attend_id);
+
+        return new ResponseEntity<String>("success", HttpStatus.OK);
     }
-//    class Winning extends TimerTask{
-//        private String key;
-//
-//        public Winning(String key){
-//            this.key=key;
-//        }
-//        @Override
-//        public void run() {
-//            // redis 에서 한명뽑기 ( 1부터 뽑아야함 )
-//            // size
-//            Long size= redisTemplate.opsForList().size(key);
-//            // 참가자 목록 얻어오기 : list
-//            List<String> list= redisTemplate.opsForList().range(key, 1, size-1);
-//
-//            Random random = new Random();
-//            int randomIndex = random.nextInt(list.size());
-//            String win_id = list.get(randomIndex);
-//            log.info("당점자 : " +win_id);
-//        }
-//    } // winning class
+
+
+    /*자리 양도 종료*/
+    /*{ "userId" : 양도자 id , "content" : 자리 정보 } */
+    @PostMapping("/finish")
+    public ResponseEntity<?> finishSeat(@RequestBody Map<String, String> finishInfo){
+        String userId = finishInfo.get("userId");
+        String content = finishInfo.get("content");
+
+        Seats seatsInfo = new Seats();
+        seatsInfo.setUserId(userId);
+        seatsInfo.setContent(content);
+
+        //redis에서 key 값으로 참가리스트 가지고 오기
+        String key = "seat:"+userId; // ex)seat:ssafy
+//        boolean isKeyEmpty = redisTemplate.keys(key).isEmpty();
+        Long size=  redisTemplate.opsForList().size(key);
+        /*참가자가 없음*/
+        if(size == 1){
+            //당첨자 NULL
+            seatsInfo.setWinnerId(null);
+        }
+        /*참가자가 있음*/
+        else{
+
+            List<String> attendList=  redisTemplate.opsForList().range(key, 1, size-1);
+
+            Random random = new Random();
+            int randomIndex = random.nextInt(attendList.size());
+            String winnerId = attendList.get(randomIndex);
+
+            seatsInfo.setWinnerId(winnerId);
+        }
+        // redis에서 해당 키 삭제
+        redisTemplate.expire(key, 3, TimeUnit.SECONDS);
+        // 자리양도 주최자 mem 에서 삭제
+        seatsRepository.getSeatUser().remove(userId);
+        // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject("http://localhost:8101/seat/finish", seatsInfo, String.class );
+
+        return new ResponseEntity<String>("success", HttpStatus.OK);
+    }
 
 }

@@ -1,3 +1,9 @@
+spring:
+  application:
+    name: module-auth
+
+---
+
 # mongo
 spring:
   data:

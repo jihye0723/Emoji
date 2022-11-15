@@ -35,10 +35,10 @@ spring:
         - id: module-auth
           uri: lb://MODULE-AUTH
           predicates:
-            #            - Path=/oauth/**
-            - name: Path
-              args:
-                patterns: /oauth/**
+            - Path=/oauth/**
+#            - name: Path
+#              args:
+#                patterns: /oauth/**
 #            - name: Method
 #              args:
 #                methods:
@@ -56,10 +56,10 @@ spring:
         - id: module-service
           uri: lb://MODULE-SERVICE
           predicates:
-            #            - Path=/oauth/**
-            - name: Path
-              args:
-                patterns: /subway/**
+            - Path=/subway/**
+#            - name: Path
+#              args:
+#                patterns: /subway/**
 #            - name: Method
 #              args:
 #                methods:

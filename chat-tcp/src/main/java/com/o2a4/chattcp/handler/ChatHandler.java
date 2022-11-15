@@ -171,6 +171,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     roomService.villainOn(trans);
                     break;
                 case "villain-off":
+                    log.info("VILLAIN OFF IN");
                     roomService.villainOff(trans);
                     break;
                 default:

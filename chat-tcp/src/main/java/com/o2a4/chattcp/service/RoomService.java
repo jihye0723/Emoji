@@ -6,6 +6,7 @@ import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,7 @@ public class RoomService {
         builder.setUserId(userId);
         builder.setSendAt(time);
 
+        // TODO 메시지 안간다
         // 당첨자 메시지 전송
         messageService.sendMessageToOne(builder.build(), winnerId);
 
@@ -111,22 +113,30 @@ public class RoomService {
     }
 
     public void villainOn(Transfer trans) {
+        // TODO 빌런 하나에 대한 중복 신고는 어떻게?
         redisTemplate.opsForHash().get(uPrefix + trans.getUserId(), "channelGroup")
                 .flatMap(cg ->
                         redisTemplate.opsForHash().increment(tPrefix + cg, "villain", 1)
-                                .doOnSubscribe(incre -> {
-                                    Transfer send = Transfer.newBuilder(trans).setContent(incre.toString()).build();
+                                .flatMap(incre -> {
+                                    log.info("SEND VILLAIN ON");
+                                    Transfer.Builder send = Transfer.newBuilder(trans);
+                                    send.setContent(incre.toString());
+                                    send.build();
                                     // 빌런 증가하면 증가한 숫자를 전송
                                     tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+
+                                    return Mono.empty();
                                 })
                 ).subscribe();
     }
 
-    public void villainOff(TransferOuterClass.Transfer trans) {
+    public void villainOff(Transfer trans) {
         redisTemplate.opsForHash().get(uPrefix + trans.getUserId(), "channelGroup")
-                .doOnSubscribe(cg ->
+                .flatMap(cg ->
                         redisTemplate.opsForHash().get(tPrefix + cg, "villain")
                                 .flatMap(num -> {
+                                    log.info("SEND VILLAIN OFF");
+
                                     int n = Integer.valueOf(String.valueOf(num));
                                     if (n == 0) {
                                         return Mono.empty();

@@ -12,6 +12,7 @@ server:
 # eureka
 eureka:
   instance:
+    hostname: http://k7a6022.p.ssafy.io
     appname: api-gateway
 #    preferIpAddress: true
   client:

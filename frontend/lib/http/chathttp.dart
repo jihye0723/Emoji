@@ -4,6 +4,7 @@ import 'dart:convert';
 //기본 url
 var url = 'http://10.0.2.2:8101';
 var url2 = 'http://10.0.2.2:8082';
+var server = 'http://k7a6022.p.ssafy.io';
 
 class chatroom {
   Future getPort(String mytoken, String train) async {
@@ -14,9 +15,10 @@ class chatroom {
         headers: {
           "Content-type": "application/json",
           "token": mytoken,
+          //"Authorization": "Bearer $accessToken",
         },
         body: body);
-    print(response.body);
+
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body)['data'];
       return responseBody;
@@ -32,6 +34,7 @@ class chatroom {
         headers: {
           "Content-type": "application/json",
           "token": mytoken,
+          // "Authorization": "Bearer $accessToken",
         },
         body: body);
 
@@ -50,6 +53,26 @@ class chatroom {
         headers: {
           "Content-type": "application/json",
           "token": mytoken,
+          // "Authorization": "Bearer $accessToken",
+        },
+        body: body);
+
+    if (response.statusCode == 200) {
+      const responseBody = "OK";
+      return responseBody;
+    }
+  }
+
+  //사용자 신고
+  Future report(String mytoken, String userid) async {
+    Map data = {"userId": userid};
+    var body = json.encode(data);
+
+    final response = await http.post(Uri.parse('$url2/user'),
+        headers: {
+          "Content-type": "application/json",
+          "token": mytoken,
+          // "Authorization": "Bearer $accessToken",
         },
         body: body);
     print(response.statusCode);

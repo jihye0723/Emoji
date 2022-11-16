@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '/utils/snackbar.dart' as snackbar;
 import '../data/station.dart' as stationdata;
 import '../widget/chat_screen.dart';
 
@@ -30,7 +31,7 @@ class TextChat extends StatefulWidget {
 
   //현재역 찾기
   late String _info = "";
-  late String _destination = "역삼";
+  late String _destination = "";
 
   @override
   State<TextChat> createState() => _TextChatState();
@@ -67,6 +68,7 @@ class _TextChatState extends State<TextChat> {
         test();
         //print(widget._info);
         if (widget._info == widget._destination) {
+          snackbar.showSnackBar(context, '곧 목적지에 도착합니다!', 'common');
           _timer?.cancel();
         }
       });

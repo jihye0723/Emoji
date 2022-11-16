@@ -54,6 +54,7 @@ spring:
 # eureka
 eureka:
   instance:
+    hostname: http://k7a6021.p.ssafy.io
     appname: module-service
 #    preferIpAddress: true
   client:

@@ -12,7 +12,7 @@ server:
 # eureka
 eureka:
   instance:
-    hostname: http://k7a6022.p.ssafy.io
+    hostname: k7a6022.p.ssafy.io
     appname: api-gateway
 #    preferIpAddress: true
   client:
@@ -38,9 +38,23 @@ spring:
           uri: lb://MODULE-AUTH
           predicates:
             - Path=/oauth/**
+#            - name: Method
+#              args:
+#                methods:
+#                  - GET, POST
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: recruitlist
+#                fallbackUri: forward:/fallbacks/7
+
+        - id: module-service
+          uri: lb://MODULE-SERVICE
+          predicates:
+            - Path=/subway/**
 #            - name: Path
 #              args:
-#                patterns: /oauth/**
+#                patterns: /subway/**
 #            - name: Method
 #              args:
 #                methods:
@@ -54,11 +68,10 @@ spring:
 #              args:
 #                regexp: /recruit/(?<path>.*)
 #                replacement: /$\{path}
-
-        - id: module-service
-          uri: lb://MODULE-SERVICE
+        - id: chat
+          uri: lb://CHAT
           predicates:
-            - Path=/subway/**
+            - Path=/chat/**, /seat/finish
 #            - name: Path
 #              args:
 #                patterns: /subway/**

@@ -1,4 +1,10 @@
 spring:
+  application:
+    name: chat
+
+---
+
+spring:
   redis:
     password: o2a4redis
 #    host: 52.79.215.19

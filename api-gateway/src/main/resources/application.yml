@@ -68,3 +68,23 @@ spring:
 #              args:
 #                regexp: /recruit/(?<path>.*)
 #                replacement: /$\{path}
+        - id: chat
+          uri: lb://CHAT
+          predicates:
+            - Path=/chat/**, /seat/finish
+#            - name: Path
+#              args:
+#                patterns: /subway/**
+#            - name: Method
+#              args:
+#                methods:
+#                  - GET, POST
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: recruitlist
+#                fallbackUri: forward:/fallbacks/7
+#            - name: RewritePath
+#              args:
+#                regexp: /recruit/(?<path>.*)
+#                replacement: /$\{path}

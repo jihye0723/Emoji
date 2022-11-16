@@ -13,7 +13,7 @@ server:
 eureka:
   instance:
     appname: api-gateway
-    preferIpAddress: true
+#    preferIpAddress: true
   client:
     registerWithEureka: true
     fetchRegistry: true

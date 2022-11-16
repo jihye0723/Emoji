@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../data/chat.dart';
@@ -53,10 +54,16 @@ class ChatScreen extends StatefulWidget {
 
 // 화면 구성용 상태 위젯. 애니메이션 효과를 위해 TickerProviderStateMixin를 가짐
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+
   // 입력한 메시지를 저장하는 리스트
   final List<ChatMessage> _message = <ChatMessage>[];
   late FocusNode chatNode;
+
+
+  //TCP서버용
   late Socket socket;
+  String ip = "10.0.2.2";
+  int port = 0;
 
   //빌런 상태 확인
   late int villaincount;
@@ -69,16 +76,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Future<dynamic> portname;
   late Future<dynamic> attendseat;
 
-  //TCP서버용
-  String ip = "10.0.2.2";
-  int port = 0;
+  //토큰용
+  String? userAccessToken;
+  static final storage = FlutterSecureStorage();
+
+  // 저장되어 있는 유저의 accessToken 을 확인한다.
+  getUserToken() async {
+    //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
+    userAccessToken = await storage.read(key: 'accessToken');
+    return userAccessToken;
+  }
 
   ///             initState    채팅부분 포트랑,ip 가져오기
   @override
   void initState() {
     super.initState();
+
     //내아이디 전역으로 사용
     myuserId = widget.myId;
+
+    //비동기로 getUserToken 함수를 실행하여 Secure Storage 정보를 불러오는 작업.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getUserToken();
+    });
 
     chatNode = FocusNode();
 
@@ -112,7 +132,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     //소켓 연결되어있는 상태일때만
     if (port != 0) {
       //서버에 나간다고 알려주고 나가기
-      print("hi");
       tcpsend("room-out", "", widget.myId, widget.myName);
       socket.close();
     }
@@ -151,10 +170,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       Uint8List data,
     ) {
       var serverdata = data.getRange(2, data.length);
-      print(data);
+      //print(data);
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
-      print(receive);
+      //print(receive);
 
       if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {
@@ -617,12 +636,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //http 통신으로 끝났다고 알려줌
       seatresult = http.chatroom().finish(widget.myId, widget.myId, text);
       temp = await seatresult;
-
       //print(temp);
     });
+
     Timer(Duration(seconds: 12), () async {
-      if (temp == "OK")
+      if (temp == "OK") {
         snackbar.showSnackBar(context, '자리양도가 완료되었습니다.', 'common');
+      }
     });
 
     _seatController.clear();
@@ -824,8 +844,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     var sendmessage = header.buffer.asUint8List() + message;
 
-    print(sendmessage.length);
-    print(sendmessage.runtimeType);
     socket.add(sendmessage);
     //socket.add(message);
     //await socket.flush();

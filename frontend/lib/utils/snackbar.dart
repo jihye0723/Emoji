@@ -6,7 +6,7 @@ void showSnackBar(
   // snackBarType 이 "common"인 경우, 아래의 색상 적용됨.
   int bgColorValue = 0xff32A1C8; // 파란색
   int disabledTextColorValue = 0xffFFFFFF; // 하얀색
-  int textColorValue = 0xffFFE15D; // 노란색
+  int textColorValue = 0xff393E46; // 노란색
 
   // snackBarType 이 "villain"인 경우, 아래의 색상 적용됨.
   if (snackBarType == "villain") {

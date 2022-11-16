@@ -5,7 +5,6 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 
-import '/utils/playsound.dart' as sound;
 import '/utils/snackbar.dart' as snackbar;
 import '../data/station.dart' as stationdata;
 import '../widget/chat_screen.dart';

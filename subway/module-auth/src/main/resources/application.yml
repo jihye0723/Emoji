@@ -48,7 +48,7 @@ jwt:
 eureka:
   instance:
     appname: module-auth
-    preferIpAddress: true
+#    preferIpAddress: true
   client:
     registerWithEureka: true
     fetchRegistry: true

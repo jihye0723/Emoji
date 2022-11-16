@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:practice_01/login/kakao_login.dart';
 import 'package:practice_01/login/loginpage.dart';
 import 'package:practice_01/mainpage/Home.dart';
 import 'package:video_player/video_player.dart';
@@ -90,6 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (userAccessToken != null) {
       print('저장되어 있는 토큰 발견!!');
       // 홈 화면으로 이동하게 된다.
+      // userAccessToken -> 서버로 토큰 검증을 거쳐야하고 -> 유효? Home: 재발급 ->
       Navigator.of(context).pop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
     }
@@ -98,7 +100,8 @@ class _SplashScreenState extends State<SplashScreen> {
       print('저장되어 있는 토큰이 없습니다!!');
       // 로그인 페이지로 이동하게 된다.
       Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => LoginPage()));
     }
   }
 

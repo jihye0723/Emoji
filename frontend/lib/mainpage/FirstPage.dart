@@ -120,13 +120,13 @@ class _FirstPageState extends State<FirstPage> {
       setState(() {
         _loadedLocation = true;
       });
-      Uri uri = Uri.http("k7a6021.p.ssafy.io:8082", "/subway/station", {
+      Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
         // "latitude": position.latitude.toString(),
         // "longtitude": position.longitude.toString()
-        // "latitude": 37.500643.toString(), // 역삼역
-        // "longtitude": 127.036377.toString()
-        "latitude": 37.476559.toString(), // 사당역
-        "longtitude": 126.981633.toString()
+        "latitude": 37.500643.toString(), // 역삼역
+        "longtitude": 127.036377.toString()
+        // "latitude": 37.476559.toString(), // 사당역
+        // "longtitude": 126.981633.toString()
       });
 
       http.get(uri).then((data) {
@@ -159,7 +159,7 @@ class _FirstPageState extends State<FirstPage> {
           }
         });
       }).then((value) {
-        print("stationName : " + _trainInfo.stationName);
+        print("stationName : ${_trainInfo.stationName}");
       });
     }
   }
@@ -292,6 +292,7 @@ class _FirstPageState extends State<FirstPage> {
 
     return Scaffold(
       body: Container(
+        decoration: BoxDecoration(color: Color(0xFFffe15d)),
         width: 1.sw,
         height: 1.sh,
         child: Column(

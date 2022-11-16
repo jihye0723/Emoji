@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
+import '../data/chat.dart';
+import '../data/db.dart' as dbhelper;
 import '/data/Transfer.pb.dart';
 import '/http/chathttp.dart' as http;
 import '/utils/snackbar.dart' as snackbar;
@@ -60,7 +62,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late int villaincount;
 
   //자리양도 신청 리스트
-  late List<String> attendlist;
+  late List<String> attendlist = [];
 
   // http 통신용
   late Future<dynamic> seatresult;
@@ -148,13 +150,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     socket.listen((
       Uint8List data,
     ) {
-      var serverdata = data.getRange(1, data.length);
-
+      var serverdata = data.getRange(2, data.length);
+      print(data);
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
       print(receive);
 
-      if (receive.userId == widget.myId) {
+      if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
 
@@ -172,6 +174,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
 
         if (receive.type == "msg") {
+          var chatmsg = Chat(
+            userid: receive.userId,
+            content: receive.content,
+            datetime: receive.sendAt,
+          );
+          save(chatmsg);
           //showResult();
           makeMessage(receive.content, receive.nickName, receive.userId);
         }
@@ -194,16 +202,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ));
         }
-
-        if (receive.type == "seat-end") {
-          if (attendlist.isNotEmpty) {
-            for (int i = 0; i < attendlist.length; i++) {
-              if (attendlist.elementAt(i) == receive.userId) {
-                attendlist.removeAt(i);
-                showResult("당첨되지 않았습니다", false);
-              }
+        if (receive.type == "seat-win") {
+          for (int i = 0; i < attendlist.length; i++) {
+            if (attendlist.elementAt(i) == receive.userId) {
+              attendlist.removeAt(i);
             }
           }
+          showResult(receive.content, true);
+        }
+        if (receive.type == "seat-end") {
+          Timer(Duration(seconds: 1), () {
+            if (attendlist.isNotEmpty) {
+              for (int i = 0; i < attendlist.length; i++) {
+                if (attendlist.elementAt(i) == receive.userId) {
+                  attendlist.removeAt(i);
+                  showResult("당첨되지 않았습니다", false);
+                }
+              }
+            }
+          });
         }
         if (receive.type == "villain-on") {
           //빌런 탑승
@@ -211,7 +228,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           setState(() {
             villaincount = int.parse(receive.content);
           });
-          //makeMessage(receive.content, receive.nickName, receive.userId);
         }
 
         if (receive.type == "villain-off") {
@@ -220,17 +236,30 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           setState(() {
             villaincount = int.parse(receive.content);
           });
-
-          //makeMessage(receive.content, receive.nickName, receive.userId);
         }
       } else if (receive.userId == widget.myId) {
-        if (receive.type == "seat-win") {
-          for (int i = 0; i < attendlist.length; i++) {
-            if (attendlist.elementAt(i) == receive.userId) {
-              attendlist.removeAt(i);
-            }
-          }
-          showResult(receive.content, true);
+        if (receive.type == "room-in") {
+          //빌런값 초기 설정
+          /*
+          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
+          */
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+        }
+
+        if (receive.type == "villain-on") {
+          //빌런 탑승
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
+        }
+
+        if (receive.type == "villain-off") {
+          //빌런 하차
+          setState(() {
+            villaincount = int.parse(receive.content);
+          });
         }
       }
     }, onError: (error) {
@@ -532,7 +561,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
                             foregroundColor: Colors.white,
-                            backgroundColor: const Color(0xff747f00),
+                            backgroundColor: widget.color,
                             // 백그라운드로 컬러 설정
                             textStyle: TextStyle(fontSize: 16.sp),
                             shape: RoundedRectangleBorder(
@@ -572,9 +601,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var temp = await attendseat;
 
     Timer(Duration(seconds: 2), () async {
-      if (temp == "OK") {
-        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
-      }
+      if (temp == "OK") snackbar.showSnackBar(context, '양도 신청 완료', 'common');
     });
   }
 
@@ -583,7 +610,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // tcp서버에 시작한다고 알려주고
     tcpsend("seat-start", "시작", widget.myId, widget.myName);
 
-    snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
     var temp;
 
     //10초 딜레이후에 rest보내
@@ -595,9 +621,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //print(temp);
     });
     Timer(Duration(seconds: 12), () async {
-      if (temp == "OK") {
-        snackbar.showSnackBar(context, '접수가 완료 되었습니다.', 'common');
-      }
+      if (temp == "OK")
+        snackbar.showSnackBar(context, '자리양도가 완료되었습니다.', 'common');
     });
 
     _seatController.clear();
@@ -647,9 +672,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           width: 300.w,
                           child: Image.asset("assets/images/lose.png"),
                         ),
+                  Padding(padding: EdgeInsets.all(10.0)),
                   Text(
                     detail,
-                    style: TextStyle(fontSize: 18.sp),
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                    ),
                   ),
                 ],
               ),
@@ -688,87 +716,91 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             builder: (BuildContext ctx) {
               double height = MediaQuery.of(ctx).size.height;
               double width = MediaQuery.of(ctx).size.width;
-              return AlertDialog(
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular((32.0)))),
-                actionsAlignment: MainAxisAlignment.center,
-                // borderRadius: BorderRadius.circular(20),
-                title: Column(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                          onPressed: () {
-                            Navigator.of(ctx).pop();
-                          },
-                          icon: const Icon(Icons.close_rounded)),
-                    ),
-                    Image.asset(
-                      "assets/images/villain-icon.png",
-                      width: (width * 0.1).w,
-                      height: (width * 0.1).h,
-                    ),
-                    Text('빌런 제보',
-                        style: TextStyle(
-                            fontSize: 24.sp, fontWeight: FontWeight.w800))
-                  ],
-                ),
-
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "지금 열차에 $villaincount 명의 빌런이 있습니다!",
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-                actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
-                actions: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return SingleChildScrollView(
+                child: AlertDialog(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular((32.0)))),
+                  actionsAlignment: MainAxisAlignment.center,
+                  // borderRadius: BorderRadius.circular(20),
+                  title: Column(
                     children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
-                          foregroundColor: Colors.white,
-                          backgroundColor: const Color(0xffff5f5f),
-                          textStyle: TextStyle(fontSize: 16.sp),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(
-                              context, '접수가 완료 되었습니다.', 'common');
-                          //소켓통신
-                          tcpsend("villain-on", "", widget.myId, widget.myName);
-                        },
-                        child: const SizedBox(child: Text("😫 나타났어요!")),
+                      Container(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                            },
+                            icon: const Icon(Icons.close_rounded)),
                       ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
-                          foregroundColor: Colors.white,
-                          backgroundColor: const Color(0xff5abaff),
-                          textStyle: TextStyle(fontSize: 16.sp),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          snackbar.showSnackBar(
-                              context, '접수가 완료 되었습니다.', 'common');
-                          //소켓통신
-                          //tcpsend("valian-off","퇴장",widget.myId,widget.myName);  412341234
-                        },
-                        child: const SizedBox(child: Text("😄 사라졌어요!")),
+                      Image.asset(
+                        "assets/images/villain-icon.png",
+                        width: (width * 0.1).w,
+                        height: (width * 0.1).h,
+                      ),
+                      Text('빌런 제보',
+                          style: TextStyle(
+                              fontSize: 24.sp, fontWeight: FontWeight.w800))
+                    ],
+                  ),
+
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "지금 열차에 $villaincount 명의 빌런이 있습니다!",
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  )
-                ],
+                  ),
+                  actionsPadding: EdgeInsets.only(bottom: (height * 0.03).h),
+                  actions: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xffff5f5f),
+                            textStyle: TextStyle(fontSize: 16.sp),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            //소켓통신
+                            tcpsend(
+                                "villain-on", "", widget.myId, widget.myName);
+                            snackbar.showSnackBar(
+                                context, '접수가 완료 되었습니다.', 'common');
+                          },
+                          child: const SizedBox(child: Text("😫 나타났어요!")),
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.fromLTRB(30.w, 0, 30.w, 0),
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xff5abaff),
+                            textStyle: TextStyle(fontSize: 16.sp),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            snackbar.showSnackBar(
+                                context, '접수가 완료 되었습니다.', 'common');
+                            //소켓통신
+                            tcpsend(
+                                "villain-off", "", widget.myId, widget.myName);
+                          },
+                          child: const SizedBox(child: Text("😄 사라졌어요!")),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               );
             });
       },
@@ -776,26 +808,35 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   //TCP서버에 메시지 보내는 메소드
-  void tcpsend(String type, String text, String id, String nick) {
+  void tcpsend(String type, String text, String id, String nick) async {
     final date =
         DateFormat('yyy-MM-dd HH:mm:ss').format(DateTime.now()).toString();
+
+    var chatmsg = Chat(userid: id, content: text, datetime: date);
+    save(chatmsg);
 
     Uint8List message = testMethod(type, text, id, nick, date).writeToBuffer();
 
     int leng = message.length;
-    int msgByteLen = 1;
+    int msgByteLen = 2;
     var header = ByteData(msgByteLen);
-    header.setUint8(0, leng);
+    header.setUint16(0, leng);
 
-    var sendmessage =
-        header.buffer.asUint8List() + message.buffer.asUint8List();
+    var sendmessage = header.buffer.asUint8List() + message;
 
     print(sendmessage.length);
     print(sendmessage.runtimeType);
     socket.add(sendmessage);
     //socket.add(message);
-    //socket.flush();
+    //await socket.flush();
   }
+}
+
+// 메시지 local db 에 저장
+void save(Chat chat) async {
+  await dbhelper.DBHelper.insertChat(chat);
+  print("메시지 저장");
+  //print(await dbhelper.DBHelper.getChat());
 }
 
 /*----------------------메세지 만드는 클래스----------------------------*/

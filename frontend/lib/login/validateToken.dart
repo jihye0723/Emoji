@@ -34,7 +34,7 @@ validateToken(String tkn) {
 
   Uri uri = Uri.http("k7a6022.p.ssafy.io", "/");
 
-  http.post(uri, body: {'token': tkn}).then((value) {
+  http.post(uri, body: {'jwtToken': tkn}).then((value) {
     int resultCode = value.statusCode;
     if (resultCode == 200) {
       // 정상 토큰

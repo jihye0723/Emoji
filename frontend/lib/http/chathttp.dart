@@ -13,7 +13,7 @@ class chatroom {
     final response = await http.post(Uri.parse('$url/chat/in'),
         headers: {
           "Content-type": "application/json",
-          "token": mytoken,
+          "Authorization": "Bearer $mytoken",
         },
         body: body);
     print(response.body);
@@ -31,7 +31,7 @@ class chatroom {
     final response = await http.post(Uri.parse('$url2/seat/attend'),
         headers: {
           "Content-type": "application/json",
-          "token": mytoken,
+          "Authorization": "Bearer $mytoken",
         },
         body: body);
 
@@ -49,7 +49,7 @@ class chatroom {
     final response = await http.post(Uri.parse('$url2/seat/finish'),
         headers: {
           "Content-type": "application/json",
-          "token": mytoken,
+          "Authorization": "Bearer $mytoken",
         },
         body: body);
     print(response.statusCode);

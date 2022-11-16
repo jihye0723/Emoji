@@ -35,10 +35,19 @@ validateToken(String tkn) {
   Uri uri = Uri.http("k7a6022.p.ssafy.io", "/");
 
   http.post(uri, body: {'token': tkn}).then((value) {
-    // 토큰 검증 결과를 가지고 어쩌고 저쩌고
-  });
+    int resultCode = value.statusCode;
+    if (resultCode == 200) {
+      // 정상 토큰
 
-  // api 요청
-  //
-  // 200
+      // secureStorage 토큰 갱신
+
+      // 메인페이지로 이동
+    } else {
+      // secureStorage 토큰 삭제
+      // 로그인 페이지로 이동
+      // kakao API 이용해서 인증토큰 발급
+      // 인증토큰 서버로 전달해 jwt 토큰 발급
+      // 토큰 검증
+    }
+  });
 }

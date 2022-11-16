@@ -1,6 +1,5 @@
-import 'package:jwt_decode/jwt_decode.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 validateToken(String tkn) {
   // 앱 실행 (스플래시 화면동안)
@@ -21,7 +20,6 @@ validateToken(String tkn) {
   // 2-1. (토큰 검증 결과가 FAIL 인 경우) secure storage 토큰정보 삭제하고 로그인 페이지로 이동
   // 2-2. kakao API 이용해서 인증토큰 발급
   // 2-3. 인증토큰 서버로 전달해 jwt 토큰 발급
-  // 2-4. (jwt) 토큰 검증
 
   // --------------------------------------------------
 
@@ -32,27 +30,25 @@ validateToken(String tkn) {
   // "Authorization": "Bearer $accessToken",
   // }
 
+  final storage = FlutterSecureStorage();
+
   Uri uri = Uri.http("k7a6022.p.ssafy.io", "/");
 
   http.post(uri, body: {'token': tkn}).then((value) {
     int resultCode = value.statusCode;
     if (resultCode == 200) {
       // 정상 토큰
-
       // secureStorage 토큰 갱신
+      storage.write(key: "jwtToken", value: value.body);
 
       // 메인페이지로 이동
+      return true;
     } else {
       // secureStorage 토큰 삭제
+      storage.delete(key: "jwtToken");
 
       // 로그인 페이지로 이동
-
-      // kakao API 이용해서 인증토큰 발급
-
-      // 인증토큰 서버로 전달해 jwt 토큰 발급
-
-      // 토큰 검증
-      // validateToken(tkn);
+      return false;
     }
   });
 }

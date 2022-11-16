@@ -5,6 +5,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:practice_01/login/kakao_login.dart';
 import 'package:practice_01/login/loginpage.dart';
+import 'package:practice_01/login/validateToken.dart';
 import 'package:practice_01/mainpage/Home.dart';
 import 'package:video_player/video_player.dart';
 
@@ -53,14 +54,13 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
-  String? userAccessToken;
+  String userJwtToken = "";
   static final storage = FlutterSecureStorage();
 
   // 저장되어 있는 유저의 accessToken 을 확인한다.
   getUserToken() async {
     //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
-    userAccessToken = await storage.read(key: 'accessToken');
-    return userAccessToken;
+    return await storage.read(key: 'jwtToken');
   }
 
   @override
@@ -84,21 +84,30 @@ class _SplashScreenState extends State<SplashScreen> {
   void _playVideo() async {
     //playing video
     _controller.play();
-    //add delay till video is complete
-    await Future.delayed(const Duration(seconds: 4));
 
-    // 이미 저장되어 있는 AccessToken 이 존재한다면,
-    if (userAccessToken != null) {
+    // Token 이 존재한다면,
+    if (userJwtToken != null && userJwtToken != "") {
       print('저장되어 있는 토큰 발견!!');
-      // 홈 화면으로 이동하게 된다.
-      // userAccessToken -> 서버로 토큰 검증을 거쳐야하고 -> 유효? Home: 재발급 ->
-      Navigator.of(context).pop();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+
+      // 토큰 검증
+      if (validateToken(userJwtToken)) {
+        print('유효한 토큰입니다!! --> 홈 화면 이동');
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.of(context).pop();
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Home()));
+      } else {
+        print('유효하지 않은 토큰입니다!! --> 재 로그인');
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.of(context).pop();
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
+      }
     }
-    // 저장되어 있는 AccessToken 이 존재하지 않는다면,
+    // Token 이 존재하지 않는다면,
     else {
-      print('저장되어 있는 토큰이 없습니다!!');
-      // 로그인 페이지로 이동하게 된다.
+      print('저장되어 있는 토큰이 없습니다!! --> 재 로그인');
+      await Future.delayed(const Duration(seconds: 2));
       Navigator.of(context).pop();
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => LoginPage()));

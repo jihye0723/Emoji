@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:practice_01/mainpage/APIResponse.dart';
 import 'package:practice_01/mainpage/JsonReform.dart';
@@ -31,6 +32,8 @@ class _FirstPageState extends State<FirstPage> {
   Position? _currentPosition;
   int _itemCount = 0;
   String _stationName = "";
+
+  final storage = FlutterSecureStorage();
 
   RefreshController _controller = RefreshController(initialRefresh: false);
 
@@ -129,37 +132,48 @@ class _FirstPageState extends State<FirstPage> {
         // "longtitude": 126.981633.toString()
       });
 
-      http.get(uri).then((data) {
-        print("data : $data");
-        print("data.body.length : ${data.body.length}");
-        print("요청 uri : ${uri.toString()}");
-        print("요청 결과 : ${data.body.toString()}");
-        dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
-        // for (dynamic item in jsonParsed) {
-        //   print(item);
-        // }
-        List<APITrain> temp = [];
-        for (dynamic item in jsonParsed) {
-          print(item.runtimeType);
-          temp.add(APITrain.fromJson(item));
-        }
-        TrainInfo ti = jsonReform(temp);
-        // print("jsonParsed : $jsonParsed");
+      String mytoken = storage.read(key: "jwtToken") as String;
 
-        setState(() {
-          _loadedInfo = true;
-          // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
-          _trainInfo = ti;
-          _itemCount = (ti.trainList.length / 2).floor();
-
-          // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
-          print("after setState DATA LENGTH : ${_trainInfo.trainList.length}");
-          for (Train item in _trainInfo.trainList) {
-            print(item.toString());
+      http.get(
+        uri,
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Bearer $mytoken",
+        },
+      ).then((data) {
+        if (data.statusCode == 200) {
+          print("data : $data");
+          print("data.body.length : ${data.body.length}");
+          print("요청 uri : ${uri.toString()}");
+          print("요청 결과 : ${data.body.toString()}");
+          dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
+          // for (dynamic item in jsonParsed) {
+          //   print(item);
+          // }
+          List<APITrain> temp = [];
+          for (dynamic item in jsonParsed) {
+            print(item.runtimeType);
+            temp.add(APITrain.fromJson(item));
           }
-        });
-      }).then((value) {
-        print("stationName : ${_trainInfo.stationName}");
+          TrainInfo ti = jsonReform(temp);
+          // print("jsonParsed : $jsonParsed");
+
+          setState(() {
+            _loadedInfo = true;
+            // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
+            _trainInfo = ti;
+            _itemCount = (ti.trainList.length / 2).floor();
+
+            // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
+            print(
+                "after setState DATA LENGTH : ${_trainInfo.trainList.length}");
+            for (Train item in _trainInfo.trainList) {
+              print(item.toString());
+            }
+          });
+        } else {
+          print("데이터를 불러오는데 실패했습니다.");
+        }
       });
     }
   }

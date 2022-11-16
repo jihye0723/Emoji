@@ -1,6 +1,7 @@
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:practice_01/login/social_login.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /*
 * 토큰이 있다면, 로그인 페이지를 띄워주지 않아도 됨.
@@ -9,6 +10,9 @@ import 'package:http/http.dart' as http;
 class KakaoLogin implements SocialLogin {
   // url:8081/oauth/kakao-login?access-token=
   // 여기서 tkn 은 카카오톡에서 받아온 access token 을 뜻함.
+
+  final storage = FlutterSecureStorage();
+
   _postRequest(String tkn) async {
     // String baseUrl = 'http://localhost:8081/oauth/kakao-login?';
     // baseUrl += 'access-token=$tkn';
@@ -31,7 +35,11 @@ class KakaoLogin implements SocialLogin {
       try {
         OAuthToken token = await UserApi.instance.loginWithKakaoTalk();
         print('카카오톡으로 로그인(인증) 성공 ${token.accessToken}');
-        return _postRequest(token.accessToken);
+        var jwtToken = await _postRequest(token.accessToken);
+
+        // secureStorage 토큰 갱신
+        storage.write(key: 'jwtToken', value: jwtToken);
+        return jwtToken;
       } catch (error) {
         print('카카오톡으로 로그인(인증) 실패 $error');
         return null;
@@ -43,7 +51,11 @@ class KakaoLogin implements SocialLogin {
         // 카카오 계정으로 로그인 유도
         OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
         print('카카오 계정으로 로그인(인증) 성공 ${token.accessToken}');
-        return _postRequest(token.accessToken);
+        var jwtToken = await _postRequest(token.accessToken);
+
+        // secureStorage 토큰 갱신
+        storage.write(key: 'jwtToken', value: jwtToken);
+        return jwtToken;
       } catch (error) {
         print('카카오 계정으로 로그인(인증) 실패 $error');
         return null;

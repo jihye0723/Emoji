@@ -106,7 +106,7 @@ public class MessageService {
         }
     }
 
-    private static Transfer serverTrans(String type, String content) {
+    /*private static Transfer serverTrans(String type, String content) {
         Transfer.Builder builder = Transfer.newBuilder();
 
         builder.setType(type);
@@ -118,5 +118,5 @@ public class MessageService {
         builder.setSendAt(LocalDateTime.now().toString());
 
         return builder.build();
-    }
+    }*/
 }

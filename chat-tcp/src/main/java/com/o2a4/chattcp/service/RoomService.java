@@ -104,13 +104,9 @@ public class RoomService {
                 .setType("seat-end")
                 .setContent("");
 
-        // TODO 버퍼가 두개 붙은게 먼저 전송되고 두 번쨰 전송은 하나의 메시지만 전달이 됨. 왜 두개가 합쳐지지?
-
-        // 이 형태는 2개 합친거 한번에 전송
-        // 당첨자 메시지 전송
         redisTemplate.opsForHash().get(uPrefix + winnerId, "channel")
                 .doOnNext(c -> {
-                    // 유저 한 명에게 메시지 전송
+                    // 당첨자 메시지 전송
                     log.info("SEND MESSAGE TO USER");
                     cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(builder.build());
                 }).flatMap(c ->
@@ -122,7 +118,7 @@ public class RoomService {
                 })
                 .subscribe();
 
-        // 이 형태는 2개 합친거 -> 뒤에거 전송
+        // 이 형태는 2개 합친거 & 뒤에거 전송
 //        // 당첨자 메시지 전송
 //        messageService.sendMessageToOne(builder.build(), winnerId);
 //

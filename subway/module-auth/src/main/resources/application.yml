@@ -47,7 +47,7 @@ jwt:
 # eureka
 eureka:
   instance:
-    hostname: k7a6021.p.ssafy.io
+    hostname: k7a602.p.ssafy.io
     appname: module-auth
 #    preferIpAddress: true
   client:

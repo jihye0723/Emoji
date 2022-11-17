@@ -29,13 +29,15 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 // 모든 사용자 제한
+                .antMatchers("/oauth/kakao-login").permitAll()
                 .antMatchers("/**").access("hasIpAddress('3.34.252.107')")
 //                .access("hasIpAddress('172.26.12.212')")     // IP를 제한적으로 받음
-                .anyRequest().authenticated();
-//                .and()
+                .anyRequest().authenticated()
+                .and()
 ////                .anyRequest().permitAll()
 ////                .anyRequest().denyAll()
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+        ;
         return http.build();
     }
 

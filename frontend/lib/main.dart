@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return MaterialApp(
               debugShowCheckedModeBanner: false,
-              title: "메인페이지",
+              title: "이모지",
               theme: ThemeData(
                 primarySwatch: Colors.blue,
               ),

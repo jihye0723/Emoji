@@ -28,10 +28,10 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests().antMatchers("/**") // 모든 사용자 제한
-                .hasIpAddress("172.26.12.212") // IP를 제한적으로 받음
+                .access("hasIpAddress('172.26.12.212')")     // IP를 제한적으로 받음
                 .and()
-//                .anyRequest().permitAll()
-//                .anyRequest().denyAll()
+////                .anyRequest().permitAll()
+////                .anyRequest().denyAll()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

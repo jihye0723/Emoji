@@ -44,8 +44,9 @@ public class RoomService {
                         cg -> {
                             String channelId = channel.id().asShortText();
 
+                            ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
                             // 열차 채팅방에 채널 추가
-                            tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
+                            channelGroup.add(channel);
                             // 채널Id 채널 맵에 추가
                             cidcRepo.getChannelIdChannelMap().put(channelId, channel);
                             // 채널Id 유저id Redis에 저장
@@ -55,8 +56,8 @@ public class RoomService {
                                     ).flatMap(i ->
                                             redisTemplate.opsForHash().get(tPrefix + cg, "villain")
                                             .flatMap(v -> {
-                                                // Content에 빌런 수 전달
-                                                Transfer send = Transfer.newBuilder(trans).setContent(v.toString()).build();
+                                                // Content에 채팅 방 인원과 빌런 수 (a, b) 전달
+                                                Transfer send = Transfer.newBuilder(trans).setContent(String.valueOf(channelGroup.size())+","+v.toString()).build();
 
                                                 Map<String, String> aMap = new HashMap<>();
                                                 aMap.put("channel", channelId);
@@ -129,7 +130,6 @@ public class RoomService {
     }
 
     public void villainOn(Transfer trans) {
-        // TODO 빌런 하나에 대한 중복 신고는 어떻게?
         String userId = trans.getUserId();
         Mono.zip( redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),
                         redisTemplate.opsForHash().get(uPrefix + userId, "channel"))

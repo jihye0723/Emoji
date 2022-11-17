@@ -120,7 +120,7 @@ class _FirstPageState extends State<FirstPage> {
       setState(() {
         _loadedLocation = true;
       });
-      Uri uri = Uri.http("k7a6021.p.ssafy.io:8082", "/subway/station", {
+      Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
         // "latitude": position.latitude.toString(),
         // "longtitude": position.longitude.toString()
         // "latitude": 37.500643.toString(), // 역삼역

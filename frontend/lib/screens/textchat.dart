@@ -9,7 +9,6 @@ import '/utils/snackbar.dart' as snackbar;
 import '../data/station.dart' as stationdata;
 import '../widget/chat_screen.dart';
 
-
 // 채팅방있는 페이지
 class TextChat extends StatefulWidget {
   //노선,열차,현재역
@@ -65,7 +64,7 @@ class _TextChatState extends State<TextChat> {
     directionM();
     //시간마다 정보변경
     setState(() {
-      _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      _timer = Timer.periodic(Duration(seconds: 90), (timer) {
         test();
         //print(widget._info);
         if (widget._info == widget._destination) {
@@ -156,10 +155,12 @@ class _TextChatState extends State<TextChat> {
         ),
         backgroundColor: _color,
         actions: <Widget>[
-          IconButton(onPressed: ()async{
-            await _audioPlayer.setAsset("assets/audio/bird.mp3");
-            _audioPlayer.play();
-          }, icon: const Icon(Icons.audiotrack_outlined)),
+          IconButton(
+              onPressed: () async {
+                await _audioPlayer.setAsset("assets/audio/bird.mp3");
+                _audioPlayer.play();
+              },
+              icon: const Icon(Icons.audiotrack_outlined)),
           IconButton(
             onPressed: () {
               //경로선택 dialog

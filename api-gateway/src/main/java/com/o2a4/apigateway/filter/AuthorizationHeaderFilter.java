@@ -1,16 +1,38 @@
 package com.o2a4.apigateway.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+
+@Slf4j
 @Component
 public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<AuthorizationHeaderFilter.Config> {
-    @Autowired
-    private JwtUtil jwtUtil;
 
-    public AuthorizationHeaderFilter() {
+    private final Key key;
+
+    public AuthorizationHeaderFilter(@Value("${jwt.secret}") String secretKey) {
         super(Config.class);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public static class Config {
@@ -19,48 +41,58 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
     @Override
     public GatewayFilter apply(Config config) {
-        return (exchange, chain) -> {
-            String token = exchange.getRequest().getHeaders().get("Authorization").get(0).substring(7);   // 헤더의 토큰 파싱 (Bearer 제거)
-            Map<String, Object> userInfo = jwtUtil.getUserParseInfo(token);   // 파싱된 토큰의 claim을 추출해 아이디 값을 가져온다.
+        return ((exchange, chain) -> {
+            ServerHttpRequest request = exchange.getRequest();
 
-            addAuthorizationHeaders(exchange.getRequest(), userInfo);
+            if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                return onError(exchange, "no authorization header", HttpStatus.UNAUTHORIZED);
+            }
+
+            String authorizationHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+            log.info(authorizationHeader);
+            String jwt = authorizationHeader.replace("Bearer", "");
+
+            if (!isJwtValid(jwt)) {
+                return onError(exchange, "JWT token is not valid", HttpStatus.UNAUTHORIZED);
+            }
 
             return chain.filter(exchange);
-        };
+        });
+    }
+
+    // Mono, Flux -> Spring 5.0 에서 추가된 WebFlux = 클라이언트 요청이 들어왔을때 반환하는값 단일, 다중값을 비동기로 처리함
+    private Mono<Void> onError(ServerWebExchange exchange,
+                               String err,
+                               HttpStatus httpStatus) {
+        ServerHttpResponse response = exchange.getResponse();
+
+        response.setStatusCode(httpStatus);
+
+        log.error(err);
+        return response.setComplete();
+    }
+
+    private boolean isJwtValid(String token) {
+        boolean returnValue = true;
+
+        String subject = null;
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        } catch (Exception exception) {
+            returnValue = false;
+        }
+        if (subject == null || subject.isEmpty()) {
+            returnValue = false;
+        }
+
+        return returnValue;
     }
 
     // 성공적으로 검증이 되었기 때문에 인증된 헤더로 요청을 변경해준다. 서비스는 해당 헤더에서 아이디를 가져와 사용한다.
-    private void addAuthorizationHeaders(ServerHttpRequest request, Map<String, Object> userInfo) {
-        request.mutate()
-                .header("X-Authorization-Id", userInfo.get("memberId").toString())
-                .build();
-    }
+//    private void addAuthorizationHeaders(ServerHttpRequest request, Map<String, Object> userInfo) {
+//        request.mutate()
+//                .header("X-Authorization-Id", userInfo.get("memberId").toString())
+//                .build();
+//    }
 
-    // 토큰 검증 요청을 실행하는 도중 예외가 발생했을 때 예외처리하는 핸들러
-    @Bean
-    public ErrorWebExceptionHandler tokenValidation() {
-        return new JwtTokenExceptionHandler();
-    }
-
-    // 실제 토큰이 null, 만료 등 예외 상황에 따른 예외처리
-    public class JwtTokenExceptionHandler implements ErrorWebExceptionHandler {
-        private String getErrorCode(int errorCode) {
-            return "{\\"errorCode\\":" + errorCode + "}";
-        }
-
-        @Override
-        public Mono<Void> handle(
-                ServerWebExchange exchange, Throwable ex) {
-            int errorCode = 500;
-            if (ex.getClass() == NullPointerException.class) {
-                errorCode = 100;
-            } else if (ex.getClass() == ExpiredJwtException.class) {
-                errorCode = 200;
-            }
-
-            byte[] bytes = getErrorCode(errorCode).getBytes(StandardCharsets.UTF_8);
-            DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
-            return exchange.getResponse().writeWith(Flux.just(buffer));
-        }
-    }
 }

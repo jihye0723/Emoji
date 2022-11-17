@@ -18,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -26,16 +25,32 @@ public class SecurityConfig {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests()
-                .antMatchers("/oauth/kakao-login").permitAll()
-                .antMatchers("/oauth/test").hasRole("USER")
-                .anyRequest().authenticated()
+                .authorizeRequests().antMatchers("/**") // 모든 사용자 제한
+                .hasIpAddress("172.26.12.212") // IP를 제한적으로 받음
+                .and()
 //                .anyRequest().permitAll()
 //                .anyRequest().denyAll()
-                .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .httpBasic().disable()
+//                .csrf().disable()
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .authorizeRequests()
+//                .antMatchers("/oauth/kakao-login").permitAll()
+//                .antMatchers("/oauth/test").hasRole("USER")
+//                .anyRequest().authenticated()
+////                .anyRequest().permitAll()
+////                .anyRequest().denyAll()
+//                .and()
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

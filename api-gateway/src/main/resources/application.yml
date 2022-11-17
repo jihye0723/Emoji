@@ -25,6 +25,11 @@ eureka:
 
 ---
 
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+
+---
+
 spring:
   cloud:
     gateway:
@@ -52,6 +57,8 @@ spring:
           uri: lb://MODULE-SERVICE
           predicates:
             - Path=/subway/**
+          filters:
+            - AuthorizationHeaderFilter
 #            - name: Path
 #              args:
 #                patterns: /subway/**
@@ -72,6 +79,8 @@ spring:
           uri: lb://CHAT
           predicates:
             - Path=/chat/**, /seat/finish
+          filters:
+            - AuthorizationHeaderFilter
 #            - name: Path
 #              args:
 #                patterns: /subway/**

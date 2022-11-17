@@ -27,12 +27,15 @@ public class SecurityConfig {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests().antMatchers("/**") // 모든 사용자 제한
-                .access("hasIpAddress('172.26.12.212')")     // IP를 제한적으로 받음
-                .and()
+                .authorizeRequests()
+                // 모든 사용자 제한
+                .antMatchers("/**").access("hasIpAddress('3.34.252.107')")
+//                .access("hasIpAddress('172.26.12.212')")     // IP를 제한적으로 받음
+                .anyRequest().authenticated();
+//                .and()
 ////                .anyRequest().permitAll()
 ////                .anyRequest().denyAll()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

@@ -39,17 +39,17 @@ class APITrain {
 
   factory APITrain.fromJson(Map<String, dynamic> parsedJson) {
     return APITrain(
-        parsedJson["ordkey"],
-        parsedJson["arvlCd"],
-        parsedJson["updnLine"],
-        parsedJson["subwayId"],
-        parsedJson["statnNm"],
-        parsedJson["trainLineNm"],
+        parsedJson["ordkey"] ?? "",
+        parsedJson["arvlCd"] ?? "",
+        parsedJson["updnLine"] ?? "",
+        parsedJson["subwayId"] ?? "",
+        parsedJson["statnNm"] ?? "",
+        parsedJson["trainLineNm"] ?? "",
         parsedJson["btrainSttus"] ?? "",
-        parsedJson["recptnDt"],
-        parsedJson["barvlDt"],
-        parsedJson["btrainNo"],
-        parsedJson["arvlMsg2"],
-        parsedJson["arvlMsg3"]);
+        parsedJson["recptnDt"] ?? "",
+        parsedJson["barvlDt"] ?? "",
+        parsedJson["btrainNo"] ?? "",
+        parsedJson["arvlMsg2"] ?? "",
+        parsedJson["arvlMsg3"] ?? "");
   }
 }

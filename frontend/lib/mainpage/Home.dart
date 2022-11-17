@@ -47,9 +47,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("main test"),
-      ),
       // 탭 누르는거에 따라서 페이지 전환
       body: pages.length > 0 ? pages[_selectedIndex] : Container(),
       // body: CustomSlider(),

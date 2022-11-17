@@ -86,7 +86,7 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
 
-            if (Pattern.matches("([^a-zA-Z가-힣]*)", String.valueOf(c))) {
+            if (Pattern.matches("([^a-zA-Zㄱ-ㅎ가-힣]*)", String.valueOf(c))) {
                 continue;
             }
 

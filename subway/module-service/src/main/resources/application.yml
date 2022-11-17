@@ -45,7 +45,8 @@ spring:
 # redis
 spring:
   redis:
-    host: 52.79.215.19
+    #      host: 52.79.215.19
+    host: 172.26.10.110
     port: 6379
     password: o2a4redis
 
@@ -54,7 +55,7 @@ spring:
 # eureka
 eureka:
   instance:
-    hostname: k7a6021.p.ssafy.io
+    hostname: k7a602.p.ssafy.io
     appname: module-service
 #    preferIpAddress: true
   client:

@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class RoomService {
     static String tPrefix = "train:";
     static String sPrefix = "server:";
     static String cPrefix = "channel:";
+    static String vPrefix = "villain:";
 
     public void roomIn(Channel channel, Transfer trans) {
         String userId = trans.getUserId();
@@ -128,19 +130,45 @@ public class RoomService {
 
     public void villainOn(Transfer trans) {
         // TODO 빌런 하나에 대한 중복 신고는 어떻게?
-        redisTemplate.opsForHash().get(uPrefix + trans.getUserId(), "channelGroup")
-                .flatMap(cg ->
-                        redisTemplate.opsForHash().increment(tPrefix + cg, "villain", 1)
-                                .flatMap(incre -> {
-                                    log.info("SEND VILLAIN ON");
+        String userId = trans.getUserId();
+        Mono.zip( redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),
+                        redisTemplate.opsForHash().get(uPrefix + userId, "channel"))
+                .flatMap(tuple -> {
+                        // 채널그룹 (열차번호)
+                        String cg = (String) tuple.getT1();
+                        // 채널 id
+                        String c = (String) tuple.getT2();
+
+                        // villain:열차번호를 찾음
+                        return redisTemplate.opsForValue().get(vPrefix + cg)
+                                // 결과 데이터가 없다면 (빌런 추가가 가능한 시간)
+                                .switchIfEmpty(Mono.defer(() ->
+                                    Mono.zip(redisTemplate.opsForValue().set(vPrefix + cg, "1"),
+                                            redisTemplate.expire(vPrefix + cg, Duration.ofMinutes(1)))
+                                            .flatMap(a -> redisTemplate.opsForHash().increment(tPrefix + cg, "villain", 1)
+                                            .flatMap(incre -> {
+                                                log.info("SEND VILLAIN ON");
+                                                Transfer.Builder send = Transfer.newBuilder(trans);
+                                                send.setContent(incre.toString());
+                                                send.build();
+                                                // 빌런 증가하면 증가한 숫자를 전송
+                                                tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+                                                // 종료
+                                                return Mono.empty();
+                                            }))
+                                ))
+                                // 결과 데이터가 있다면 (빌런 추가를 제한하는 시간)
+                                .flatMap(a -> {
+                                    log.info("VILLAIN ADD PROHIBITED");
                                     Transfer.Builder send = Transfer.newBuilder(trans);
-                                    send.setContent(incre.toString());
+                                    send.setContent("-1");
                                     send.build();
                                     // 빌런 증가하면 증가한 숫자를 전송
-                                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+                                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(send);
 
                                     return Mono.empty();
-                                })
+                                });
+                        }
                 ).subscribe();
     }
 

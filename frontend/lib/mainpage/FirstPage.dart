@@ -14,6 +14,7 @@ import 'TrainArrival.dart';
 import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
 import 'package:http/http.dart' as http;
+import 'package:carousel_slider/carousel_slider.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key, required this.userId}) : super(key: key);
@@ -209,10 +210,11 @@ class _FirstPageState extends State<FirstPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: Colors.black,
+            // color: Color(0xFFF8EFD
             width: 2,
           ),
-          color: Colors.white,
+          color: Color(0xFFfbfbfb),
+          // color: Color(0xFFF8EFD2),
         ),
         child: _loadedInfo
             ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
@@ -224,6 +226,9 @@ class _FirstPageState extends State<FirstPage> {
     Widget stationInfoSection(int idx, TrainInfo ti) => Container(
           alignment: Alignment.topCenter,
           child: Container(
+            decoration: BoxDecoration(
+                color: Color(0xFFfbfbfb),
+                borderRadius: BorderRadius.circular(10.w)),
             width: 320.w,
             height: 120.h,
             alignment: Alignment.center,
@@ -276,37 +281,37 @@ class _FirstPageState extends State<FirstPage> {
 
     // 광고 섹션
     Widget advBoardSection = Container(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        width: 320.w,
-        height: 60.h,
-        margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.blue,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Image.asset(
-              'assets/images/train.png',
-              width: 70.w,
-              height: 70.h,
+      width: 320.w,
+      height: 60.h,
+      margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+          color: Color(0xfffbfbfb),
+          // color: Color(0xFFF8EFD2),
+          borderRadius: BorderRadius.circular(10.w)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Image.asset(
+            'assets/images/train.png',
+            width: 70.w,
+            height: 70.h,
+          ),
+          Text(
+            "광고문의 : A602팀a",
+            style: TextStyle(
+              fontSize: 20.sp,
             ),
-            Text(
-              "광고문의 : A602팀a",
-              style: TextStyle(
-                fontSize: 20.sp,
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
+    // );
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(color: Color(0xFFffe15d)),
+        decoration: BoxDecoration(color: Color(0xFFfbfbfb)),
+        // decoration: BoxDecoration(color: Color(0xFFF8EFD2)),
         width: 1.sw,
         height: 1.sh,
         child: Column(
@@ -318,6 +323,7 @@ class _FirstPageState extends State<FirstPage> {
             stationNameSection,
             Expanded(
               child: Scaffold(
+                // backgroundColor: Color(0xFFF8EFD2),
                 body: SmartRefresher(
                   enablePullDown: true,
                   controller: _controller,
@@ -338,7 +344,7 @@ class _FirstPageState extends State<FirstPage> {
                 ),
               ),
             ),
-            advBoardSection,
+            // advBoardSection,
           ],
         ),
       ),

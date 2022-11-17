@@ -40,6 +40,7 @@ class KakaoLogin implements SocialLogin {
         print("1");
         var jwtToken = await _postRequest(token.accessToken);
         print("2 ${jwtToken.body}");
+        print(jwtToken.statusCode);
 
         // secureStorage 토큰 갱신
         // storage.write(key: 'jwtToken', value: jwtToken);

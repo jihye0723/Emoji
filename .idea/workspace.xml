@@ -10,12 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3ef383de-8754-4900-804d-848fbb27f6ed" name="Changes" comment="FIX 로그인 토큰 검증 (작성중)">
-      <change beforePath="$PROJECT_DIR$/frontend/.metadata" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/lib/mainpage/newAdvBoardSection.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/login/kakao_login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/login/kakao_login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/login/main_view_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/login/main_view_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/login/validateToken.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/login/validateToken.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/main.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +33,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fe/develop" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitSEFilterConfiguration">
@@ -50,6 +58,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
@@ -173,7 +182,14 @@
       <option name="project" value="LOCAL" />
       <updated>1668587999574</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="FIX 로그인 토큰 검증 (작성중)">
+      <created>1668648911012</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1668648911012</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

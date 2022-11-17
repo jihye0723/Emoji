@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-validateToken(String tkn) {
+validateToken(dynamic tkn) {
   // 앱 실행 (스플래시 화면동안)
   // 0. secure storage 에 isLogin 체크
   // isLogin? 토큰검증 : 로그인페이지
@@ -34,7 +34,8 @@ validateToken(String tkn) {
 
   final storage = FlutterSecureStorage();
 
-  Uri uri = Uri.http("k7a6022.p.ssafy.io", "/");
+  // 토큰 검증 요청할 url
+  Uri uri = Uri.http("k7a6022.p.ssafy.io", "/oauth/validate");
 
   String at = json.decode(tkn)['accessToken'];
   String rt = json.decode(tkn)['refreshToken'];
@@ -44,6 +45,7 @@ validateToken(String tkn) {
     if (resultCode == 200) {
       // 정상 토큰
       // secureStorage 토큰 갱신
+      print("저장된 토큰 갱신");
       storage.write(
           key: "accessToken", value: json.decode(value.body)['accessToken']);
       storage.write(
@@ -53,6 +55,7 @@ validateToken(String tkn) {
       return true;
     } else {
       // secureStorage 토큰 삭제
+      print("저장된 토큰 삭제");
       storage.delete(key: "accessToken");
       storage.delete(key: "refreshToken");
 

@@ -201,7 +201,7 @@ class _FirstPageState extends State<FirstPage> {
     // GPS 정보 받아와서 역 정보 구하면 역 이름 띄워줄 섹션 (사당)
     Widget stationNameSection = Container(
       alignment: Alignment.topCenter,
-      padding: EdgeInsets.only(top: 30.h, bottom: 30.h),
+      padding: EdgeInsets.only(top: 50.h, bottom: 30.h),
       child: Container(
         width: 240.w,
         height: 60.h,

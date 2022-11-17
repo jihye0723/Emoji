@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -60,7 +62,13 @@ class _SplashScreenState extends State<SplashScreen> {
   // 저장되어 있는 유저의 accessToken 을 확인한다.
   getUserToken() async {
     //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
-    return await storage.read(key: 'jwtToken');
+    var jwtToken = {
+      "grantType": "Bearer",
+      "accessToken": storage.read(key: 'accessToken'),
+      "refreshToken": storage.read(key: 'refreshToken')
+    };
+    return json.encode(jwtToken);
+    // return await storage.read(key: 'accessToken');
   }
 
   @override

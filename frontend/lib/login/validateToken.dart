@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -34,18 +36,25 @@ validateToken(String tkn) {
 
   Uri uri = Uri.http("k7a6022.p.ssafy.io", "/");
 
-  http.post(uri, body: {'jwtToken': tkn}).then((value) {
+  String at = json.decode(tkn)['accessToken'];
+  String rt = json.decode(tkn)['refreshToken'];
+
+  http.post(uri, body: {'accessToken': at, 'refreshToken': rt}).then((value) {
     int resultCode = value.statusCode;
     if (resultCode == 200) {
       // 정상 토큰
       // secureStorage 토큰 갱신
-      storage.write(key: "jwtToken", value: value.body);
+      storage.write(
+          key: "accessToken", value: json.decode(value.body)['accessToken']);
+      storage.write(
+          key: "refreshToken", value: json.decode(value.body)['refreshToken']);
 
       // 메인페이지로 이동
       return true;
     } else {
       // secureStorage 토큰 삭제
-      storage.delete(key: "jwtToken");
+      storage.delete(key: "accessToken");
+      storage.delete(key: "refreshToken");
 
       // 로그인 페이지로 이동
       return false;

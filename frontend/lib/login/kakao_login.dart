@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:practice_01/login/social_login.dart';
 import 'package:http/http.dart' as http;
@@ -35,10 +37,19 @@ class KakaoLogin implements SocialLogin {
       try {
         OAuthToken token = await UserApi.instance.loginWithKakaoTalk();
         print('카카오톡으로 로그인(인증) 성공 ${token.accessToken}');
+        print("1");
         var jwtToken = await _postRequest(token.accessToken);
+        print("2 ${jwtToken.body}");
 
         // secureStorage 토큰 갱신
-        storage.write(key: 'jwtToken', value: jwtToken);
+        // storage.write(key: 'jwtToken', value: jwtToken);
+        storage.write(
+            key: 'accessToken',
+            value: json.decode(jwtToken.body)['accessToken']);
+        storage.write(
+            key: 'refreshToken',
+            value: json.decode(jwtToken.body)['refreshToken']);
+        print("3 ${storage.read(key: 'accessToken')}");
         return jwtToken;
       } catch (error) {
         print('카카오톡으로 로그인(인증) 실패 $error');
@@ -54,7 +65,12 @@ class KakaoLogin implements SocialLogin {
         var jwtToken = await _postRequest(token.accessToken);
 
         // secureStorage 토큰 갱신
-        storage.write(key: 'jwtToken', value: jwtToken);
+        storage.write(
+            key: 'accessToken',
+            value: json.decode(jwtToken.body)['accessToken']);
+        storage.write(
+            key: 'refreshToken',
+            value: json.decode(jwtToken.body)['refreshToken']);
         return jwtToken;
       } catch (error) {
         print('카카오 계정으로 로그인(인증) 실패 $error');

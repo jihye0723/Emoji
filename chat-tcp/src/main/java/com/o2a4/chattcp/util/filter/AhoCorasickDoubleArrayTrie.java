@@ -1,14 +1,12 @@
-/**
+package com.o2a4.chattcp.util.filter; /**
  * Apache License 2.0
- *
+ * <p>
  * An implementation of Aho Corasick algorithm based on Double Array Trie
  *
  * @author hankcs
  * <p>
- * MODIFIED BY Park Jiwon (2022-11-09)
+ * MODIFIED BY Park Jiwon (2022-11)
  */
-
-package com.o2a4.chattcp.util.filter;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -68,31 +66,41 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable {
         return collectedEmits;
     }
 
-    //FIXME 숫자, 공백 포함한 경우에 어떻게 구현,,,
     /*
      * Custom Parse text
      *
      * @param text The text
      * @parma processor which includes the output
+     *
+     * ADDED BY PARK JIWON
      * */
     public List<Hit<V>> customParseText(CharSequence text) {
         int position = 1;
         int currentState = 0;
 
-        List<Hit<V>> collectedEmits = new ArrayList<Hit<V>>();
+        String convText = null;
+        List<Integer> convIdx = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < text.length(); ++i) {
+        // 문자가 아닌 부분 변환
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
 
-            if (Pattern.matches("/[^a-zA-Zㄱ-ㅎㅏ-ㅣ가-힣]", String.valueOf(text.charAt(i)))) {
-                // 일반 문자가 아니라면 다음 칸으로 패스
-                i++;
-                ++position;
-
+            if (Pattern.matches("([^a-zA-Z가-힣]*)", String.valueOf(c))) {
                 continue;
             }
 
-            currentState = getState(currentState, text.charAt(i));
-            storeEmits(position, currentState, collectedEmits);
+            convIdx.add(i);
+            sb.append(c);
+        }
+
+        convText = sb.toString();
+
+        List<Hit<V>> collectedEmits = new ArrayList<Hit<V>>();
+
+        for (int i = 0; i < convText.length(); ++i) {
+            currentState = getState(currentState, convText.charAt(i));
+            customStoreEmits(position, currentState, collectedEmits, convIdx);
             ++position;
         }
 
@@ -407,6 +415,24 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable {
     }
 
     /**
+     * store output
+     *
+     * @param position
+     * @param currentState
+     * @param collectedEmits
+     *
+     * ADDED BY PARK JIWON
+     */
+    private void customStoreEmits(int position, int currentState, List<Hit<V>> collectedEmits, List<Integer> convIdx) {
+        int[] hitArray = output[currentState];
+        if (hitArray != null) {
+            for (int hit : hitArray) {
+                collectedEmits.add(new Hit<V>(convIdx.get(position - l[hit]), convIdx.get(position - 1) + 1, v[hit]));
+            }
+        }
+    }
+
+    /**
      * transition of a state
      *
      * @param current
@@ -449,7 +475,7 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable {
 
 
     /**
-     * Build a AhoCorasickDoubleArrayTrie from a map
+     * Build a src.AhoCorasickDoubleArrayTrie from a map
      *
      * @param map a map containing key-value pairs
      */
@@ -518,7 +544,7 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable {
     }
 
     /**
-     * A builder to build the AhoCorasickDoubleArrayTrie
+     * A builder to build the src.AhoCorasickDoubleArrayTrie
      */
     private class Builder {
         /**

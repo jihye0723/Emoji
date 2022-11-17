@@ -27,14 +27,11 @@ public class MessageService {
     static String uPrefix = "user:";
 
     public String filterMessage(String content) {
-        // FIXME 공백이랑 숫자 처리 -> 배열을 같은 크기로 만들어서 문자열 위치를 매핑하고, 필요없는 부분 정규표현식으로 다 삭제하고 필터링?
-
         StringBuilder sb = new StringBuilder();
         String target = content;
         LinkedList<Integer[]> output = new LinkedList<>();
 
-//        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
-        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().parseText(target);
+        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
 
         // 비속어가 있다면
         if (res != null) {

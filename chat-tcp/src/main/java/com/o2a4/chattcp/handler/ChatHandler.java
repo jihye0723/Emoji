@@ -1,37 +1,39 @@
 package com.o2a4.chattcp.handler;
 
 import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
+import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
+import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import com.o2a4.chattcp.service.KafkaService;
 import com.o2a4.chattcp.service.MessageService;
 import com.o2a4.chattcp.service.RoomService;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
 @ChannelHandler.Sharable
 @RequiredArgsConstructor
 public class ChatHandler extends ChannelInboundHandlerAdapter {
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
+    private final TrainChannelGroupRepository tcgRepo;
+    private final ChannelIdChannelRepository cidcRepo;
     private final RoomService roomService;
     private final MessageService messageService;
     private final KafkaService kafkaService;
 
-//    private final ReactiveRedisTemplate<String, String> redisTemplate;
-//    private final TrainChannelGroupRepository tcgRepo;
-//    private final ChannelIdChannelRepository cidcRepo;
-//
-//    static String uPrefix = "user:";
-//    static String cPrefix = "channel:";
+    static String uPrefix = "user:";
+    static String cPrefix = "channel:";
+    static String tPrefix = "train:";
 
     // 핸들러가 생성될 때 호출되는 메소드
     @Override
@@ -46,22 +48,58 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     // 클라이언트와 연결되어 트래픽을 생성할 준비가 되었을 때 호출되는 메소드
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-/*        ChannelFuture closeFuture = ctx.channel().closeFuture();
-        closeFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (tcgRepo.getTrainChannelGroupMap().get(cg).size() == 0) {
-                    redisTemplate.opsForHash().delete(tPrefix+cg).subscribe();
-                }
-            }
-        })*/
-
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[OPEN] Remote Address: " + remoteAddress);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        String channelId = ctx.channel().id().asShortText();
+
+        // 얘 말고 더 정확하게 train이나 user를 기준으로 파악해야할듯
+        // Rest에서 Train이랑 User를 생성하니까 만약에 실제로 소켓연결 도중에 실패한다면 train이랑 user가 붕떠서
+        // 다시 유저의 재접속이 불가능한 경우가 생긴다?
+        redisTemplate.opsForValue().get(cPrefix + channelId)
+                .flatMap(userId ->
+                        Mono.zip(redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),
+                                        redisTemplate.opsForHash().get(uPrefix + userId, "nickName"))
+                                .flatMap(tuple -> {
+                                    log.info("SOCKET CLOSE HANDLE");
+
+                                    String cg = (String) tuple.getT1();
+                                    String nick = (String) tuple.getT2();
+
+                                    // 채널Id 채널 맵에서 제거
+                                    cidcRepo.getChannelIdChannelMap().remove(channelId);
+
+                                    ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
+
+                                    if (channelGroup == null || channelGroup.size() == 0) {
+                                        log.info("REMOVE TRAIN {} SERVER", cg);
+                                        // 메모리에서 채널그룹 제거
+                                        tcgRepo.getTrainChannelGroupMap().remove(cg);
+
+                                        redisTemplate.opsForHash().delete(tPrefix + cg).subscribe();
+                                    } else {
+                                        log.info("ROOM OUT MESSAGE SENDING");
+
+                                        Transfer.Builder builder = Transfer.newBuilder();
+
+                                        builder.setType("room-out");
+                                        builder.setUserId(userId);
+                                        builder.setNickName(nick);
+
+                                        channelGroup.writeAndFlush(builder.build());
+                                    }
+
+                                    redisTemplate.opsForHash().delete(uPrefix + userId).subscribe();
+                                    redisTemplate.opsForValue().delete(cPrefix + channelId).subscribe();
+
+                                    return Mono.empty();
+                                }))
+                .subscribe();
+
+
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[CLOSED] Remote Address: " + remoteAddress);
     }
@@ -94,32 +132,29 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     break;
                 case "room-out":
                     log.info("방 퇴장 : {}", trans.getUserId());
-                    roomService.roomOut(ctx.channel(), trans);
+                    roomService.roomOut(ctx.channel());
                     break;
                 case "seat-start":
-                    // TODO 자리양도
                     String userId = trans.getUserId();
-                    String place = trans.getContent();
-                    Map<String, String> amap = new HashMap<>();
-                    amap.put(userId, place);
 
                     log.info("자리양도 시작 : {}", userId);
                     Mono<String> res = roomService.seatStart(userId);
-                    res.subscribe();
+                    res.subscribe(
+                            i -> {
+                                if (i != null) {
+                                    log.info("자리양도 시작 요청 완료 : {}", userId);
 
-//                    Mono<Seats> seatInfo = roomService.seatStart(userId);
-//
-//                    seatInfo.subscribe(seat -> {
-//                        // 당첨인 사람한테 내용 보내기
-//                        // 방에 끝났다는 메시지 보내기
-//                        log.info("세팅 위치 : {} / 자리양도 : {} / 당첨자 : {} / 당첨 자리 : {}", place, seat.getUserId(), seat.getWinnerId(), amap.get(seat.getUserId()));
-//                    });
+                                    messageService.sendMessageToRoom(trans, "userId", userId);
+                                }
+                            }
+                    );
 
                     break;
                 case "villain-on":
                     roomService.villainOn(trans);
                     break;
                 case "villain-off":
+                    log.info("VILLAIN OFF IN");
                     roomService.villainOff(trans);
                     break;
                 default:

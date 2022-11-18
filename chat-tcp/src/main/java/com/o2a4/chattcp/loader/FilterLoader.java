@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class FilterLoader {
     @PostConstruct
     public void loadFilter() {
         ClassPathResource resource = new ClassPathResource("data/FwordList.txt");
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new TreeMap<>();
 
         BufferedReader br = null;
 

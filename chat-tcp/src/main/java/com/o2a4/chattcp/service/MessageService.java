@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -26,14 +27,11 @@ public class MessageService {
     static String uPrefix = "user:";
 
     public String filterMessage(String content) {
-        // FIXME 공백이랑 숫자 처리 -> 배열을 같은 크기로 만들어서 문자열 위치를 매핑하고, 필요없는 부분 정규표현식으로 다 삭제하고 필터링?
-
         StringBuilder sb = new StringBuilder();
         String target = content;
         LinkedList<Integer[]> output = new LinkedList<>();
 
-//        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
-        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().parseText(target);
+        List<AhoCorasickDoubleArrayTrie.Hit<?>> res = filterRepo.getFilterTrie().customParseText(target);
 
         // 비속어가 있다면
         if (res != null) {
@@ -93,7 +91,6 @@ public class MessageService {
 
     public void sendMessageToRoom(Transfer trans, String type, String target) {
         // 채팅방에 메시지 전송
-
         if (type.equals("userId")) {
             redisTemplate.opsForHash().get(uPrefix + target, "channelGroup")
                     .subscribe(cg -> {
@@ -106,7 +103,7 @@ public class MessageService {
         }
     }
 
-    private static Transfer serverTrans(String type, String content) {
+    /*private static Transfer serverTrans(String type, String content) {
         Transfer.Builder builder = Transfer.newBuilder();
 
         builder.setType(type);
@@ -118,5 +115,5 @@ public class MessageService {
         builder.setSendAt(LocalDateTime.now().toString());
 
         return builder.build();
-    }
+    }*/
 }

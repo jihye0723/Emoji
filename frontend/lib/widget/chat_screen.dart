@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../data/chat.dart';
@@ -56,10 +57,17 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   // 입력한 메시지를 저장하는 리스트
   final List<ChatMessage> _message = <ChatMessage>[];
   late FocusNode chatNode;
+
+  //TCP서버용
   late Socket socket;
+  String ip = "10.0.2.2";
+  //String ip = 'k7a6022.p.ssafy.io';
+  int port = 0;
 
   //빌런 상태 확인
-  late int villaincount;
+  late int villaincount = 0;
+  //채팅방 사람수 확인
+  late int peoplecount = 0;
 
   //자리양도 신청 리스트
   late List<String> attendlist = [];
@@ -69,16 +77,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Future<dynamic> portname;
   late Future<dynamic> attendseat;
 
-  //TCP서버용
-  String ip = "10.0.2.2";
-  int port = 0;
+  //토큰용
+  String? userAccessToken;
+  static final storage = FlutterSecureStorage();
+
+  // 저장되어 있는 유저의 accessToken 을 확인한다.
+  getUserToken() async {
+    //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
+    userAccessToken = await storage.read(key: 'accessToken');
+    return userAccessToken;
+  }
 
   ///             initState    채팅부분 포트랑,ip 가져오기
   @override
   void initState() {
     super.initState();
+
     //내아이디 전역으로 사용
     myuserId = widget.myId;
+
+    //비동기로 getUserToken 함수를 실행하여 Secure Storage 정보를 불러오는 작업.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getUserToken();
+    });
 
     chatNode = FocusNode();
 
@@ -112,7 +133,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     //소켓 연결되어있는 상태일때만
     if (port != 0) {
       //서버에 나간다고 알려주고 나가기
-      print("hi");
       tcpsend("room-out", "", widget.myId, widget.myName);
       socket.close();
     }
@@ -125,7 +145,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   ////// 서버 연결되면 들어왔다고 알려주는 메시지 전송하고, 연결이 성공적으로 되면 채팅이 가능하도록 채팅창을 막던지. 로딩창을 유지하던지 하자.
   void create() async {
     print(port);
-
+    print(ip);
     try {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
@@ -151,26 +171,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       Uint8List data,
     ) {
       var serverdata = data.getRange(2, data.length);
-      print(data);
+      //print(data);
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
-      print(receive);
+      //print(receive);
 
       if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {
           makeMessage("${receive.nickName}님이 입장하셨습니다", "alert", "Manager");
 
-          //빌런값 초기 설정
-          /*
-          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
-          */
+          String str = receive.content;
           setState(() {
-            villaincount = int.parse(receive.content);
+            peoplecount = int.parse(str.split(",")[0]);
           });
         }
 
         if (receive.type == "room-out") {
           makeMessage("${receive.nickName}님이 퇴장하셨습니다", "alert", "Manager");
+
+          setState(() {
+            peoplecount = peoplecount - 1;
+          });
         }
 
         if (receive.type == "msg") {
@@ -189,7 +210,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("자리 양도 이벤트가 발생하였습니다"),
             duration: Duration(seconds: 5),
-            backgroundColor: widget.color,
+            backgroundColor: Color(0xff32A1C8),
             behavior: SnackBarBehavior.floating,
             action: SnackBarAction(
               label: '참가!',
@@ -225,6 +246,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         if (receive.type == "villain-on") {
           //빌런 탑승
           snackbar.showSnackBar(context, '새로운 빌런이 나타났어요!', 'villain');
+
           setState(() {
             villaincount = int.parse(receive.content);
           });
@@ -233,26 +255,31 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         if (receive.type == "villain-off") {
           //빌런 하차
           snackbar.showSnackBar(context, '빌런이 사라졌어요!', 'villain');
+
           setState(() {
             villaincount = int.parse(receive.content);
           });
         }
       } else if (receive.userId == widget.myId) {
         if (receive.type == "room-in") {
-          //빌런값 초기 설정
-          /*
-          * 빌런 값 초기화시켜주어야 한다.(채팅방 입장시)
-          */
+          String str = receive.content;
           setState(() {
-            villaincount = int.parse(receive.content);
+            peoplecount = int.parse(str.split(",")[0]);
+            villaincount = int.parse(str.split(",")[1]);
           });
         }
 
         if (receive.type == "villain-on") {
           //빌런 탑승
-          setState(() {
-            villaincount = int.parse(receive.content);
-          });
+          if (int.parse(receive.content) == -1) {
+            snackbar.showSnackBar(
+                context, "최근 빌런이 신고되었어요. 잠시후 시도해 주세요", "villain");
+          } else {
+            setState(() {
+              villaincount = int.parse(receive.content);
+            });
+            snackbar.showSnackBar(context, '접수가 완료 되었습니다!', 'common');
+          }
         }
 
         if (receive.type == "villain-off") {
@@ -323,35 +350,62 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: widget.color,
-      body: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(30.0)),
-          color: Theme.of(context).cardColor,
-        ),
-        child: Column(
-          children: <Widget>[
-            // 리스트뷰를 Flexible로 추가.
-            Flexible(
-              // 리스트뷰 추가
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8.0),
-                // 리스트뷰의 스크롤 방향을 반대로 변경. 최신 메시지가 하단에 추가됨
-                reverse: true,
-                itemCount: _message.length,
-                itemBuilder: (_, index) => _message[index],
-              ),
+      body: Column(
+        children: <Widget>[
+          Container(
+            height: 40,
+            color: widget.color,
+            padding: EdgeInsets.only(bottom: 10.h),
+            //child: Text("인원 수 : $peoplecount   빌런 : $villaincount"),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("assets/images/hi.png"),
+                Text(
+                  "   $peoplecount       ",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                Image.asset("assets/images/devil.png"),
+                Text("   $villaincount",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white)),
+              ],
             ),
-            // 구분선
-            const Divider(height: 1.0),
-            // 메시지 입력을 받은 위젯(_buildTextCompose)추가
-            Container(
+          ),
+          Expanded(
+            child: Container(
               decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(30.0)),
                 color: Theme.of(context).cardColor,
               ),
-              child: _buildTextComposer(),
-            )
-          ],
-        ),
+              child: Column(
+                children: <Widget>[
+                  // 리스트뷰를 Flexible로 추가.
+                  Flexible(
+                    // 리스트뷰 추가
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      // 리스트뷰의 스크롤 방향을 반대로 변경. 최신 메시지가 하단에 추가됨
+                      reverse: true,
+                      itemCount: _message.length,
+                      itemBuilder: (_, index) => _message[index],
+                    ),
+                  ),
+                  // 구분선
+                  const Divider(height: 1.0),
+                  // 메시지 입력을 받은 위젯(_buildTextCompose)추가
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                    ),
+                    child: _buildTextComposer(),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -601,7 +655,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     var temp = await attendseat;
 
     Timer(Duration(seconds: 2), () async {
-      if (temp == "OK") snackbar.showSnackBar(context, '양도 신청 완료', 'common');
+      if (temp == "OK") snackbar.showSnackBar(context, '신청 완료!!', 'common');
     });
   }
 
@@ -617,12 +671,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //http 통신으로 끝났다고 알려줌
       seatresult = http.chatroom().finish(widget.myId, widget.myId, text);
       temp = await seatresult;
-
       //print(temp);
     });
+
     Timer(Duration(seconds: 12), () async {
-      if (temp == "OK")
-        snackbar.showSnackBar(context, '자리양도가 완료되었습니다.', 'common');
+      if (temp == "OK") {
+        snackbar.showSnackBar(context, '자리양도가 완료되었습니다!', 'common');
+      }
     });
 
     _seatController.clear();
@@ -772,8 +827,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             //소켓통신
                             tcpsend(
                                 "villain-on", "", widget.myId, widget.myName);
-                            snackbar.showSnackBar(
-                                context, '접수가 완료 되었습니다.', 'common');
                           },
                           child: const SizedBox(child: Text("😫 나타났어요!")),
                         ),
@@ -824,8 +877,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     var sendmessage = header.buffer.asUint8List() + message;
 
-    print(sendmessage.length);
-    print(sendmessage.runtimeType);
     socket.add(sendmessage);
     //socket.add(message);
     //await socket.flush();

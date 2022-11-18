@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'make_nick.dart' as makeNick;
+import '../http/chathttp.dart' as http;
+import '/utils/snackbar.dart' as snackbar;
 
 // nick - 채팅보낸사람 닉네임, text-문자, id-채팅보낸사람 아이디, myid- 내 아이디
 // 내채팅 니채팅 확인, type 은 내채팅인지 확인하기 위해 만들어 둠, 추후에 작업이 필요 현재는 단순 아이디 비교
@@ -89,6 +91,8 @@ Widget message(
                           ),
                           onPressed: () {
                             print(id);
+                            // 토큰 얻어와야함.
+                            //userreport(context, mytoken, id);
                             Navigator.of(ctx).pop();
                           },
                           child: const Text("신고하기"),
@@ -129,5 +133,19 @@ Widget message(
         ],
       ),
     );
+  }
+}
+
+late Future<dynamic> userReport;
+
+void userreport(BuildContext context, String mytoken, String userid) async {
+  userReport = http.chatroom().report(mytoken, userid);
+
+  var temp = await userReport;
+
+  if (temp == "OK") {
+    snackbar.showSnackBar(context, '접수 완료!', 'common');
+  } else {
+    snackbar.showSnackBar(context, '접수 실패!', 'common');
   }
 }

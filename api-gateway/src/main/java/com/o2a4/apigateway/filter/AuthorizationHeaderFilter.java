@@ -2,6 +2,8 @@ package com.o2a4.apigateway.filter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +63,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         });
     }
 
-    // Mono, Flux -> Spring 5.0 에서 추가된 WebFlux = 클라이언트 요청이 들어왔을때 반환하는값 단일, 다중값을 비동기로 처리함
     private Mono<Void> onError(ServerWebExchange exchange,
                                String err,
                                HttpStatus httpStatus) {
@@ -74,19 +75,20 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     }
 
     private boolean isJwtValid(String token) {
-        boolean returnValue = true;
-
-        String subject = null;
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-        } catch (Exception exception) {
-            returnValue = false;
-        }
-        if (subject == null || subject.isEmpty()) {
-            returnValue = false;
+            return true;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT Token", e);
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT Token", e);
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT Token", e);
+        } catch (IllegalArgumentException e) {
+            log.info("JWT claims string is empty.", e);
         }
 
-        return returnValue;
+        return false;
     }
 
     // 성공적으로 검증이 되었기 때문에 인증된 헤더로 요청을 변경해준다. 서비스는 해당 헤더에서 아이디를 가져와 사용한다.

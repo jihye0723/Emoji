@@ -4,20 +4,17 @@ import com.o2a4.chattcp.socket.NettyChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.internal.SystemPropertyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.*;
-import java.util.TimerTask;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,7 +26,7 @@ public class NettyConfiguration {
     private int transferPort;
     @Value("${server.netty.bossCount}")
     private int bossCount;
-//    @Value("${server.netty.ioCount}")
+    //    @Value("${server.netty.ioCount}")
 //    private int ioCount;
     @Value("${server.netty.workerCount}")
     private int workerCount;
@@ -55,10 +52,13 @@ public class NettyConfiguration {
                 .childHandler(nettyChannelInitializer);
 
         // ServerBootstrap에 다양한 Option 추가 가능
-        // SO_BACKLOG: 동시에 수용 가능한 최대 incoming connections 개수
+
         // 이 외에도 SO_KEEPALIVE, TCP_NODELAY 등 옵션 제공
-        serverBootstrap.option(ChannelOption.SO_BACKLOG, backlog);
-        serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true); //OS에 따라 옵션이 다르고 성능이 별로라서 비추천
+        serverBootstrap.option(ChannelOption.SO_BACKLOG, backlog);  // SO_BACKLOG: 동시에 수용 가능한 최대 incoming connections 개수
+        serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);   // nagle알고리즘 비활성화로 반응속도 향상
+        serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);  // TIME_WAIT 소켓을 재활용
+//        serverBootstrap.childOption(ChannelOption.SO_LINGER, 0);    // TIME_WAIT을 남기지 않고 빠르게 강제종료 할 수 있게 하지만 특수한 경우가 아니라면 사용 X
+        serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true); //OS에 따라 옵션이 다르다
 
         return serverBootstrap;
     }
@@ -74,7 +74,7 @@ public class NettyConfiguration {
 //    public NioEventLoopGroup ioGroup() {
 //        return new NioEventLoopGroup(ioCount);
 //    }
-    
+
     // worker: boss가 수락한 연결 핸들링
     @Bean(destroyMethod = "shutdownGracefully")
     public NioEventLoopGroup workerGroup() {

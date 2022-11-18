@@ -6,6 +6,7 @@ import com.o2a4.chattcp.proto.TransferOuterClass.Transfer;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
 import com.o2a4.chattcp.repository.TrainChannelGroupRepository;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.group.ChannelGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,12 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,110 +35,151 @@ public class RoomService {
     static String tPrefix = "train:";
     static String sPrefix = "server:";
     static String cPrefix = "channel:";
+    static String vPrefix = "villain:";
 
     public void roomIn(Channel channel, Transfer trans) {
         String userId = trans.getUserId();
-        redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
+        redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
                 .flatMap(
                         cg -> {
                             String channelId = channel.id().asShortText();
 
+                            ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
                             // 열차 채팅방에 채널 추가
-                            tcgRepo.getTrainChannelGroupMap().get(cg).add(channel);
+                            channelGroup.add(channel);
                             // 채널Id 채널 맵에 추가
                             cidcRepo.getChannelIdChannelMap().put(channelId, channel);
+                            // 채널Id 유저id Redis에 저장
+                            return redisTemplate.opsForValue().set(cPrefix + channelId, userId)
+                                    .flatMap(i ->
+                                            redisTemplate.expire(cPrefix + channelId, Duration.ofHours(3))
+                                    ).flatMap(i ->
+                                            redisTemplate.opsForHash().get(tPrefix + cg, "villain")
+                                            .flatMap(v -> {
+                                                // Content에 채팅 방 인원과 빌런 수 (a, b) 전달
+                                                Transfer send = Transfer.newBuilder(trans).setContent(String.valueOf(channelGroup.size())+","+v.toString()).build();
 
-                            return redisTemplate.opsForHash().get(tPrefix + cg, "villain")
-                                    .flatMap(v -> {
-                                        // Content에 빌런 수 전달
-                                        Transfer send = Transfer.newBuilder(trans).setContent(v.toString()).build();
+                                                Map<String, String> aMap = new HashMap<>();
+                                                aMap.put("channel", channelId);
+                                                aMap.put("nickName", trans.getNickName());
 
-                                        return redisTemplate.opsForHash().put(uPrefix + userId, "channel", channelId)
-                                                .doOnSubscribe(i -> {
-                                                            log.info("ROOM IN MESSAGE SENDING");
-                                                            tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
-                                                        }
-                                                );
-                                    });
+                                                return redisTemplate.opsForHash().putAll(uPrefix + userId, aMap)
+                                                        .doOnSubscribe(a -> {
+                                                                    log.info("ROOM IN MESSAGE SENDING");
+                                                                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+                                                                }
+                                                        );
+                                            }));
 //                            return redisTemplate.opsForValue().set(cPrefix + channelId, userId).flatMap(i -> {})
                         })
                 .subscribe();
     }
 
-    public void roomOut(Channel channel, Transfer trans) {
-        String userId = trans.getUserId();
-        String channelId = channel.id().asShortText();
-
-        redisTemplate.opsForHash().get("user:" + userId, "channelGroup")
-                .flatMap(cg -> {
-                    // 채널Id 채널 맵에서 제거
-                    cidcRepo.getChannelIdChannelMap().remove(channelId);
-                    // 열차 채팅방에서 채널 제거 (close하면 알아서 channelGroup에서 제거됨)
-                    channel.close();
-
-                    ChannelGroup channelGroup = tcgRepo.getTrainChannelGroupMap().get(cg);
-                    if (channelGroup != null && channelGroup.size() == 0) {
-                        log.info("REMOVE TRAIN {} SERVER", cg);
-                        // 메모리에서 채널그룹 제거
-                        tcgRepo.getTrainChannelGroupMap().remove(cg);
-                    } else {
-                        log.info("ROOM OUT MESSAGE SENDING");
-                        channelGroup.writeAndFlush(trans);
-                    }
-
-                    return redisTemplate.opsForHash().delete(uPrefix + userId);
-                }).subscribe();
+    public void roomOut(Channel channel) {
+        channel.close();
     }
 
     public Mono<String> seatStart(String userId) {
-        // TODO 자리양도 시작
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
         Mono<String> res = webClient.get().uri("http://localhost:8082/seat/" + userId)
                 .retrieve().bodyToMono(String.class);
 
-//        RestTemplate restTemplate = new RestTemplate();
-//        String res= restTemplate.getForObject("http://localhost:8082/seat/"+userId, String.class);
         return res;
     }
 
     public void seatEnd(Seats seat) {
+        log.info("자리 양도 종료 호출");
         String userId = seat.getUserId();
         String winnerId = seat.getWinnerId();
         // 위치 정보에서 비속어 필터링
         String place = messageService.filterMessage(seat.getContent());
+        String time = LocalDateTime.now().toString();
 
         Transfer.Builder builder = Transfer.newBuilder();
 
         builder.setType("seat-win");
         builder.setContent(place);
         builder.setUserId(userId);
-        builder.setSendAt(LocalDateTime.now().toString());
+        builder.setSendAt(time);
 
-        // 당첨자 메시지 전송
-        messageService.sendMessageToOne(builder.build(), winnerId);
-        // 채팅방 전체 메시지 전송
-        messageService.sendMessageToRoom(builder.build(), "userId", userId);
+        Transfer.Builder b2 = Transfer.newBuilder(builder.build())
+                .setType("seat-end")
+                .setContent("");
+
+        redisTemplate.opsForHash().get(uPrefix + winnerId, "channel")
+                .doOnNext(c -> {
+                    // 당첨자 메시지 전송
+                    log.info("SEND MESSAGE TO USER");
+                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(builder.build());
+                }).flatMap(c ->
+                    redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
+                ).doOnNext(cg -> {
+                    // 채팅방에 메시지 전송
+                    log.info("SEND MESSAGE TO ROOM");
+                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(b2.build());
+                })
+                .subscribe();
+
+        // 이 형태는 2개 합친거 & 뒤에거 전송
+//        // 당첨자 메시지 전송
+//        messageService.sendMessageToOne(builder.build(), winnerId);
+//
+//        // 채팅방 전체 메시지 전송
+//        messageService.sendMessageToRoom(b2.build(), "userId", userId);
     }
 
     public void villainOn(Transfer trans) {
-        redisTemplate.opsForHash().get(uPrefix + trans.getUserId(), "channelGroup")
-                .flatMap(cg ->
-                        redisTemplate.opsForHash().increment(tPrefix + cg, "villain", 1)
-                                .doOnSubscribe(incre -> {
-                                    Transfer send = Transfer.newBuilder(trans).setContent(incre.toString()).build();
+        String userId = trans.getUserId();
+        Mono.zip( redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup"),
+                        redisTemplate.opsForHash().get(uPrefix + userId, "channel"))
+                .flatMap(tuple -> {
+                        // 채널그룹 (열차번호)
+                        String cg = (String) tuple.getT1();
+                        // 채널 id
+                        String c = (String) tuple.getT2();
+
+                        // villain:열차번호를 찾음
+                        return redisTemplate.opsForValue().get(vPrefix + cg)
+                                // 결과 데이터가 없다면 (빌런 추가가 가능한 시간)
+                                .switchIfEmpty(Mono.defer(() ->
+                                    Mono.zip(redisTemplate.opsForValue().set(vPrefix + cg, "1"),
+                                            redisTemplate.expire(vPrefix + cg, Duration.ofMinutes(1)))
+                                            .flatMap(a -> redisTemplate.opsForHash().increment(tPrefix + cg, "villain", 1)
+                                            .flatMap(incre -> {
+                                                log.info("SEND VILLAIN ON");
+                                                Transfer.Builder send = Transfer.newBuilder(trans);
+                                                send.setContent(incre.toString());
+                                                send.build();
+                                                // 빌런 증가하면 증가한 숫자를 전송
+                                                tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
+                                                // 종료
+                                                return Mono.empty();
+                                            }))
+                                ))
+                                // 결과 데이터가 있다면 (빌런 추가를 제한하는 시간)
+                                .flatMap(a -> {
+                                    log.info("VILLAIN ADD PROHIBITED");
+                                    Transfer.Builder send = Transfer.newBuilder(trans);
+                                    send.setContent("-1");
+                                    send.build();
                                     // 빌런 증가하면 증가한 숫자를 전송
-                                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
-                                })
+                                    cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(send);
+
+                                    return Mono.empty();
+                                });
+                        }
                 ).subscribe();
     }
 
-    public void villainOff(TransferOuterClass.Transfer trans) {
+    public void villainOff(Transfer trans) {
         redisTemplate.opsForHash().get(uPrefix + trans.getUserId(), "channelGroup")
-                .doOnSubscribe(cg ->
+                .flatMap(cg ->
                         redisTemplate.opsForHash().get(tPrefix + cg, "villain")
                                 .flatMap(num -> {
-                                    int n = Integer.valueOf(String.valueOf(num));
+                                    log.info("SEND VILLAIN OFF - num before : {}", num);
+
+                                    int n = Integer.parseInt(String.valueOf(num));
                                     if (n == 0) {
                                         return Mono.empty();
                                     }
@@ -141,7 +187,7 @@ public class RoomService {
                                     Transfer send = Transfer.newBuilder(trans).setContent(String.valueOf(n - 1)).build();
                                     tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(send);
 
-                                    return redisTemplate.opsForHash().put(tPrefix + cg, "villain", n - 1);
+                                    return redisTemplate.opsForHash().put(tPrefix + cg, "villain", String.valueOf(n - 1));
                                 })
                 )
                 .subscribe();

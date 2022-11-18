@@ -1,13 +1,13 @@
-package com.o2a4.chat;
+package com.o2a4.apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ChatApplication {
+public class ApiGatewayApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ChatApplication.class, args);
+        SpringApplication.run(ApiGatewayApplication.class, args);
     }
 
 }

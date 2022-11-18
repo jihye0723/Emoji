@@ -35,13 +35,6 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     static String cPrefix = "channel:";
     static String tPrefix = "train:";
 
-//    private final ReactiveRedisTemplate<String, String> redisTemplate;
-//    private final TrainChannelGroupRepository tcgRepo;
-//    private final ChannelIdChannelRepository cidcRepo;
-//
-//    static String uPrefix = "user:";
-//    static String cPrefix = "channel:";
-
     // 핸들러가 생성될 때 호출되는 메소드
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
@@ -55,16 +48,6 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
     // 클라이언트와 연결되어 트래픽을 생성할 준비가 되었을 때 호출되는 메소드
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-/*        ChannelFuture closeFuture = ctx.channel().closeFuture();
-        closeFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (tcgRepo.getTrainChannelGroupMap().get(cg).size() == 0) {
-                    redisTemplate.opsForHash().delete(tPrefix+cg).subscribe();
-                }
-            }
-        })*/
-
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[OPEN] Remote Address: " + remoteAddress);
     }

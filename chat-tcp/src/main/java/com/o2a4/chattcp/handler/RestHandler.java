@@ -1,6 +1,6 @@
 package com.o2a4.chattcp.handler;
 
-import com.o2a4.chattcp.decoder.JwtDecoder;
+import com.auth0.jwt.JWT;
 import com.o2a4.chattcp.model.Bridge;
 import com.o2a4.chattcp.model.Seats;
 import com.o2a4.chattcp.repository.ChannelIdChannelRepository;
@@ -39,8 +39,6 @@ public class RestHandler {
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final RoomService roomService;
 
-    private final JwtDecoder jwtDecoder;
-
     private final TrainChannelGroupRepository tcgRepo;
     private final ChannelIdChannelRepository cidcRepo;
     private final AuthService authService;
@@ -54,12 +52,10 @@ public class RestHandler {
            2-1 서버 UserCnt 증가
          3. return TCP 포트번호 */
 
-        // TODO token에서 id 디코딩
         // 1. 유효한 사용자 확인
-        String token = req.headers().firstHeader("token");
-        String userId = jwtDecoder.decode(token);
+        String token = req.headers().firstHeader("Authorization").split("Bearer")[1].trim();
+        String userId = JWT.decode(token).getClaim("sub").asString();
 
-        // TODO Error Gracefully,,,,
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
                 // 없었다면 body를 사용
                 .switchIfEmpty(req.bodyToMono(Bridge.class))
@@ -101,10 +97,6 @@ public class RestHandler {
                                         redisTemplate.expire(uPrefix + userId, Duration.ofHours(3)));
                             });
                 })
-//                .flatMap(i -> {
-//                    log.info("INCREASE USER COUNT");
-//                    return redisTemplate.opsForValue().increment(sPrefix + port);
-//                })
                 .map(i -> {
                     log.info("BRIDGE");
                     Bridge res = new Bridge();
@@ -135,66 +127,4 @@ public class RestHandler {
             return ServerResponse.status(500).build();
         }
     }
-
-//    public Mono<ServerResponse> roomOut(ServerRequest req) {
-//        /* 방 퇴장 요청
-//         ? 1. 유효한 사용자인지 확인 - jwt 토큰
-//         2. Redis - 유저 ID 확인해서 방에서 퇴장
-//           2-1 서버 UserCnt 감소
-//           2-2 User (Hash) 제거
-//           2-a CG에 남은 사람이 없다면 : Train 서버 제거, Train CG 제거
-//         3. return 성공, 실패 */
-//
-//
-//        // 1. 유효한 사용자 확인
-//        String token = req.headers().firstHeader("token");
-//        String userId = jwtDecoder.decode(token);
-//
-//        // 인증서버 보낸 결과가 유효하지 않은 사용자라면
-//        if (false) {
-//            return ServerResponse.badRequest().body(Mono.just("권한이 없는 유저"), String.class);
-//        }
-//
-//        log.info("GET USER CHANNELGROUP");
-//        Mono<Bridge> result = redisTemplate.opsForHash().entries(uPrefix + userId)
-//                .collectMap(x -> x.getKey(), x -> x.getValue())
-//                .flatMap(map -> {
-//                    log.info("REMOVE USER {}", userId);
-//                    log.info("MAP VALUES : {}", map.values());
-//
-//                    String channelId = (String) map.get("channel");
-//                    String channelGroup = (String) map.get("channelGroup");
-//
-//                    // channelId가 null인 경우는 아직 TCP 소켓이 연결 안된 상태
-//                    if (channelId != null) {
-//                        // 서버에서 클라이언트의 채널 닫음
-//                        cidcRepo.getChannelIdChannelMap().get(channelId).close();
-//                    }
-//
-//                    return Mono.zip(
-//                            // Redis에서 유저 정보 제거
-//                            redisTemplate.opsForHash().delete(uPrefix + userId).doOnSubscribe(i -> {
-//                                log.info("REMOVE USER {} REDIS", userId);
-//                            }),
-//                            // Redis에서 열차 서버 매핑정보 제거
-//                            redisTemplate.opsForHash().delete(tPrefix + channelGroup).doOnSubscribe(i -> {
-//                                log.info("REMOVE TRAIN {} REDIS", channelGroup);
-//                            }));
-//                }).flatMap(i -> {
-//                    if (i.getT1() && i.getT2()) {
-//                        redisTemplate.opsForValue().decrement(sPrefix + port).subscribe(a -> {
-//                            log.info("DECREASE USER COUNT");
-//                        });
-//                    }
-//                    return Mono.just("pass");
-//                }).map(i -> {
-//                    log.info("MAKE BRIDGE");
-//                    Bridge res = new Bridge();
-//                    res.setName("result");
-//                    res.setData("DONE");
-//                    return res;
-//                });
-//
-//        return ServerResponse.ok().body(result, Bridge.class);
-//    }
 }

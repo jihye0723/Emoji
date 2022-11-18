@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3ef383de-8754-4900-804d-848fbb27f6ed" name="Changes" comment="FIX 로그인 토큰 검증 (작성중)">
+      <change afterPath="$PROJECT_DIR$/frontend/lib/mainpage/newAdvBoardSection.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/login/kakao_login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/login/kakao_login.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fe/develop" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2HI7n13AtTbLb8lJWWAAJt5aB2h" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\SSAFY\Desktop\PJT 3\S07P31A602\frontend\assets\images" />
+      <recent name="C:\Users\SSAFY\Desktop\PJT 3\S07P31A602\frontend\lib\mainpage" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/frontend/lib/main.dart" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="S07P31A602" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="S07P31A602" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Flutter.main.dart" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3ef383de-8754-4900-804d-848fbb27f6ed" name="Changes" comment="" />
+      <created>1667960910749</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1667960910749</updated>
+    </task>
+    <task id="LOCAL-00001" summary="FEAT API 받아서 위젯에 뿌려주기">
+      <created>1668067082738</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1668067082738</updated>
+    </task>
+    <task id="LOCAL-00002" summary="FEAT GPS 이용하기위한 권한 설정">
+      <created>1668067139746</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1668067139746</updated>
+    </task>
+    <task id="LOCAL-00003" summary="FEAT 새로고침 픽스 완료">
+      <created>1668408234815</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1668408234815</updated>
+    </task>
+    <task id="LOCAL-00004" summary="FIX LineCodeToName.dart 수정">
+      <created>1668410742828</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1668410742828</updated>
+    </task>
+    <task id="LOCAL-00005" summary="FIX NickGenerator 추가">
+      <created>1668489753773</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1668489753773</updated>
+    </task>
+    <task id="LOCAL-00006" summary="FIX api response NULL 예외처리">
+      <created>1668490031342</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1668490031342</updated>
+    </task>
+    <task id="LOCAL-00007" summary="ADD Image Assets">
+      <created>1668570436138</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1668570436138</updated>
+    </task>
+    <task id="LOCAL-00008" summary="FIX url 수정, 로그인 토큰 검증 (작성중)">
+      <created>1668587490739</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1668587490739</updated>
+    </task>
+    <task id="LOCAL-00009" summary="FIX 로그인 토큰 검증 (작성중)">
+      <created>1668587809465</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1668587809465</updated>
+    </task>
+    <task id="LOCAL-00010" summary="FIX 로그인 토큰 검증 (작성중)">
+      <created>1668587999574</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1668587999574</updated>
+    </task>
+    <task id="LOCAL-00011" summary="FIX 로그인 토큰 검증 (작성중)">
+      <created>1668648911012</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1668648911012</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="FEAT API 받아서 위젯에 뿌려주기" />
+    <MESSAGE value="FEAT GPS 이용하기위한 권한 설정" />
+    <MESSAGE value="FEAT 새로고침 픽스 완료" />
+    <MESSAGE value="FIX LineCodeToName.dart 수정" />
+    <MESSAGE value="FIX NickGenerator 추가" />
+    <MESSAGE value="FIX api response NULL 예외처리" />
+    <MESSAGE value="ADD Image Assets" />
+    <MESSAGE value="FIX url 수정, 로그인 토큰 검증 (작성중)" />
+    <MESSAGE value="FIX 로그인 토큰 검증 (작성중)" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX 로그인 토큰 검증 (작성중)" />
+  </component>
+</project>

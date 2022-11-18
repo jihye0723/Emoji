@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:practice_01/mainpage/APIResponse.dart';
 import 'package:practice_01/mainpage/JsonReform.dart';
@@ -13,6 +14,7 @@ import 'TrainArrival.dart';
 import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
 import 'package:http/http.dart' as http;
+import 'package:carousel_slider/carousel_slider.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key, required this.userId}) : super(key: key);
@@ -31,6 +33,8 @@ class _FirstPageState extends State<FirstPage> {
   Position? _currentPosition;
   int _itemCount = 0;
   String _stationName = "";
+
+  final storage = FlutterSecureStorage();
 
   RefreshController _controller = RefreshController(initialRefresh: false);
 
@@ -123,43 +127,54 @@ class _FirstPageState extends State<FirstPage> {
       Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
         // "latitude": position.latitude.toString(),
         // "longtitude": position.longitude.toString()
-        // "latitude": 37.500643.toString(), // 역삼역
-        // "longtitude": 127.036377.toString()
-        "latitude": 37.476559.toString(), // 사당역
-        "longtitude": 126.981633.toString()
+        "latitude": 37.500643.toString(), // 역삼역
+        "longtitude": 127.036377.toString()
+        // "latitude": 37.476559.toString(), // 사당역
+        // "longtitude": 126.981633.toString()
       });
 
-      http.get(uri).then((data) {
-        print("data : $data");
-        print("data.body.length : ${data.body.length}");
-        print("요청 uri : ${uri.toString()}");
-        print("요청 결과 : ${data.body.toString()}");
-        dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
-        // for (dynamic item in jsonParsed) {
-        //   print(item);
-        // }
-        List<APITrain> temp = [];
-        for (dynamic item in jsonParsed) {
-          print(item.runtimeType);
-          temp.add(APITrain.fromJson(item));
-        }
-        TrainInfo ti = jsonReform(temp);
-        // print("jsonParsed : $jsonParsed");
+      Future<String?> mytoken = storage.read(key: "accessToken");
 
-        setState(() {
-          _loadedInfo = true;
-          // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
-          _trainInfo = ti;
-          _itemCount = (ti.trainList.length / 2).floor();
-
-          // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
-          print("after setState DATA LENGTH : ${_trainInfo.trainList.length}");
-          for (Train item in _trainInfo.trainList) {
-            print(item.toString());
+      http.get(
+        uri,
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": "Bearer $mytoken",
+        },
+      ).then((data) {
+        if (data.statusCode == 200) {
+          print("data : $data");
+          print("data.body.length : ${data.body.length}");
+          print("요청 uri : ${uri.toString()}");
+          print("요청 결과 : ${data.body.toString()}");
+          dynamic jsonParsed = jsonDecode(utf8.decode(data.bodyBytes));
+          // for (dynamic item in jsonParsed) {
+          //   print(item);
+          // }
+          List<APITrain> temp = [];
+          for (dynamic item in jsonParsed) {
+            print(item.runtimeType);
+            temp.add(APITrain.fromJson(item));
           }
-        });
-      }).then((value) {
-        print("stationName : " + _trainInfo.stationName);
+          TrainInfo ti = jsonReform(temp);
+          // print("jsonParsed : $jsonParsed");
+
+          setState(() {
+            _loadedInfo = true;
+            // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
+            _trainInfo = ti;
+            _itemCount = (ti.trainList.length / 2).floor();
+
+            // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
+            print(
+                "after setState DATA LENGTH : ${_trainInfo.trainList.length}");
+            for (Train item in _trainInfo.trainList) {
+              print(item.toString());
+            }
+          });
+        } else {
+          print("데이터를 불러오는데 실패했습니다.");
+        }
       });
     }
   }
@@ -187,7 +202,7 @@ class _FirstPageState extends State<FirstPage> {
     // GPS 정보 받아와서 역 정보 구하면 역 이름 띄워줄 섹션 (사당)
     Widget stationNameSection = Container(
       alignment: Alignment.topCenter,
-      padding: EdgeInsets.only(top: 30.h, bottom: 30.h),
+      padding: EdgeInsets.only(top: 50.h, bottom: 30.h),
       child: Container(
         width: 240.w,
         height: 60.h,
@@ -195,10 +210,11 @@ class _FirstPageState extends State<FirstPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: Colors.black,
+            // color: Color(0xFFF8EFD
             width: 2,
           ),
-          color: Colors.white,
+          color: Color(0xFFfbfbfb),
+          // color: Color(0xFFF8EFD2),
         ),
         child: _loadedInfo
             ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
@@ -210,6 +226,9 @@ class _FirstPageState extends State<FirstPage> {
     Widget stationInfoSection(int idx, TrainInfo ti) => Container(
           alignment: Alignment.topCenter,
           child: Container(
+            decoration: BoxDecoration(
+                color: Color(0xFFfbfbfb),
+                borderRadius: BorderRadius.circular(10.w)),
             width: 320.w,
             height: 120.h,
             alignment: Alignment.center,
@@ -262,36 +281,37 @@ class _FirstPageState extends State<FirstPage> {
 
     // 광고 섹션
     Widget advBoardSection = Container(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        width: 320.w,
-        height: 60.h,
-        margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.blue,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Image.asset(
-              'assets/images/train.png',
-              width: 70.w,
-              height: 70.h,
+      width: 320.w,
+      height: 60.h,
+      margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+          color: Color(0xfffbfbfb),
+          // color: Color(0xFFF8EFD2),
+          borderRadius: BorderRadius.circular(10.w)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Image.asset(
+            'assets/images/train.png',
+            width: 70.w,
+            height: 70.h,
+          ),
+          Text(
+            "광고문의 : A602팀a",
+            style: TextStyle(
+              fontSize: 20.sp,
             ),
-            Text(
-              "광고문의 : A602팀a",
-              style: TextStyle(
-                fontSize: 20.sp,
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
+    // );
 
     return Scaffold(
       body: Container(
+        decoration: BoxDecoration(color: Color(0xFFfbfbfb)),
+        // decoration: BoxDecoration(color: Color(0xFFF8EFD2)),
         width: 1.sw,
         height: 1.sh,
         child: Column(
@@ -303,6 +323,7 @@ class _FirstPageState extends State<FirstPage> {
             stationNameSection,
             Expanded(
               child: Scaffold(
+                // backgroundColor: Color(0xFFF8EFD2),
                 body: SmartRefresher(
                   enablePullDown: true,
                   controller: _controller,
@@ -323,7 +344,7 @@ class _FirstPageState extends State<FirstPage> {
                 ),
               ),
             ),
-            advBoardSection,
+            // advBoardSection,
           ],
         ),
       ),

@@ -32,6 +32,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     private final Key key;
 
     public AuthorizationHeaderFilter(@Value("${jwt.secret}") String secretKey) {
+        super(Config.class);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }

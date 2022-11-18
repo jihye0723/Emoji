@@ -15,6 +15,8 @@ import 'TrainInfo.dart';
 import 'TrainLineColor.dart';
 import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
+import 'newAdvBoardSection.dart';
+import 'dart:math';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key, required this.userId}) : super(key: key);
@@ -33,6 +35,9 @@ class _FirstPageState extends State<FirstPage> {
   Position? _currentPosition;
   int _itemCount = 0;
   String _stationName = "";
+  int _contentNo = -1;
+
+  Random random = Random();
 
   final storage = FlutterSecureStorage();
 
@@ -100,9 +105,17 @@ class _FirstPageState extends State<FirstPage> {
       // _trainInfo = TrainInfo(stationName: "", trainList: []);
       _loadedInfo = false;
       _itemCount = 0;
+      _contentNo = -1;
+      print("contentNo : $_contentNo");
     });
     await sendLocationToServer();
     print("onRefresh, stationName : " + _trainInfo.stationName);
+    setState(() {
+      _contentNo = random.nextInt(3);
+      print("changed contentNo : $_contentNo");
+    });
+    print("onrefresh accessToken : ${storage.read(key: 'accessToken')}");
+    print("onrefresh refreshToken : ${storage.read(key: 'refreshToken')}");
     _controller.refreshCompleted();
   }
 
@@ -195,6 +208,7 @@ class _FirstPageState extends State<FirstPage> {
     _controller = RefreshController(initialRefresh: true);
     setState(() {
       _userId = widget.userId;
+      _contentNo = random.nextInt(3);
     });
     getLocation().then((value) {
       print("init 에서 getLocation 한 결과확인 : $value");
@@ -291,32 +305,31 @@ class _FirstPageState extends State<FirstPage> {
         );
 
     // 광고 섹션
-    Widget advBoardSection = Container(
-      width: 320.w,
-      height: 60.h,
-      margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-          color: Color(0xfffbfbfb),
-          // color: Color(0xFFF8EFD2),
-          borderRadius: BorderRadius.circular(10.w)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Image.asset(
-            'assets/images/train.png',
-            width: 70.w,
-            height: 70.h,
-          ),
-          Text(
-            "광고문의 : A602팀a",
-            style: TextStyle(
-              fontSize: 20.sp,
-            ),
-          )
-        ],
-      ),
-    );
+    // Widget advBoardSection = Container(
+    //   width: 320.w,
+    //   height: 60.h,
+    //   margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+    //   alignment: Alignment.center,
+    //   decoration: BoxDecoration(
+    //       color: Color(0xfffbfbfb),
+    //       // color: Color(0xFFF8EFD2),
+    //       borderRadius: BorderRadius.circular(10.w)),
+    //   child: Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+    //     children: [
+    //       Image.asset(
+    //         'assets/images/train.png',
+    //         width: 70.w,
+    //         height: 70.h,
+    //       ),
+    //       Text(
+    //         "광고문의 : A602팀a",
+    //         style: TextStyle(
+    //           fontSize: 20.sp,
+    //         ),
+    //       )
+    //     ],
+    //   ),
     // );
 
     return Scaffold(
@@ -355,7 +368,20 @@ class _FirstPageState extends State<FirstPage> {
                 ),
               ),
             ),
-            // advBoardSection,
+            Container(
+                width: 320.w,
+                height: 100.h,
+                margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    // color: Color(0xfffbfbfb),
+                    // border: Border.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Color(0xFFF8EFD2)),
+                child: _contentNo == -1
+                    // ? advBoardSection
+                    ? Container()
+                    : newAdvBoardSection(contentNo: _contentNo)),
           ],
         ),
       ),

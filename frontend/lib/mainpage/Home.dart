@@ -49,6 +49,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       // 탭 누르는거에 따라서 페이지 전환
       appBar: AppBar(
+        title: Text("이름 모를 지하철", style: TextStyle(color: Colors.black)),
         backgroundColor: Color(0xFFF8EFD2),
       ),
       body: pages.length > 0 ? pages[_selectedIndex] : Container(),

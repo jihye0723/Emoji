@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 
@@ -79,7 +81,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                                         // 메모리에서 채널그룹 제거
                                         tcgRepo.getTrainChannelGroupMap().remove(cg);
 
-                                        redisTemplate.opsForHash().delete(tPrefix + cg).subscribe();
+                                        return redisTemplate.opsForHash().delete(tPrefix + cg);
                                     } else {
                                         log.info("ROOM OUT MESSAGE SENDING");
 
@@ -92,13 +94,11 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                                         channelGroup.writeAndFlush(builder.build());
                                     }
 
-                                    redisTemplate.opsForHash().delete(uPrefix + userId).subscribe();
-                                    redisTemplate.opsForValue().delete(cPrefix + channelId).subscribe();
-
-                                    return Mono.empty();
-                                }))
+                                    return Mono.just("ok");
+                                }).flatMap(i ->
+                                        Mono.zip(redisTemplate.opsForHash().delete(uPrefix + userId).subscribeOn(Schedulers.parallel()),
+                                                redisTemplate.opsForValue().delete(cPrefix + channelId).subscribeOn(Schedulers.parallel()))))
                 .subscribe();
-
 
         String remoteAddress = ctx.channel().remoteAddress().toString();
         log.info("[CLOSED] Remote Address: " + remoteAddress);
@@ -111,19 +111,28 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
         try {
             switch (trans.getType()) {
                 case "msg":
-                    log.info("msg in : {}", trans.getContent());
-                    String msg = messageService.filterMessage(trans.getContent());
-                    log.info("msg filtered : {}", msg);
-                    messageService.sendMessage(trans, msg);
+                    Mono sendMessage = Mono.just(trans).map(t -> {
+                        log.info("msg in : {}", trans.getContent());
 
-                    /*kafka 로 메시지 전송 */
-                    JSONObject message = new JSONObject();
-                    message.put("userid", trans.getUserId()); // 사용자 ID
-                    message.put("content", trans.getContent()); // 메시지
-                    message.put("send_at", trans.getSendAt());  // 전송 시간
-                    String chats = message.toString();
-                    kafkaService.send(chats);
+                        return messageService.filterMessage(trans.getContent());
+                    }).doOnNext(msg -> {
+                        log.info("msg filtered : {}", msg);
+                        messageService.sendMessage(trans, msg);
+                    }).subscribeOn(Schedulers.parallel());
 
+                    Mono kafkaSend = Mono.just(trans).map(t -> {
+                        /*kafka 로 보낼 메시지 생성 */
+                        JSONObject message = new JSONObject();
+                        message.put("userid", trans.getUserId()); // 사용자 ID
+                        message.put("content", trans.getContent()); // 메시지
+                        message.put("send_at", trans.getSendAt());  // 전송 시간
+
+                        return message.toString();
+                    }).doOnNext(msg -> {
+                        kafkaService.send(msg);
+                    }).subscribeOn(Schedulers.parallel());
+
+                    Flux.zip(sendMessage, kafkaSend).subscribe();
                     break;
 
                 case "room-in":

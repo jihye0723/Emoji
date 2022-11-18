@@ -1,11 +1,17 @@
+spring:
+  application:
+    name: module-auth
+
+---
+
 # mongo
 spring:
   data:
     mongodb:
       #      uri: mongodb://localhost:27017/subway
       #      host: localhost
-      #      host: 52.79.215.19
-      host: 172.26.10.110
+      host: 52.79.215.19
+#      host: 172.26.10.110
       port: 27017
       authentication-database: admin
       database: o2a4
@@ -35,6 +41,22 @@ spring:
 jwt:
   secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
 
+
+---
+
+# eureka
+eureka:
+  instance:
+    hostname: k7a602.p.ssafy.io
+    appname: module-auth
+#    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://3.34.252.107:8761/eureka/
+#      defaultZone: http://172.26.12.212:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka/
 ---
 
 # mysql
@@ -49,4 +71,5 @@ jwt:
 #spring.jpa.database= mysql
 #spring.jpa.database-platform= org.hibernate.dialect.MySQL5InnoDBDialect
 #spring.jpa.defer-datasource-initialization= true
+
 ---

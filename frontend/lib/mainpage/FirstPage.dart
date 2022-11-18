@@ -133,7 +133,12 @@ class _FirstPageState extends State<FirstPage> {
         // "longtitude": 126.981633.toString()
       });
 
-      Future<String?> mytoken = storage.read(key: "accessToken");
+      // Future<String?> mytoken = storage.read(key: "accessToken");
+      var mytoken = await storage.read(key: "accessToken");
+      var myrefreshtoken = await storage.read(key: "refreshToken");
+
+      print("accessToken : $mytoken");
+      print("refreshToken : $myrefreshtoken");
 
       http.get(
         uri,
@@ -172,7 +177,13 @@ class _FirstPageState extends State<FirstPage> {
               print(item.toString());
             }
           });
+        } else if (data.statusCode == 401) {
+          print(data.statusCode);
+          print(data.body);
+          print("요청 권한이 없습니다.");
         } else {
+          print(data.statusCode);
+          print(data.body);
           print("데이터를 불러오는데 실패했습니다.");
         }
       });

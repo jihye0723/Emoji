@@ -16,7 +16,11 @@ class MainViewModel {
 
   login() async {
     // await 토큰변수 = login
-    isLogined = await _socialLogin.login();
+    // isLogined = await _socialLogin.login();
+    _socialLogin.login().then((value) {
+      isLogined = value;
+    });
+
     // 토큰변수? islogined=true : islogined=false;
     // if (jwtToken != null) {
     //   isLogined = true;

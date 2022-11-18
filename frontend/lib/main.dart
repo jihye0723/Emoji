@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
         var jwtToken = json.encode(
             {"grantType": "Bearer", "accessToken": at, "refreshToken": rt});
 
-        // 토큰 검증
+        // 토큰 검증 validation 아직 없어서 true 로 해놓음
         // if (validateToken(jwtToken)) {
         if (true) {
           print('유효한 토큰입니다!! --> 홈 화면 이동');

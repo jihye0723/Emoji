@@ -14,27 +14,31 @@ class KakaoLoginButton extends StatefulWidget {
 
 class _KakaoLoginButtonState extends State<KakaoLoginButton> {
   final viewModel = MainViewModel(KakaoLogin());
+  bool _islogined = false;
   // bool isLoginSuccess = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
-        await viewModel.login();
-        setState(() {
-        });
         if (viewModel.isLogined) {
+          print("로그인성공");
           Navigator.of(context).pop();
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Home()));
         } else {
+          print("로그인안성공");
+          await viewModel.login();
+          await Future.delayed(Duration(milliseconds: 3000));
+          Navigator.of(context).pop();
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Home()));
         }
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.transparent,
         padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12)
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Image.asset('assets/images/icon-kakao-login.png'),
     );

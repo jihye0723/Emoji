@@ -72,10 +72,10 @@ class KakaoLogin implements SocialLogin {
         storage.write(
             key: 'refreshToken',
             value: json.decode(jwtToken.body)['refreshToken']);
-        return jwtToken;
+        return true;
       } catch (error) {
         print('카카오 계정으로 로그인(인증) 실패 $error');
-        return null;
+        return false;
       }
     }
   }

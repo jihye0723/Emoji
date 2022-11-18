@@ -53,6 +53,7 @@ dependencies:
   flutter_typeahead: ^4.1.1
   intl: ^0.17.0
   sqflite: ^2.2.0+3
+  just_audio: ^0.9.30
   carousel_slider: ^4.1.1
 
 dev_dependencies:
@@ -80,6 +81,7 @@ flutter:
     - assets/
     - assets/data/
     - assets/images/
+    - assets/audio/
     - assets/jsons/
     - assets/fonts/
 

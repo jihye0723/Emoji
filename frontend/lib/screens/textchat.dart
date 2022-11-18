@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:just_audio/just_audio.dart';
 
+import '/utils/snackbar.dart' as snackbar;
 import '../data/station.dart' as stationdata;
 import '../widget/chat_screen.dart';
-
-// 메시지 언제 끊을것이지...
 
 // 채팅방있는 페이지
 class TextChat extends StatefulWidget {
@@ -30,7 +30,7 @@ class TextChat extends StatefulWidget {
 
   //현재역 찾기
   late String _info = "";
-  late String _destination = "역삼";
+  late String _destination = "";
 
   @override
   State<TextChat> createState() => _TextChatState();
@@ -52,6 +52,8 @@ class _TextChatState extends State<TextChat> {
 
   String roomname = "";
 
+  AudioPlayer _audioPlayer = AudioPlayer();
+
   //시작..
   @override
   void initState() {
@@ -60,13 +62,13 @@ class _TextChatState extends State<TextChat> {
     find();
     makeroom();
     directionM();
-
     //시간마다 정보변경
     setState(() {
       _timer = Timer.periodic(Duration(seconds: 90), (timer) {
         test();
         //print(widget._info);
         if (widget._info == widget._destination) {
+          snackbar.showSnackBar(context, '곧 목적지에 도착합니다!', 'common');
           _timer?.cancel();
         }
       });
@@ -153,6 +155,12 @@ class _TextChatState extends State<TextChat> {
         ),
         backgroundColor: _color,
         actions: <Widget>[
+          IconButton(
+              onPressed: () async {
+                await _audioPlayer.setAsset("assets/audio/bird.mp3");
+                _audioPlayer.play();
+              },
+              icon: const Icon(Icons.audiotrack_outlined)),
           IconButton(
             onPressed: () {
               //경로선택 dialog

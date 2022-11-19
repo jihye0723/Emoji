@@ -55,7 +55,7 @@ final List<Map> _animals = [
   {"name": "독수리", "image": "eagle"},
   {"name": "고릴라", "image": "gorilla"},
   {"name": "펭귄", "image": "penguin"},
-  {"name": "판다", "image": "panda"},
+  {"name": "팬더", "image": "panda"},
   {"name": "영양", "image": "antelope"},
   {"name": "다람쥐", "image": "squirrel"},
   {"name": "원숭이", "image": "monkey"},

@@ -10,19 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3ef383de-8754-4900-804d-848fbb27f6ed" name="Changes" comment="FIX 로그인 토큰 검증 (작성중)">
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/choi.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/do.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/han.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/jeong.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/jo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/assets/images/park.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/Home.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/newAdvBoardSection.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/newAdvBoardSection.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

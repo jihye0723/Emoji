@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:practice_01/mainpage/APIResponse.dart';
 import 'package:practice_01/mainpage/JsonReform.dart';
 import 'package:practice_01/mainpage/LineCodeToName.dart';
@@ -114,8 +115,10 @@ class _FirstPageState extends State<FirstPage> {
       _contentNo = random.nextInt(3);
       print("changed contentNo : $_contentNo");
     });
-    print("onrefresh accessToken : ${storage.read(key: 'accessToken')}");
-    print("onrefresh refreshToken : ${storage.read(key: 'refreshToken')}");
+    print("onrefresh accessToken : ${await storage.read(key: 'accessToken')}");
+    print(
+        "onrefresh refreshToken : ${await storage.read(key: 'refreshToken')}");
+    print("userId : $_userId");
     _controller.refreshCompleted();
   }
 
@@ -142,8 +145,8 @@ class _FirstPageState extends State<FirstPage> {
         // "longtitude": position.longitude.toString()
         //"latitude": 37.500643.toString(), // 역삼역
         //"longtitude": 127.036377.toString()
-         "latitude": 37.476559.toString(), // 사당역
-         "longtitude": 126.981633.toString()
+        "latitude": 37.476559.toString(), // 사당역
+        "longtitude": 126.981633.toString()
       });
 
       // Future<String?> mytoken = storage.read(key: "accessToken");
@@ -152,6 +155,10 @@ class _FirstPageState extends State<FirstPage> {
 
       print("accessToken : $mytoken");
       print("refreshToken : $myrefreshtoken");
+
+      Map<String, dynamic> payload = Jwt.parseJwt(mytoken!);
+      print("payload : ");
+      print(payload);
 
       http.get(
         uri,
@@ -253,7 +260,9 @@ class _FirstPageState extends State<FirstPage> {
           ],
         ),
         child: _loadedInfo
-            ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 30.sp, fontFamily: "cafe24_surround"))
+            ? Text(_trainInfo.stationName,
+                style:
+                    TextStyle(fontSize: 30.sp, fontFamily: "cafe24_surround"))
             : Text(""),
       ),
     );
@@ -385,10 +394,11 @@ class _FirstPageState extends State<FirstPage> {
                 margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    // color: Color(0xfffbfbfb),
-                    // border: Border.all(color: Colors.black, width: 1),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Color(0xFFF8EFD2)),
+                  // color: Color(0xfffbfbfb),
+                  // border: Border.all(color: Colors.black, width: 1),
+                  borderRadius: BorderRadius.circular(10),
+                  // color: Color(0xFFF8EFD2)
+                ),
                 child: _contentNo == -1
                     // ? advBoardSection
                     ? Container()

@@ -1,7 +1,11 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import 'FirstPage.dart';
 import 'SecondPage.dart';
 import 'package:flutter/material.dart';
-import 'package:faker/faker.dart';
+// import 'package:faker/faker.dart';
+import 'package:jwt_decode/jwt_decode.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -12,10 +16,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-  var faker = Faker();
-  String _email = "";
+  // var faker = Faker();
+  String _token = "";
 
   late List<Widget> pages = [];
+  static final storage = FlutterSecureStorage();
 
   // static List<Widget> pages = <Widget>[
   //   // 하단 내비게이션에 들어갈 페이지 리스트 2개
@@ -26,13 +31,18 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     // print("pages");
-    setState(() {
-      _email = faker.internet.email();
-      pages = <Widget>[
-        // 하단 내비게이션에 들어갈 페이지 리스트 2개
-        FirstPage(userId: "gkswotmd96@naver.com"),
-        // SecondPage(),
-      ];
+    storage.read(key: 'accessToken').then((value) {
+      setState(() {
+        _token = value!;
+        Map<String, dynamic> payload = Jwt.parseJwt(_token);
+        String _email = payload['sub'];
+        pages = <Widget>[
+          // 하단 내비게이션에 들어갈 페이지 리스트 2개
+          // FirstPage(userId: "gkswotmd96@naver.com"),
+          FirstPage(userId: _email),
+          // SecondPage(),
+        ];
+      });
     });
     // print(_email);
     super.initState();
@@ -49,7 +59,9 @@ class _HomeState extends State<Home> {
     return Scaffold(
       // 탭 누르는거에 따라서 페이지 전환
       appBar: AppBar(
-        title: Text("이름 모를 지하철", style: TextStyle(color: Colors.black,fontFamily: "cafe24_surround")),
+        title: Text("이름 모를 지하철",
+            style:
+                TextStyle(color: Colors.black, fontFamily: "cafe24_surround")),
         backgroundColor: Color(0xFFF8EFD2),
         centerTitle: true,
       ),

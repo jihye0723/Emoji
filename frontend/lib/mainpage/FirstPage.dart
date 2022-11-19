@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:practice_01/mainpage/APIResponse.dart';
+import 'package:practice_01/mainpage/GetOnTrainDialog.dart';
 import 'package:practice_01/mainpage/JsonReform.dart';
 import 'package:practice_01/mainpage/LineCodeToName.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -18,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'newAdvBoardSection.dart';
 import 'dart:math';
+import '../data/stationLine.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key, required this.userId}) : super(key: key);
@@ -188,7 +190,9 @@ class _FirstPageState extends State<FirstPage> {
             _loadedInfo = true;
             // _apiResponse = APIResponse(realtimeArrivalList: jsonParsed);
             _trainInfo = ti;
-            _itemCount = (ti.trainList.length / 2).floor();
+            // _itemCount = (ti.trainList.length / 2).floor();
+            // stationLine 사용할 경우
+            _itemCount = stationLine[ti.stationName]!.length;
 
             // _apiResponse = jsonReform(jsonDecode(utf8.decode(data.bodyBytes)));
             print(
@@ -267,62 +271,372 @@ class _FirstPageState extends State<FirstPage> {
       ),
     );
 
+    // stationLine 사용하기 전 코드
     // 역 정보 받아와서 열차 운행정보 구하면 열차 도착정보 띄워줄 섹션 (2호선, { 낙성대, 2147, 3분 }, { 방배, 2156, 2분 })
-    Widget stationInfoSection(int idx, TrainInfo ti) => Container(
-          alignment: Alignment.topCenter,
-          child: Container(
+    // Widget stationInfoSection(int idx, TrainInfo ti) => Container(
+    //       alignment: Alignment.topCenter,
+    //       child: Container(
+    //         decoration: BoxDecoration(
+    //             color: Color(0xFFfbfbfb),
+    //             borderRadius: BorderRadius.circular(10.w)),
+    //         width: 320.w,
+    //         height: 120.h,
+    //         alignment: Alignment.center,
+    //         // decoration: BoxDecoration(
+    //         //   color: Colors.white,
+    //         // ),
+    //         child: Row(
+    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //           children: <Widget>[
+    //             ti.trainList.isEmpty
+    //                 ? Text("도착정보가 존재하지 않아요")
+    //                 // : CustomSlider(
+    //                 : TrainArrival(
+    //                     userId: widget.userId,
+    //                     stationName: ti.stationName,
+    //                     train: ti.trainList[idx * 2],
+    //                   ),
+    //             Container(
+    //                 width: 50.w,
+    //                 height: 50.h,
+    //                 decoration: BoxDecoration(
+    //                     shape: BoxShape.circle,
+    //                     color: ti.trainList.isEmpty
+    //                         ? Colors.white60
+    //                         // : lineColor(ti.trainList[idx * 2].line)),
+    //                         // stationLine 사용할 경우
+    //                         : lineColor(stationLine[ti.stationName]![idx])),
+    //                 child: Container(
+    //                   alignment: Alignment.center,
+    //                   child: Text(
+    //                     ti.trainList[idx * 2].line + "\n" + ti.stationName,
+    //                     textAlign: TextAlign.center,
+    //                     style: TextStyle(
+    //                         fontWeight: FontWeight.w700,
+    //                         fontSize: 10.sp,
+    //                         color: Colors.white),
+    //                   ),
+    //                 )),
+    //             ti.trainList.isEmpty
+    //                 ? Text("도착정보가 존재하지 않아요")
+    //                 // : CustomSlider(
+    //                 : TrainArrival(
+    //                     userId: widget.userId,
+    //                     stationName: ti.stationName,
+    //                     train: ti.trainList[(idx * 2) + 1],
+    //                   )
+    //           ],
+    //         ),
+    //       ),
+    //     );
+
+    // stationLine 사용할 경우
+    newStationInfoSection(String stationName, int idx, TrainInfo ti) {
+      String imageEmpty = "assets/images/sub_empty.png";
+      String imageRight = "assets/images/sub_empty.png";
+      String imageLeft = "assets/images/sub_empty.png";
+
+      // 왼쪽 (direction 1)
+      Widget innerLeft = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100.w,
+            height: 30.h,
             decoration: BoxDecoration(
-                color: Color(0xFFfbfbfb),
-                borderRadius: BorderRadius.circular(10.w)),
-            width: 320.w,
-            height: 120.h,
+                image: DecorationImage(
+                    image: AssetImage(imageEmpty), fit: BoxFit.fill)),
+          ),
+          Container(
+            width: 110.w,
+            height: 20.h,
             alignment: Alignment.center,
-            // decoration: BoxDecoration(
-            //   color: Colors.white,
-            // ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                ti.trainList.isEmpty
-                    ? Text("도착정보가 존재하지 않아요")
-                    // : CustomSlider(
-                    : TrainArrival(
-                        userId: widget.userId,
-                        stationName: ti.stationName,
-                        train: ti.trainList[idx * 2],
-                      ),
-                Container(
-                    width: 50.w,
-                    height: 50.h,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: ti.trainList.isEmpty
-                            ? Colors.white60
-                            : lineColor(ti.trainList[idx * 2].line)),
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        // lineCodeName(_trainInfo.trainList[idx * 2].line),
-                        ti.trainList[idx * 2].line + "\n" + ti.stationName,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10.sp,
-                            color: Colors.white),
-                      ),
-                    )),
-                ti.trainList.isEmpty
-                    ? Text("도착정보가 존재하지 않아요")
-                    // : CustomSlider(
-                    : TrainArrival(
-                        userId: widget.userId,
-                        stationName: ti.stationName,
-                        train: ti.trainList[(idx * 2) + 1],
-                      )
-              ],
+            child: Text(
+              "도착정보가 없어요",
             ),
           ),
-        );
+        ],
+      );
+
+      // 가운데 (호선, 역이름)
+      Widget innerCenter = Container(
+          width: 50.w,
+          height: 50.h,
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: lineColor(stationLine[ti.stationName]![idx])),
+          child: Container(
+            alignment: Alignment.center,
+            child: Text(
+              "${stationLine[ti.stationName]![idx]}\n${ti.stationName}",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10.sp,
+                  color: Colors.white),
+            ),
+          ));
+
+      // 오른쪽 (direction 0)
+      Widget innerRight = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100.w,
+            height: 30.h,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage(imageEmpty), fit: BoxFit.fill)),
+          ),
+          Container(
+            width: 110.w,
+            height: 20.h,
+            alignment: Alignment.center,
+            child: Text(
+              "도착정보가 없어요",
+            ),
+          ),
+        ],
+      );
+
+      int flag = 0;
+      int startIdx = -1;
+      for (int i = 0; i < ti.trainList.length; i++) {
+        var t = ti.trainList[i];
+        if (t.line == stationLine[stationName]![idx]) {
+          if (startIdx == -1) startIdx = i;
+          if (t.direction == 1) {
+            flag += 1;
+          } else if (t.direction == 0) {
+            flag += 2;
+          }
+        }
+      }
+
+      // 도착 플래그에 따라 innerChildren 수정
+      switch (flag) {
+        case 1:
+          int remainTime = (ti.trainList[startIdx].remainTime / 60).floor();
+          String arrivalInfo = remainTime > 0 ? "약 $remainTime분 후 도착" : "곧 도착";
+
+          if (remainTime < 2) {
+            imageRight = "assets/images/sub_right_01.png";
+          } else if (remainTime < 5) {
+            imageRight = "assets/images/sub_right_02.png";
+          } else if (remainTime < 10) {
+            imageRight = "assets/images/sub_right_03.png";
+          } else {
+            imageRight = "assets/images/sub_empty.png";
+          }
+
+          innerLeft = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext ctx) {
+                        return GetOnTrainDialog(
+                            userId: widget.userId,
+                            train: ti.trainList[startIdx],
+                            // trainNo: int.parse(widget.train.trainNo),
+                            // line: widget.train.line!,
+                            stationName: stationName);
+                        // remainTime: widget.train.remainTime);
+                      })
+                },
+                child: Container(
+                  width: 100.w,
+                  height: 30.h,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(imageRight), fit: BoxFit.fill)),
+                ),
+              ),
+              Container(
+                width: 110.w,
+                height: 20.h,
+                alignment: Alignment.center,
+                child: Text(
+                  arrivalInfo,
+                ),
+              ),
+            ],
+          );
+          break;
+        case 2:
+          int remainTime = (ti.trainList[startIdx].remainTime / 60).floor();
+          String arrivalInfo = remainTime > 0 ? "약 $remainTime분 후 도착" : "곧 도착";
+
+          if (remainTime < 2) {
+            imageLeft = "assets/images/sub_left_01.png";
+          } else if (remainTime < 5) {
+            imageLeft = "assets/images/sub_left_02.png";
+          } else if (remainTime < 10) {
+            imageLeft = "assets/images/sub_left_03.png";
+          } else {
+            imageLeft = "assets/images/sub_empty.png";
+          }
+
+          innerRight = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext ctx) {
+                        return GetOnTrainDialog(
+                            userId: widget.userId,
+                            train: ti.trainList[startIdx],
+                            // trainNo: int.parse(widget.train.trainNo),
+                            // line: widget.train.line!,
+                            stationName: stationName);
+                        // remainTime: widget.train.remainTime);
+                      })
+                },
+                child: Container(
+                  width: 100.w,
+                  height: 30.h,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(imageLeft), fit: BoxFit.fill)),
+                ),
+              ),
+              Container(
+                width: 110.w,
+                height: 20.h,
+                alignment: Alignment.center,
+                child: Text(
+                  arrivalInfo,
+                ),
+              ),
+            ],
+          );
+          break;
+        case 3:
+          int remainTime = (ti.trainList[startIdx].remainTime / 60).floor();
+          String arrivalInfo = remainTime > 0 ? "약 $remainTime분 후 도착" : "곧 도착";
+
+          if (remainTime < 2) {
+            imageRight = "assets/images/sub_right_01.png";
+          } else if (remainTime < 5) {
+            imageRight = "assets/images/sub_right_02.png";
+          } else if (remainTime < 10) {
+            imageRight = "assets/images/sub_right_03.png";
+          } else {
+            imageRight = "assets/images/sub_empty.png";
+          }
+
+          innerLeft = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext ctx) {
+                        return GetOnTrainDialog(
+                            userId: widget.userId,
+                            train: ti.trainList[startIdx],
+                            // trainNo: int.parse(widget.train.trainNo),
+                            // line: widget.train.line!,
+                            stationName: stationName);
+                        // remainTime: widget.train.remainTime);
+                      })
+                },
+                child: Container(
+                  width: 100.w,
+                  height: 30.h,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(imageRight), fit: BoxFit.fill)),
+                ),
+              ),
+              Container(
+                width: 110.w,
+                height: 20.h,
+                alignment: Alignment.center,
+                child: Text(
+                  arrivalInfo,
+                ),
+              ),
+            ],
+          );
+
+          remainTime = (ti.trainList[startIdx + 1].remainTime / 60).floor();
+          arrivalInfo = remainTime > 0 ? "약 $remainTime분 후 도착" : "곧 도착";
+
+          if (remainTime < 2) {
+            imageLeft = "assets/images/sub_left_01.png";
+          } else if (remainTime < 5) {
+            imageLeft = "assets/images/sub_left_02.png";
+          } else if (remainTime < 10) {
+            imageLeft = "assets/images/sub_left_03.png";
+          } else {
+            imageLeft = "assets/images/sub_empty.png";
+          }
+
+          innerRight = Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext ctx) {
+                        return GetOnTrainDialog(
+                            userId: widget.userId,
+                            train: ti.trainList[startIdx + 1],
+                            // trainNo: int.parse(widget.train.trainNo),
+                            // line: widget.train.line!,
+                            stationName: stationName);
+                        // remainTime: widget.train.remainTime);
+                      })
+                },
+                child: Container(
+                  width: 100.w,
+                  height: 30.h,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(imageLeft), fit: BoxFit.fill)),
+                ),
+              ),
+              Container(
+                width: 110.w,
+                height: 20.h,
+                alignment: Alignment.center,
+                child: Text(
+                  arrivalInfo,
+                ),
+              ),
+            ],
+          );
+          break;
+      }
+
+      // 최종적으로 리턴할 위젯
+      return Container(
+        alignment: Alignment.topCenter,
+        child: Container(
+          decoration: BoxDecoration(
+              color: Color(0xFFfbfbfb),
+              borderRadius: BorderRadius.circular(10.w)),
+          width: 320.w,
+          height: 120.h,
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [innerLeft, innerCenter, innerRight],
+          ),
+        ),
+      );
+    }
 
     // 광고 섹션
     // Widget advBoardSection = Container(
@@ -382,7 +696,10 @@ class _FirstPageState extends State<FirstPage> {
                         } else if (_itemCount == 0) {
                           return Text("There is No Train");
                         } else {
-                          return stationInfoSection(index, _trainInfo);
+                          // return stationInfoSection(index, _trainInfo);
+                          // stationLine 사용할 경우
+                          return newStationInfoSection(
+                              _trainInfo.stationName, index, _trainInfo);
                         }
                       }),
                 ),

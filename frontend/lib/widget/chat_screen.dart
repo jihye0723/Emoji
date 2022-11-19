@@ -84,7 +84,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     //내아이디 전역으로 사용
     myuserId = widget.myId;
 
-
     chatNode = FocusNode();
 
     //알아낸 주소로 입장 설정 -> 소켓까지 연결
@@ -345,13 +344,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("assets/images/hi.png",width: 30.w),
+                Image.asset("assets/images/hi.png", width: 30.w),
                 Text(
                   "   $peoplecount       ",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                Image.asset("assets/images/devil.png",width: 30.w),
+                Image.asset("assets/images/devil.png", width: 30.w),
                 Text("   $villaincount",
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),

@@ -32,17 +32,19 @@ class _HomeState extends State<Home> {
   void initState() {
     // print("pages");
     storage.read(key: 'accessToken').then((value) {
-      setState(() {
-        _token = value!;
-        Map<String, dynamic> payload = Jwt.parseJwt(_token);
-        String _email = payload['sub'];
-        pages = <Widget>[
-          // 하단 내비게이션에 들어갈 페이지 리스트 2개
-          // FirstPage(userId: "gkswotmd96@naver.com"),
-          FirstPage(userId: _email),
-          // SecondPage(),
-        ];
-      });
+      if (value != null) {
+        setState(() {
+          _token = value;
+          Map<String, dynamic> payload = Jwt.parseJwt(_token);
+          String email = payload['sub'];
+          pages = <Widget>[
+            // 하단 내비게이션에 들어갈 페이지 리스트 2개
+            // FirstPage(userId: "gkswotmd96@naver.com"),
+            FirstPage(userId: email),
+            // SecondPage(),
+          ];
+        });
+      }
     });
     // print(_email);
     super.initState();

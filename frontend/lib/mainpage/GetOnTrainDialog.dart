@@ -174,8 +174,8 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
           // decoration:
           //     BoxDecoration(border: Border.all(color: Colors.blue, width: 1)),
           child: ElevatedButton(
-            // style: ElevatedButton.styleFrom(
-            //     minimumSize: Size.zero, padding: EdgeInsets.zero),
+             style: ElevatedButton.styleFrom(
+                 backgroundColor:Color(0xFFF8EFD2),),
             onPressed: widget.train.remainTime <= 60
                 ? () {
                     showDialog(
@@ -186,6 +186,8 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                           content: Text("$_trainNo 열차 $_position번 칸에 탑승하시나요?"),
                           actions: <Widget>[
                             ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:Color(0xFFF8EFD2),),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                   Navigator.of(ctx).pop();
@@ -207,12 +209,14 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                     toastLength: Toast.LENGTH_SHORT,
                                   );
                                 },
-                                child: Text("OK")),
+                                child: Text("네",style: TextStyle(color: Colors.black))),
                             ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:Colors.grey[100]),
                                 onPressed: () {
                                   Navigator.of(ctx).pop();
                                 },
-                                child: Text("Cancel"))
+                                child: Text("아니요",style: TextStyle(color: Colors.black),))
                           ],
                         );
                       },
@@ -220,7 +224,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                   }
                 : null,
             child: Text(
-              "탑승하기",
+              "탑승하기",style: TextStyle(color: Colors.black),
             ),
           ),
         ),

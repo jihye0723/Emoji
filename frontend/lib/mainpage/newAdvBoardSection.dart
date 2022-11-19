@@ -11,7 +11,7 @@ final ann = [
   {"image": "assets/images/jeong.png", "content": "jeongjeong"},
   {"image": "assets/images/jo.png", "content": "jojo"},
   {"image": "assets/images/choi.png", "content": "choichoi"},
-  {"image": "assets/images/han.png", "content": "hanhan"},
+  {"image": "assets/images/bear.png", "content": "hanhan"},
 ];
 
 final tdw = [
@@ -93,23 +93,23 @@ class _newAdvBoardSectionState extends State<newAdvBoardSection> {
                     ],
                   ),
                   child: Row(
-                    children: [
-                      Padding(padding: EdgeInsets.only(left: 60.w)),
-                      Image.asset(
-                        alignment: Alignment.center,
-                        ann[k]['image']!,
-                        height: 80.h,
-                      ),
-                      Padding(padding: EdgeInsets.only(left: 80.w)),
-                      Container(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          ann[k]['content']!,
-                          style: TextStyle(fontSize: 20.sp,fontFamily: "cafe24_surround"),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          alignment: Alignment.center,
+                          ann[k]['image']!,
+                          height: 80.h,
                         ),
-                      )
-                    ],
-                  ),
+                        Padding(padding: EdgeInsets.only(left: 30.w,right: 30.w)),
+                        Container(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            ann[k]['content']!,
+                            style: TextStyle(fontSize: 20.sp,fontFamily: "cafe24_surround"),
+                          ),
+                        )
+                      ],
+                    ),
                 );
             break;
           case "todaysword":
@@ -144,7 +144,7 @@ class _newAdvBoardSectionState extends State<newAdvBoardSection> {
                           child: Text("오늘의 한마디", style: TextStyle(fontSize: 19.sp,fontFamily: "cafe24_surround"))),
                       Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.only(top: 10.h),
+                          padding: EdgeInsets.only(top: 10.h,left: 15.w,right: 15.w),
                           child: Text(tdw[k], style: TextStyle(fontSize: 15.sp,fontFamily: "cafe24_surround"))),
                     ],
                   ),
@@ -181,7 +181,7 @@ class _newAdvBoardSectionState extends State<newAdvBoardSection> {
                     child: Text("알고 계셨나요?", style: TextStyle(fontSize: 19.sp,fontFamily: "cafe24_surround"))),
                   Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 10.h),
+                      padding: EdgeInsets.only(top: 10.h,left: 15.w,right: 15.w),
                       child: Text(duk[k], style: TextStyle(fontSize: 15.sp,fontFamily: "cafe24_surround"))),
                 ],
               ),

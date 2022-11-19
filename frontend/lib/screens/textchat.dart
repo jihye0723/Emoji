@@ -59,6 +59,7 @@ class _TextChatState extends State<TextChat> {
   void initState() {
     super.initState();
     widget._info = widget.stationName;
+    print(widget.myuserId);
     find();
     makeroom();
     directionM();

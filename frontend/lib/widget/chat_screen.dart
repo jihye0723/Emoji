@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 import '../data/chat.dart';
@@ -60,8 +59,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   //TCP서버용
   late Socket socket;
-  String ip = "10.0.2.2";
-  //String ip = 'k7a6022.p.ssafy.io';
+  //String ip = "10.0.2.2";
+  String ip = 'k7a6021.p.ssafy.io';
   int port = 0;
 
   //빌런 상태 확인
@@ -77,17 +76,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late Future<dynamic> portname;
   late Future<dynamic> attendseat;
 
-  //토큰용
-  String? userAccessToken;
-  static final storage = FlutterSecureStorage();
-
-  // 저장되어 있는 유저의 accessToken 을 확인한다.
-  getUserToken() async {
-    //read 를 통해 accessToken 을 불러온다. 데이터가 없을 때는 null 반환
-    userAccessToken = await storage.read(key: 'accessToken');
-    return userAccessToken;
-  }
-
   ///             initState    채팅부분 포트랑,ip 가져오기
   @override
   void initState() {
@@ -96,10 +84,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     //내아이디 전역으로 사용
     myuserId = widget.myId;
 
-    //비동기로 getUserToken 함수를 실행하여 Secure Storage 정보를 불러오는 작업.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getUserToken();
-    });
 
     chatNode = FocusNode();
 
@@ -110,8 +94,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void findroom() async {
     // 아이디와 열차정보로 포트주소 알아내기
     //portname = http.enterRoom(widget.myId, widget.room);
-    portname = http.chatroom().getPort(widget.myId, widget.room);
 
+    portname = http.chatroom().getPort(widget.myId, widget.room);
     var temp = await portname;
 
     //받아온 포트 적용
@@ -144,8 +128,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   //--------------------tcp 서버연결부분------------------------------------
   ////// 서버 연결되면 들어왔다고 알려주는 메시지 전송하고, 연결이 성공적으로 되면 채팅이 가능하도록 채팅창을 막던지. 로딩창을 유지하던지 하자.
   void create() async {
-    print(port);
     print(ip);
+    print(port);
+
     try {
       socket = await Socket.connect(ip, port).timeout(Duration(seconds: 10));
       print('connected');
@@ -174,7 +159,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //print(data);
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
-      //print(receive);
+      print(receive);
 
       if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {

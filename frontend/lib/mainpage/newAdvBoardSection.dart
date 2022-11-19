@@ -70,53 +70,121 @@ class _newAdvBoardSectionState extends State<newAdvBoardSection> {
         switch (_contentType) {
           case "anniversary":
             int k = random.nextInt(ann.length);
-            result = Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  alignment: Alignment.centerLeft,
-                  ann[k]['image']!,
-                  height: 80.h,
-                ),
+            result =
                 Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    ann[k]['content']!,
-                    style: TextStyle(fontSize: 20.sp),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(4.0, 4.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 1.0,
+                      ),
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-4.0, -4.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 1.0,
+                      ),
+                    ],
                   ),
-                )
-              ],
-            );
+                  child: Row(
+                    children: [
+                      Padding(padding: EdgeInsets.only(left: 60.w)),
+                      Image.asset(
+                        alignment: Alignment.center,
+                        ann[k]['image']!,
+                        height: 80.h,
+                      ),
+                      Padding(padding: EdgeInsets.only(left: 80.w)),
+                      Container(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          ann[k]['content']!,
+                          style: TextStyle(fontSize: 20.sp,fontFamily: "cafe24_surround"),
+                        ),
+                      )
+                    ],
+                  ),
+                );
             break;
           case "todaysword":
             int k = random.nextInt(tdw.length);
-            result = Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+            result =
                 Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text("오늘의 한마디", style: TextStyle(fontSize: 20.sp))),
-                Container(
-                    alignment: Alignment.center,
-                    child: Text(tdw[k], style: TextStyle(fontSize: 14.sp))),
-              ],
-            );
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(4.0, 4.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 1.0,
+                      ),
+                      BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-4.0, -4.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 1.0,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.only(left: 15.w, top: 10.h),
+                          child: Text("오늘의 한마디", style: TextStyle(fontSize: 19.sp,fontFamily: "cafe24_surround"))),
+                      Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.only(top: 10.h),
+                          child: Text(tdw[k], style: TextStyle(fontSize: 15.sp,fontFamily: "cafe24_surround"))),
+                    ],
+                  ),
+                );
             break;
           case "doyouknow":
             int k = random.nextInt(duk.length);
-            result = Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
+            result = Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: Offset(4.0, 4.0),
+                    blurRadius: 10.0,
+                    spreadRadius: 1.0,
+                  ),
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: Offset(-4.0, -4.0),
+                    blurRadius: 10.0,
+                    spreadRadius: 1.0,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
                     alignment: Alignment.centerLeft,
-                    child: Text("알고 계셨나요?", style: TextStyle(fontSize: 20.sp))),
-                Container(
-                    alignment: Alignment.center,
-                    child: Text(duk[k], style: TextStyle(fontSize: 14.sp))),
-              ],
+                    padding: EdgeInsets.only(left: 15.w, top: 10.h),
+                    child: Text("알고 계셨나요?", style: TextStyle(fontSize: 19.sp,fontFamily: "cafe24_surround"))),
+                  Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10.h),
+                      child: Text(duk[k], style: TextStyle(fontSize: 15.sp,fontFamily: "cafe24_surround"))),
+                ],
+              ),
             );
             break;
           default:

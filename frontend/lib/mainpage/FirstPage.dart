@@ -140,10 +140,10 @@ class _FirstPageState extends State<FirstPage> {
       Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
         // "latitude": position.latitude.toString(),
         // "longtitude": position.longitude.toString()
-        "latitude": 37.500643.toString(), // 역삼역
-        "longtitude": 127.036377.toString()
-        // "latitude": 37.476559.toString(), // 사당역
-        // "longtitude": 126.981633.toString()
+        //"latitude": 37.500643.toString(), // 역삼역
+        //"longtitude": 127.036377.toString()
+         "latitude": 37.476559.toString(), // 사당역
+         "longtitude": 126.981633.toString()
       });
 
       // Future<String?> mytoken = storage.read(key: "accessToken");
@@ -233,16 +233,27 @@ class _FirstPageState extends State<FirstPage> {
         height: 60.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            // color: Color(0xFFF8EFD
-            width: 2,
+          color: Color(0xFFF8EFD2),
+          borderRadius: BorderRadius.all(
+            Radius.circular(10),
           ),
-          color: Color(0xFFfbfbfb),
-          // color: Color(0xFFF8EFD2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              offset: Offset(4.0, 4.0),
+              blurRadius: 10.0,
+              spreadRadius: 1.0,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-4.0, -4.0),
+              blurRadius: 10.0,
+              spreadRadius: 1.0,
+            ),
+          ],
         ),
         child: _loadedInfo
-            ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 32.sp))
+            ? Text(_trainInfo.stationName, style: TextStyle(fontSize: 30.sp, fontFamily: "cafe24_surround"))
             : Text(""),
       ),
     );

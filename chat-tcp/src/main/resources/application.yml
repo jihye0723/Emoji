@@ -50,7 +50,7 @@ server:
 #      port: '8102'
       port: ${transfer.port}
     keepAlive: 'true'
-    logLevel: DEBUG
+    logLevel: INFO
 
 ---
 

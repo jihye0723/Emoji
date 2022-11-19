@@ -51,6 +51,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: Text("이름 모를 지하철", style: TextStyle(color: Colors.black,fontFamily: "cafe24_surround")),
         backgroundColor: Color(0xFFF8EFD2),
+        centerTitle: true,
       ),
       body: pages.length > 0 ? pages[_selectedIndex] : Container(),
       // body: CustomSlider(),

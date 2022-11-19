@@ -345,13 +345,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("assets/images/hi.png"),
+                Image.asset("assets/images/hi.png",width: 30.w),
                 Text(
                   "   $peoplecount       ",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                Image.asset("assets/images/devil.png"),
+                Image.asset("assets/images/devil.png",width: 30.w),
                 Text("   $villaincount",
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.white)),

@@ -95,7 +95,8 @@ public class SeatController {
         String port = (String) redisTemplate.opsForHash().get(portkey, "server");
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject("http://k7a6021.p.ssafy.io:"+port+"/seat/finish", seatsInfo, String.class );
+        String path ="http://k7a6021.p.ssafy.io:"+port+"/seat/finish"; 
+        restTemplate.postForObject(path, seatsInfo, String.class );
 
         // redis에서 해당 키 삭제
         redisTemplate.expire(key, 3, TimeUnit.SECONDS);

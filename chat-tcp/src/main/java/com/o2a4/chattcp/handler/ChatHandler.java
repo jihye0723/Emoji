@@ -95,9 +95,14 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                                     }
 
                                     return Mono.just("ok");
-                                }).flatMap(i ->
-                                        Mono.zip(redisTemplate.opsForHash().delete(uPrefix + userId).subscribeOn(Schedulers.parallel()),
-                                                redisTemplate.opsForValue().delete(cPrefix + channelId).subscribeOn(Schedulers.parallel()))))
+                                }).flatMap(i -> {
+                                    log.info("DELETE USER {}", userId);
+                                    return redisTemplate.opsForHash().delete(uPrefix + userId);
+                                })
+                                .flatMap(i -> {
+                                    log.info("DELETE CHANNEL {}", channelId);
+                                    return redisTemplate.opsForValue().delete(cPrefix + channelId);
+                                }))
                 .subscribe();
 
         String remoteAddress = ctx.channel().remoteAddress().toString();

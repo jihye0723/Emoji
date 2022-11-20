@@ -82,7 +82,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
               ),
             ),
           ),
-          widget.train.remainTime <= 60
+          widget.train.remainTime > -1
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,

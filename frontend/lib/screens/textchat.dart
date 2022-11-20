@@ -67,7 +67,7 @@ class _TextChatState extends State<TextChat> {
     setState(() {
       _timer = Timer.periodic(Duration(seconds: 90), (timer) {
         test();
-        //print(widget._info);
+        print(widget._info);
         if (widget._info == widget._destination) {
           snackbar.showSnackBar(context, '곧 목적지에 도착합니다!', 'common');
           _timer?.cancel();
@@ -250,7 +250,7 @@ class _TextChatState extends State<TextChat> {
                                 },
                                 itemBuilder: (context, suggestion) {
                                   return ListTile(
-                                    leading: Icon(Icons.train),
+                                    leading: Icon(Icons.location_on),
                                     title: Text(suggestion),
                                   );
                                 },

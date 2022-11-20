@@ -47,8 +47,8 @@ class chatroom {
           "Authorization": "Bearer $mytoken2",
         },
         body: body);
-
-    if (response.statusCode == 200) {
+    print(response.statusCode);
+    if (response.statusCode < 300) {
       const responseBody = "OK";
       return responseBody;
     }
@@ -68,7 +68,7 @@ class chatroom {
         },
         body: body);
 
-    if (response.statusCode == 200) {
+    if (response.statusCode < 300) {
       const responseBody = "OK";
       return responseBody;
     }

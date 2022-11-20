@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -36,6 +37,19 @@ public class RoomService {
 
     public void roomIn(Channel channel, Transfer trans) {
         String userId = trans.getUserId();
+
+        Mono errMsg = Mono.just(userId)
+                .doOnSubscribe(a -> {
+                    Transfer send = Transfer.newBuilder()
+                            .setContent("채팅방 입장 실패")
+                            .setType("error")
+                            .setUserId("SERVER")
+                            .setSendAt(LocalDateTime.now().toString())
+                            .build();
+
+                    channel.writeAndFlush(send);
+                });
+
         redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
                 .flatMap(
                         cg -> {
@@ -45,18 +59,8 @@ public class RoomService {
 
                             // 이 채팅서버에 할당된 열차가 아님
                             if (channelGroup == null) {
-                                redisTemplate.opsForHash().delete(uPrefix + userId);
-
-                                Transfer send = Transfer.newBuilder()
-                                        .setContent("채팅방 입장 실패")
-                                        .setType("error")
-                                        .setUserId("SERVER")
-                                        .setSendAt(LocalDateTime.now().toString())
-                                        .build();
-
-                                channel.writeAndFlush(send);
-
-                                return Mono.empty();
+                                return Mono.zip(errMsg.subscribeOn(Schedulers.parallel()),
+                                        redisTemplate.opsForHash().delete(uPrefix + userId).subscribeOn(Schedulers.parallel()));
                             }
 
                             // 열차 채팅방에 채널 추가
@@ -84,7 +88,6 @@ public class RoomService {
                                                         }
                                                 );
                                     });
-//                            return redisTemplate.opsForValue().set(cPrefix + channelId, userId).flatMap(i -> {})
                         })
                 .subscribe();
     }

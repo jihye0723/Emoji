@@ -93,8 +93,7 @@ public class RestHandler {
                             }))
                             .flatMap(portRes -> {
                                 Map<String, String> uMap = new HashMap<>();
-                                log.info("get result : {}", portRes);
-                                log.info("res class : {}", portRes.getClass());
+
                                 // 만약에 지금 서버가 아닌 다른 서버에서 만들었던 열차라면
                                 // 다른 서버의 포트로 유저를 저장해야 채팅방을 맞게 찾아감
                                 if (portRes.getClass() == Tuple2.class) uMap.put("server", port);
@@ -111,14 +110,14 @@ public class RestHandler {
                                     }
                                 }
 
-                                log.info("USER MAPPING SERVER : {}", uMap.get("server"));
                                 log.info("ADD USER {} TO SERVER", userId);
                                 // 유저 정보 만들어서 저장
                                 uMap.put("channelGroup", trainId);
                                 uMap.put("token", token);
 
                                 return Mono.zip(redisTemplate.opsForHash().putAll(uPrefix + userId, uMap),
-                                        redisTemplate.expire(uPrefix + userId, Duration.ofHours(3)));
+                                                redisTemplate.expire(uPrefix + userId, Duration.ofHours(3)))
+                                        .flatMap(i -> Mono.just(uMap.get("server")));
                             });
                 })
                 .map(i -> {
@@ -126,7 +125,7 @@ public class RestHandler {
                     Bridge res = new Bridge();
 
                     res.setName("port");
-                    res.setData(chatPort);
+                    res.setData(i.substring(0, 3) + "2");
 
                     return res;
                 });

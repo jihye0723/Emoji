@@ -75,7 +75,7 @@ public class RoomService {
                                             redisTemplate.opsForHash().get(tPrefix + cg, "villain")
                                     ).flatMap(v -> {
                                         // Content에 채팅 방 인원과 빌런 수 (a, b) 전달
-                                        Transfer send = Transfer.newBuilder(trans).setContent(String.valueOf(channelGroup.size()) + "," + v.toString()).build();
+                                        Transfer send = Transfer.newBuilder(trans).setContent(channelGroup.size() + "," + v.toString()).build();
 
                                         Map<String, String> aMap = new HashMap<>();
                                         aMap.put("channel", channelId);

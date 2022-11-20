@@ -177,7 +177,7 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
                     throw new IllegalArgumentException("잘못된 타입 전송");
             }
         } catch (RuntimeException e) {
-            log.error("에러 발생! {}", e);
+            log.error("에러 발생! {}", e.toString());
 
             Transfer.Builder builder = Transfer.newBuilder();
 

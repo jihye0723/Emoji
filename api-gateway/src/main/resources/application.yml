@@ -56,7 +56,7 @@ spring:
         - id: module-service
           uri: lb://MODULE-SERVICE
           predicates:
-            - Path=/subway/**
+            - Path=/subway/**, /seat/**
           filters:
             - AuthorizationHeaderFilter
 #            - name: Path

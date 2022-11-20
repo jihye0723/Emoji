@@ -205,6 +205,15 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                 onPressed: () async {
                                   // Navigator.of(context).pop();
                                   Navigator.of(ctx).pop();
+                                  Fluttertoast.showToast(
+                                    msg: " $_trainNo 열차 $_position번 칸에 탑승",
+                                    fontSize: 16.sp,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.white60,
+                                    textColor: Colors.black,
+                                    toastLength: Toast.LENGTH_SHORT,
+                                  );
                                   String refresh = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -231,15 +240,6 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                   //         trainNo: _trainNo.toString(),
                                   //         stationName: widget.stationName,
                                   //         position: _position.toString())));
-                                  Fluttertoast.showToast(
-                                    msg: " $_trainNo 열차 $_position번 칸에 탑승",
-                                    fontSize: 16.sp,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 1,
-                                    backgroundColor: Colors.white60,
-                                    textColor: Colors.black,
-                                    toastLength: Toast.LENGTH_SHORT,
-                                  );
                                 },
                                 child: Text("네",
                                     style: TextStyle(color: Colors.black))),

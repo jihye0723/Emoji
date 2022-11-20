@@ -98,16 +98,9 @@ public class RestHandler {
                                 // 다른 서버의 포트로 유저를 저장해야 채팅방을 맞게 찾아감
                                 if (portRes.getClass() == Tuple2.class) uMap.put("server", port);
                                 else {
-                                    switch (port) {
-                                        case "8101":
-                                            uMap.put("server", "8201");
-                                            break;
-                                        case "8201":
-                                            uMap.put("server", "8101");
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                    String pRes = portRes.toString();
+                                    if (pRes.equals(port)) uMap.put("server", port);
+                                    else uMap.put("server", pRes);
                                 }
 
                                 log.info("ADD USER {} TO SERVER", userId);

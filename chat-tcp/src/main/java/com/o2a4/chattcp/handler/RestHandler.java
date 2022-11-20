@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -91,11 +92,28 @@ public class RestHandler {
                                         redisTemplate.expire(tPrefix + trainId, Duration.ofHours(3)));
                             }))
                             .flatMap(portRes -> {
+                                Map<String, String> uMap = new HashMap<>();
+
+                                // 만약에 지금 서버가 아닌 다른 서버에서 만들었던 열차라면
+                                // 다른 서버의 포트로 유저를 저장해야 채팅방을 맞게 찾아감
+                                if (portRes.getClass() == Tuple2.class) uMap.put("server", port);
+                                else {
+                                    switch (port) {
+                                        case "8101":
+                                            uMap.put("server", "8201");
+                                            break;
+                                        case "8201":
+                                            uMap.put("server", "8101");
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+
+                                log.info("USER MAPPING SERVER : {}", uMap.get("server"));
                                 log.info("ADD USER {} TO SERVER", userId);
                                 // 유저 정보 만들어서 저장
-                                Map<String, String> uMap = new HashMap<>();
                                 uMap.put("channelGroup", trainId);
-                                uMap.put("server", port);
                                 uMap.put("token", token);
 
                                 return Mono.zip(redisTemplate.opsForHash().putAll(uPrefix + userId, uMap),

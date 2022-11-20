@@ -34,6 +34,9 @@ public class RestHandler {
     @Value("${server.port}")
     private String port;
 
+    @Value("${server.netty.transfer.port}")
+    private String chatPort;
+
     private final ServerBootstrap serverBootstrap;
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;
@@ -104,7 +107,7 @@ public class RestHandler {
                     Bridge res = new Bridge();
 
                     res.setName("port");
-                    res.setData(port);
+                    res.setData(chatPort);
 
                     return res;
                 });

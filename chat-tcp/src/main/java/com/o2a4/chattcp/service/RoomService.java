@@ -99,7 +99,7 @@ public class RoomService {
     public Mono<String> seatStart(String userId) {
 //         userId : 자리양도 시작한 사용자 아이디
         WebClient webClient = WebClient.create();
-        Mono<String> res = webClient.get().uri("http://k7a6022.p.ssafy.io/subway/seat/" + userId)
+        Mono<String> res = webClient.get().uri("http://k7a602.p.ssafy.io:8082/seat/" + userId)
                 .retrieve().bodyToMono(String.class);
 
         return res;

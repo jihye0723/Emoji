@@ -11,7 +11,7 @@ final ann = [
   {"image": "assets/images/jeong.png", "content": "jeongjeong"},
   {"image": "assets/images/jo.png", "content": "jojo"},
   {"image": "assets/images/choi.png", "content": "choichoi"},
-  {"image": "assets/images/bear.png", "content": "hanhan"},
+  {"image": "assets/images/han.jpg", "content": "hanhan"},
 ];
 
 final tdw = [

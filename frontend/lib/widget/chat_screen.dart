@@ -137,12 +137,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       //소켓 연결하고 들어왔다 알려주기-----------------------------------------
       //채팅방 입장할때 알려줌 - 채팅창에 뜨는 것.
       makeMessage("채팅방에 입장하셨습니다.", "alert", "Manager");
+      print("connected2");
       /*
       * 입장과 동시에 villaincount 값을 초기화시켜주어야 함.
       */
 
       //서버에 전송
       tcpsend("room-in", "", widget.myId, widget.myName);
+      print("connected3");
     } catch (e) {
       makeMessage("서버 연결에 실패하였습니다....", "alert", "Manager");
       //뒤로가기?

@@ -157,11 +157,60 @@ class _TextChatState extends State<TextChat> {
         backgroundColor: _color,
         actions: <Widget>[
           IconButton(
-              onPressed: () async {
-                await _audioPlayer.setAsset("assets/audio/bird.mp3");
-                _audioPlayer.play();
+              onPressed: (){
+                showDialog(
+                    context: context,
+                    builder: (BuildContext ctx) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        content:  StatefulBuilder(
+                            builder: (BuildContext context, StateSetter setState) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 20.h)),
+                                  Text("내리시는 데 도움이 필요하신가요?",style: TextStyle(fontFamily: "cafe24_surround"),),
+                                  Padding(padding: EdgeInsets.only(top: 10.h)),
+                                  Text("(소리주의)",style: TextStyle(fontFamily: "cafe24_surround")),
+                                ],
+                              );
+                            },
+                          ),
+                        actionsPadding: EdgeInsets.only(bottom: 30.h),
+                        actionsAlignment: MainAxisAlignment.center,
+                        actions: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white, // 텍스트 색 바꾸기
+                              backgroundColor: _color, // 백그라운드로 컬러 설정
+
+                              textStyle: TextStyle(fontSize: 16.sp),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            onPressed: () async {
+                              await _audioPlayer.setAsset("assets/audio/bird.mp3");
+                              _audioPlayer.play();
+                            },
+                            child: const Text("네",style: TextStyle(fontFamily: "cafe24_surround")),
+                          )
+                        ],
+                        title: Column(
+                          children: [
+                            Text(
+                              "도움!",
+                              textAlign: TextAlign.center, style: TextStyle(fontFamily: "cafe24_surround",fontSize: 30.sp)
+                            ),
+                          ],
+                        ),
+                      );
+                    });
               },
-              icon: const Icon(Icons.audiotrack_outlined)),
+              icon: const Icon(Icons.emoji_people)),
           IconButton(
             onPressed: () {
               //경로선택 dialog
@@ -169,6 +218,9 @@ class _TextChatState extends State<TextChat> {
                   context: context,
                   builder: (BuildContext ctx) {
                     return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                       content: StatefulBuilder(
                         builder: (BuildContext context, StateSetter setState) {
                           return Column(
@@ -227,7 +279,7 @@ class _TextChatState extends State<TextChat> {
                           onPressed: () {
                             Navigator.of(ctx).pop();
                           },
-                          child: const Text("닫기"),
+                          child: const Text("닫기",style: TextStyle(fontFamily: "cafe24_surround"),),
                         )
                       ],
                       title: Column(
@@ -235,6 +287,7 @@ class _TextChatState extends State<TextChat> {
                           Text(
                             "목적지 선택",
                             textAlign: TextAlign.center,
+                            style: TextStyle(fontFamily: "cafe24_surround"),
                           ),
                           Container(
                             margin: EdgeInsets.only(top: 20.h),

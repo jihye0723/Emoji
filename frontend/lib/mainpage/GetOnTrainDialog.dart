@@ -45,6 +45,9 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
       alignment: Alignment.center,
       // content: Text("채팅방 입장?"),
       content: Column(
@@ -183,6 +186,9 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                       barrierDismissible: false,
                       builder: (BuildContext ctx) {
                         return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           content: Text("$_trainNo 열차 $_position번 칸에 탑승하시나요?"),
                           actions: <Widget>[
                             ElevatedButton(

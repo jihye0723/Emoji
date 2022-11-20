@@ -122,42 +122,111 @@ class _TextChatState extends State<TextChat> {
     double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: _color,
-      appBar: AppBar(
-        //뒤로가기
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back_ios),
-            padding: EdgeInsets.only(left: 10.w)),
-        centerTitle: true,
-        elevation: 0,
-        title: Stack(
-          children: [
-            Container(
-              width: (width * 0.35).w,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              //전광판
-              child: MyStatefulWidget(text: widget._info, color: Colors.white),
-              //child: Text(widget._info),
-            ),
-            Positioned(
-              top: 100.h,
-              child: SizedBox(
-                width: 350.w,
-                height: 100.h,
-              ),
-            ),
-          ],
-        ),
         backgroundColor: _color,
-        actions: <Widget>[
-          IconButton(
-              onPressed: (){
+        appBar: AppBar(
+          //뒤로가기
+          leading: IconButton(
+              onPressed: () {
+                // Navigator.pop(context);
+                Navigator.pop(context, 'refresh');
+              },
+              icon: const Icon(Icons.arrow_back_ios),
+              padding: EdgeInsets.only(left: 10.w)),
+          centerTitle: true,
+          elevation: 0,
+          title: Stack(
+            children: [
+              Container(
+                width: (width * 0.35).w,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                //전광판
+                child:
+                    MyStatefulWidget(text: widget._info, color: Colors.white),
+                //child: Text(widget._info),
+              ),
+              Positioned(
+                top: 100.h,
+                child: SizedBox(
+                  width: 350.w,
+                  height: 100.h,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: _color,
+          actions: <Widget>[
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          content: StatefulBuilder(
+                            builder:
+                                (BuildContext context, StateSetter setState) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(padding: EdgeInsets.only(top: 20.h)),
+                                  Text(
+                                    "내리시는 데 도움이 필요하신가요?",
+                                    style: TextStyle(
+                                        fontFamily: "cafe24_surround"),
+                                  ),
+                                  Padding(padding: EdgeInsets.only(top: 10.h)),
+                                  Text("(소리주의)",
+                                      style: TextStyle(
+                                          fontFamily: "cafe24_surround")),
+                                ],
+                              );
+                            },
+                          ),
+                          actionsPadding: EdgeInsets.only(bottom: 30.h),
+                          actionsAlignment: MainAxisAlignment.center,
+                          actions: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white, // 텍스트 색 바꾸기
+                                backgroundColor: _color, // 백그라운드로 컬러 설정
+
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                              ),
+                              onPressed: () async {
+                                await _audioPlayer
+                                    .setAsset("assets/audio/bird.mp3");
+                                _audioPlayer.play();
+                              },
+                              child: const Text("네",
+                                  style:
+                                      TextStyle(fontFamily: "cafe24_surround")),
+                            )
+                          ],
+                          title: Column(
+                            children: [
+                              Text("도움!",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontFamily: "cafe24_surround",
+                                      fontSize: 30.sp)),
+                            ],
+                          ),
+                        );
+                      });
+                },
+                icon: const Icon(Icons.emoji_people)),
+            IconButton(
+              onPressed: () {
+                //경로선택 dialog
                 showDialog(
                     context: context,
                     builder: (BuildContext ctx) {
@@ -165,20 +234,53 @@ class _TextChatState extends State<TextChat> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        content:  StatefulBuilder(
-                            builder: (BuildContext context, StateSetter setState) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(padding: EdgeInsets.only(top: 20.h)),
-                                  Text("내리시는 데 도움이 필요하신가요?",style: TextStyle(fontFamily: "cafe24_surround"),),
-                                  Padding(padding: EdgeInsets.only(top: 10.h)),
-                                  Text("(소리주의)",style: TextStyle(fontFamily: "cafe24_surround")),
-                                ],
-                              );
-                            },
-                          ),
+                        content: StatefulBuilder(
+                          builder:
+                              (BuildContext context, StateSetter setState) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TypeAheadField(
+                                  textFieldConfiguration:
+                                      TextFieldConfiguration(
+                                          maxLines: 1,
+                                          textAlign: TextAlign.center,
+                                          controller:
+                                              _destinationEditController,
+                                          //autofocus: true,
+                                          style: DefaultTextStyle.of(context)
+                                              .style
+                                              .copyWith(
+                                                  height: 1,
+                                                  fontSize: 17.sp,
+                                                  color: Colors.black),
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                _destinationEditController.text,
+                                            border: OutlineInputBorder(),
+                                            contentPadding: EdgeInsets.all(1),
+                                            constraints:
+                                                BoxConstraints(maxWidth: 180.w),
+                                          )),
+                                  suggestionsCallback: (pattern) {
+                                    return getSuggestions(pattern);
+                                  },
+                                  itemBuilder: (context, suggestion) {
+                                    return ListTile(
+                                      leading: Icon(Icons.location_on),
+                                      title: Text(suggestion),
+                                    );
+                                  },
+                                  onSuggestionSelected: (suggestion) {
+                                    _destinationEditController.text =
+                                        suggestion;
+                                    widget._destination = suggestion;
+                                  },
+                                )
+                              ],
+                            );
+                          },
+                        ),
                         actionsPadding: EdgeInsets.only(bottom: 30.h),
                         actionsAlignment: MainAxisAlignment.center,
                         actions: [
@@ -196,124 +298,50 @@ class _TextChatState extends State<TextChat> {
                               await _audioPlayer.setAsset("assets/audio/helpme.mp3");
                               _audioPlayer.play();
                             },
-                            child: const Text("네",style: TextStyle(fontFamily: "cafe24_surround")),
+                            child: const Text(
+                              "닫기",
+                              style: TextStyle(fontFamily: "cafe24_surround"),
+                            ),
                           )
                         ],
                         title: Column(
                           children: [
                             Text(
-                              "도움!",
-                              textAlign: TextAlign.center, style: TextStyle(fontFamily: "cafe24_surround",fontSize: 30.sp)
+                              "목적지 선택",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: "cafe24_surround"),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 20.h),
+                              child: Image.asset(
+                                "assets/images/map.png",
+                                height: (height * 0.1).h,
+                              ),
                             ),
                           ],
                         ),
                       );
                     });
               },
-              icon: const Icon(Icons.emoji_people)),
-          IconButton(
-            onPressed: () {
-              //경로선택 dialog
-              showDialog(
-                  context: context,
-                  builder: (BuildContext ctx) {
-                    return AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      content: StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TypeAheadField(
-                                textFieldConfiguration: TextFieldConfiguration(
-                                    maxLines: 1,
-                                    textAlign: TextAlign.center,
-                                    controller: _destinationEditController,
-                                    //autofocus: true,
-                                    style: DefaultTextStyle.of(context)
-                                        .style
-                                        .copyWith(
-                                            height: 1,
-                                            fontSize: 17.sp,
-                                            color: Colors.black),
-                                    decoration: InputDecoration(
-                                      hintText: _destinationEditController.text,
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.all(1),
-                                      constraints:
-                                          BoxConstraints(maxWidth: 180.w),
-                                    )),
-                                suggestionsCallback: (pattern) {
-                                  return getSuggestions(pattern);
-                                },
-                                itemBuilder: (context, suggestion) {
-                                  return ListTile(
-                                    leading: Icon(Icons.location_on),
-                                    title: Text(suggestion),
-                                  );
-                                },
-                                onSuggestionSelected: (suggestion) {
-                                  _destinationEditController.text = suggestion;
-                                  widget._destination = suggestion;
-                                },
-                              )
-                            ],
-                          );
-                        },
-                      ),
-                      actionsPadding: EdgeInsets.only(bottom: 30.h),
-                      actionsAlignment: MainAxisAlignment.center,
-                      actions: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white, // 텍스트 색 바꾸기
-                            backgroundColor: _color, // 백그라운드로 컬러 설정
-
-                            textStyle: TextStyle(fontSize: 16.sp),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(ctx).pop();
-                          },
-                          child: const Text("닫기",style: TextStyle(fontFamily: "cafe24_surround"),),
-                        )
-                      ],
-                      title: Column(
-                        children: [
-                          Text(
-                            "목적지 선택",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontFamily: "cafe24_surround"),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(top: 20.h),
-                            child: Image.asset(
-                              "assets/images/map.png",
-                              height: (height * 0.1).h,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  });
-            },
-            icon: const Icon(Icons.pin_drop),
-            padding: EdgeInsets.only(right: 20.w),
-          )
-        ],
-      ),
-      body: Center(
-        child: ChatScreen(
-            myId: widget.myuserId,
-            myName: widget.mynickName,
-            color: _color,
-            room: roomname),
-      ),
-    );
+              icon: const Icon(Icons.pin_drop),
+              padding: EdgeInsets.only(right: 20.w),
+            )
+          ],
+        ),
+        body: WillPopScope(
+          child: Center(
+            child: ChatScreen(
+                myId: widget.myuserId,
+                myName: widget.mynickName,
+                color: _color,
+                room: roomname),
+          ),
+          onWillPop: () {
+            // Navigator.pop(context);
+            Navigator.pop(context, 'refresh');
+            return Future(() => false);
+          },
+        ));
   }
 
   //검색용 메소드.. 도착역검색

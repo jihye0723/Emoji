@@ -100,7 +100,7 @@ public class SeatController {
         }
         String portkey ="user:"+userId;
         String port = (String) redisTemplate.opsForHash().get(portkey, "server");
-        port = port.substring(0, 3) + '1';
+        
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
         RestTemplate restTemplate = new RestTemplate();
         String path ="http://k7a6021.p.ssafy.io:"+port+"/seat/finish";

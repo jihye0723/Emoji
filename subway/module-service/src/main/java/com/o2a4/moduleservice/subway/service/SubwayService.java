@@ -26,8 +26,8 @@ public class SubwayService {
         List<Station> list =  stationRepository.findAll();
 
         // 미터(Meter) 단위
-        System.out.println("Lat : " + latitude + ",    Lon : " + longtitude);
-        System.out.println("Lat : " + list.get(1).getLatitude() + ",    Lon : " + list.get(1).getLongitude());
+//        System.out.println("Lat : " + latitude + ",    Lon : " + longtitude);
+//        System.out.println("Lat : " + list.get(1).getLatitude() + ",    Lon : " + list.get(1).getLongitude());
 
         for (Station s:list) {
             double distanceMeter = distance(latitude, longtitude, s.getLatitude(), s.getLongitude(), "meter");

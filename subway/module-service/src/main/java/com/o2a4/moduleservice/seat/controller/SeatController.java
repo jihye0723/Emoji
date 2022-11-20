@@ -32,7 +32,7 @@ public class SeatController {
     @GetMapping("/{userId}")
     public String startSeat(@PathVariable String userId) {
         seatsRepository.getSeatUser().add(userId);
-        log.info("자리 양도 시작 [주최자]  :" + seatsRepository.getSeatUser().toString());
+        log.info("자리 양도 시작 [주최자]  :" + userId);
 
         String key = "seat:"+userId; // ex)seat:ssafy
         redisTemplate.opsForList().rightPush(key, "start");
@@ -46,6 +46,10 @@ public class SeatController {
     public ResponseEntity<?> attendSeat(@RequestBody Map<String, String> seatMap){
        String attend_id= seatMap.get("attend_id");
        String userId = seatMap.get("userId");
+
+        log.info("[자리 양도 참가]");
+        log.info("attend_id : " + attend_id );
+        log.info("userId : " + userId );
        //start_id가 현재 활성화 된 아이디 인지 확인
         boolean HasUser = seatsRepository.getSeatUser().contains(userId);
         if(!HasUser){
@@ -67,6 +71,9 @@ public class SeatController {
         String userId = finishInfo.get("userId");
         String content = finishInfo.get("content");
 
+        log.info("[자리 양도 종료]");
+        log.info("userId : " + userId );
+        log.info("content : " + content );
         Seats seatsInfo = new Seats();
         seatsInfo.setUserId(userId);
         seatsInfo.setContent(content);
@@ -95,7 +102,8 @@ public class SeatController {
         String port = (String) redisTemplate.opsForHash().get(portkey, "server");
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
         RestTemplate restTemplate = new RestTemplate();
-        String path ="http://k7a6021.p.ssafy.io:"+port+"/seat/finish"; 
+        String path ="http://k7a6021.p.ssafy.io:"+port+"/seat/finish";
+        log.info("path : " + path );
         restTemplate.postForObject(path, seatsInfo, String.class );
 
         // redis에서 해당 키 삭제

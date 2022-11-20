@@ -14,8 +14,9 @@
   <component name="ChangeListManager">
     <list default="true" id="3ef383de-8754-4900-804d-848fbb27f6ed" name="Changes" comment="FIX 로그인 토큰 검증 (작성중)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/NickGenerator.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/NickGenerator.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/widget/make_nick.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/widget/make_nick.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/FirstPage.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/mainpage/GetOnTrainDialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/mainpage/GetOnTrainDialog.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/screens/textchat.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/textchat.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

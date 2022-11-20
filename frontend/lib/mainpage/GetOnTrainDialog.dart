@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:practice_01/mainpage/FirstPage.dart';
 import 'package:practice_01/mainpage/TrainInfo.dart';
 import '../screens/textchat.dart';
+import 'Home.dart';
 import 'TestChatPage.dart';
 import 'NickGenerator.dart';
 
@@ -77,7 +79,6 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                   color: Colors.red,
                   fontSize: 9.sp,
                 ),
-                
               ),
             ),
           ),
@@ -182,8 +183,9 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
           // decoration:
           //     BoxDecoration(border: Border.all(color: Colors.blue, width: 1)),
           child: ElevatedButton(
-             style: ElevatedButton.styleFrom(
-                 backgroundColor:Color(0xFFF8EFD2),),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFFF8EFD2),
+            ),
             onPressed: widget.train.remainTime <= 60
                 ? () {
                     showDialog(
@@ -198,18 +200,37 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                           actions: <Widget>[
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:Color(0xFFF8EFD2),),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
+                                  backgroundColor: Color(0xFFF8EFD2),
+                                ),
+                                onPressed: () async {
+                                  // Navigator.of(context).pop();
                                   Navigator.of(ctx).pop();
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) => TextChat(
-                                          myuserId: widget.userId,
-                                          mynickName: landumeNick(),
-                                          line: widget.train.line,
-                                          trainNo: _trainNo.toString(),
-                                          stationName: widget.stationName,
-                                          position: _position.toString())));
+                                  String refresh = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => TextChat(
+                                              myuserId: widget.userId,
+                                              mynickName: landumeNick(),
+                                              line: widget.train.line,
+                                              trainNo: _trainNo.toString(),
+                                              stationName: widget.stationName,
+                                              position: _position.toString())));
+                                  if (refresh == 'refresh') {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Home()));
+                                  }
+                                  // Navigator.of(context).push(MaterialPageRoute(
+                                  //     builder: (context) => TextChat(
+                                  //         myuserId: widget.userId,
+                                  //         mynickName: landumeNick(),
+                                  //         line: widget.train.line,
+                                  //         trainNo: _trainNo.toString(),
+                                  //         stationName: widget.stationName,
+                                  //         position: _position.toString())));
                                   Fluttertoast.showToast(
                                     msg: " $_trainNo 열차 $_position번 칸에 탑승",
                                     fontSize: 16.sp,
@@ -220,14 +241,18 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                                     toastLength: Toast.LENGTH_SHORT,
                                   );
                                 },
-                                child: Text("네",style: TextStyle(color: Colors.black))),
+                                child: Text("네",
+                                    style: TextStyle(color: Colors.black))),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:Colors.grey[100]),
+                                    backgroundColor: Colors.grey[100]),
                                 onPressed: () {
                                   Navigator.of(ctx).pop();
                                 },
-                                child: Text("아니요",style: TextStyle(color: Colors.black),))
+                                child: Text(
+                                  "아니요",
+                                  style: TextStyle(color: Colors.black),
+                                ))
                           ],
                         );
                       },
@@ -235,7 +260,8 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                   }
                 : null,
             child: Text(
-              "탑승하기",style: TextStyle(color: Colors.black),
+              "탑승하기",
+              style: TextStyle(color: Colors.black),
             ),
           ),
         ),

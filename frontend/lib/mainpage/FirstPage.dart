@@ -705,6 +705,25 @@ class _FirstPageState extends State<FirstPage> {
                 ),
               ),
             ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("Pull to Refresh",
+                        style: TextStyle(fontSize: 14.sp, color: Colors.grey)),
+                    Icon(Icons.arrow_downward, size: 14.sp),
+                  ],
+                ),
+                // Text(
+                //   "Last Updated : (${_updatedTime ?? 'updated time'})",
+                //   style: TextStyle(fontSize: 10.sp, color: Colors.grey),
+                // )
+              ],
+            ),
             Container(
                 width: 320.w,
                 height: 100.h,

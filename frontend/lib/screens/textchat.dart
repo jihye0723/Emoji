@@ -127,7 +127,8 @@ class _TextChatState extends State<TextChat> {
         //뒤로가기
         leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              // Navigator.pop(context);
+              Navigator.pop(context, 'refresh');
             },
             icon: const Icon(Icons.arrow_back_ios),
             padding: EdgeInsets.only(left: 10.w)),
@@ -157,7 +158,7 @@ class _TextChatState extends State<TextChat> {
         backgroundColor: _color,
         actions: <Widget>[
           IconButton(
-              onPressed: (){
+              onPressed: () {
                 showDialog(
                     context: context,
                     builder: (BuildContext ctx) {
@@ -165,20 +166,27 @@ class _TextChatState extends State<TextChat> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        content:  StatefulBuilder(
-                            builder: (BuildContext context, StateSetter setState) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(padding: EdgeInsets.only(top: 20.h)),
-                                  Text("내리시는 데 도움이 필요하신가요?",style: TextStyle(fontFamily: "cafe24_surround"),),
-                                  Padding(padding: EdgeInsets.only(top: 10.h)),
-                                  Text("(소리주의)",style: TextStyle(fontFamily: "cafe24_surround")),
-                                ],
-                              );
-                            },
-                          ),
+                        content: StatefulBuilder(
+                          builder:
+                              (BuildContext context, StateSetter setState) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(padding: EdgeInsets.only(top: 20.h)),
+                                Text(
+                                  "내리시는 데 도움이 필요하신가요?",
+                                  style:
+                                      TextStyle(fontFamily: "cafe24_surround"),
+                                ),
+                                Padding(padding: EdgeInsets.only(top: 10.h)),
+                                Text("(소리주의)",
+                                    style: TextStyle(
+                                        fontFamily: "cafe24_surround")),
+                              ],
+                            );
+                          },
+                        ),
                         actionsPadding: EdgeInsets.only(bottom: 30.h),
                         actionsAlignment: MainAxisAlignment.center,
                         actions: [
@@ -193,18 +201,22 @@ class _TextChatState extends State<TextChat> {
                               ),
                             ),
                             onPressed: () async {
-                              await _audioPlayer.setAsset("assets/audio/bird.mp3");
+                              await _audioPlayer
+                                  .setAsset("assets/audio/bird.mp3");
                               _audioPlayer.play();
                             },
-                            child: const Text("네",style: TextStyle(fontFamily: "cafe24_surround")),
+                            child: const Text("네",
+                                style:
+                                    TextStyle(fontFamily: "cafe24_surround")),
                           )
                         ],
                         title: Column(
                           children: [
-                            Text(
-                              "도움!",
-                              textAlign: TextAlign.center, style: TextStyle(fontFamily: "cafe24_surround",fontSize: 30.sp)
-                            ),
+                            Text("도움!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontFamily: "cafe24_surround",
+                                    fontSize: 30.sp)),
                           ],
                         ),
                       );
@@ -279,7 +291,10 @@ class _TextChatState extends State<TextChat> {
                           onPressed: () {
                             Navigator.of(ctx).pop();
                           },
-                          child: const Text("닫기",style: TextStyle(fontFamily: "cafe24_surround"),),
+                          child: const Text(
+                            "닫기",
+                            style: TextStyle(fontFamily: "cafe24_surround"),
+                          ),
                         )
                       ],
                       title: Column(

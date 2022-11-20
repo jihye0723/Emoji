@@ -55,7 +55,7 @@ public class RestHandler {
         // 1. 유효한 사용자 확인
         String token = req.headers().firstHeader("Authorization").split("Bearer")[1].trim();
         String userId = JWT.decode(token).getClaim("sub").asString();
-//        String userId = "ssafy";  로컬 테스트용
+//        String userId = "ssafy"; // 로컬 테스트용
 
         Mono<Bridge> train = redisTemplate.opsForHash().get(uPrefix + userId, "server")
                 // 없었다면 body를 사용

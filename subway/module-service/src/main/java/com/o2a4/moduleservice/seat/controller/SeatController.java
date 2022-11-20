@@ -91,14 +91,16 @@ public class SeatController {
 
             seatsInfo.setWinnerId(winnerId);
         }
+
+        String port = (String) redisTemplate.opsForHash().get(userId, "server");
+        // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject("http://k7a6022.p.ssafy.io:"+port+"/seat/finish", seatsInfo, String.class );
+
         // redis에서 해당 키 삭제
         redisTemplate.expire(key, 3, TimeUnit.SECONDS);
         // 자리양도 주최자 mem 에서 삭제
         seatsRepository.getSeatUser().remove(userId);
-        // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
-
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject("http://k7a6022.p.ssafy.io:8082/seat/finish", seatsInfo, String.class );
 
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }

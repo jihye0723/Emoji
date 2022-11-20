@@ -31,7 +31,7 @@ public class RestHandler {
     static String tPrefix = "train:";
     static String sPrefix = "server:";
 
-    @Value("${server.netty.transfer.port}")
+    @Value("${server.port}")
     private String port;
 
     private final ServerBootstrap serverBootstrap;

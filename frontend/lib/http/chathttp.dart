@@ -47,7 +47,9 @@ class chatroom {
           "Authorization": "Bearer $mytoken2",
         },
         body: body);
+    print(response.request);
     print(response.statusCode);
+
     if (response.statusCode < 300) {
       const responseBody = "OK";
       return responseBody;
@@ -60,6 +62,7 @@ class chatroom {
     var body = json.encode(data);
 
     var mytoken2 = await storage.read(key: "accessToken");
+    print("finish");
     final response = await http.post(Uri.parse('$server/seat/finish'),
         headers: {
           "Content-type": "application/json",
@@ -67,11 +70,14 @@ class chatroom {
           "Authorization": "Bearer $mytoken2",
         },
         body: body);
-
+    print("real finish");
+    print(response.request);
+    print(response.statusCode);
     if (response.statusCode < 300) {
       const responseBody = "OK";
       return responseBody;
     }
+    print("object");
   }
 
   //사용자 신고

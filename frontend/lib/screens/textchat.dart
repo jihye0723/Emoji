@@ -193,7 +193,7 @@ class _TextChatState extends State<TextChat> {
                               ),
                             ),
                             onPressed: () async {
-                              await _audioPlayer.setAsset("assets/audio/bird.mp3");
+                              await _audioPlayer.setAsset("assets/audio/helpme.mp3");
                               _audioPlayer.play();
                             },
                             child: const Text("네",style: TextStyle(fontFamily: "cafe24_surround")),

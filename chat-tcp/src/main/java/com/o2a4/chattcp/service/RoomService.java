@@ -136,11 +136,13 @@ public class RoomService {
                     cidcRepo.getChannelIdChannelMap().get(c).writeAndFlush(builder.build());
                 }).flatMap(c ->
                         redisTemplate.opsForHash().get(uPrefix + userId, "channelGroup")
-                ).doOnNext(cg -> {
-                    // 채팅방에 메시지 전송
-                    log.info("SEND MESSAGE TO ROOM");
-                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(b2.build());
-                })
+                                .doOnNext(cg -> {
+                                    // 채팅방에 메시지 전송
+                                    log.info("SEND MESSAGE TO ROOM");
+                                    cidcRepo.getChannelIdChannelMap().get(c).flush();
+                                    tcgRepo.getTrainChannelGroupMap().get(cg).writeAndFlush(b2.build());
+                                })
+                )
                 .subscribe();
 
         // 이 형태는 2개 합친거 & 뒤에거 전송

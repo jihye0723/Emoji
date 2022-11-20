@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: api-gateway
+
+---
+
+server:
+  port: 8000
+
+---
+
+# eureka
+eureka:
+  instance:
+    hostname: k7a6022.p.ssafy.io
+    appname: api-gateway
+#    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://3.34.252.107:8761/eureka/
+#      defaultZone: http://172.26.12.212:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka/
+
+---
+
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+
+---
+
+spring:
+  cloud:
+    gateway:
+#      default-filters:
+#        - name: GlobalFilter
+#          agrs:
+#          preLogger: true
+#          postLogger: true
+      routes:
+        - id: module-auth
+          uri: lb://MODULE-AUTH
+          predicates:
+            - Path=/oauth/**
+#            - name: Method
+#              args:
+#                methods:
+#                  - GET, POST
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: recruitlist
+#                fallbackUri: forward:/fallbacks/7
+
+        - id: module-service
+          uri: lb://MODULE-SERVICE
+          predicates:
+            - Path=/subway/**, /seat/**
+          filters:
+            - AuthorizationHeaderFilter
+#            - name: Path
+#              args:
+#                patterns: /subway/**
+#            - name: Method
+#              args:
+#                methods:
+#                  - GET, POST
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: recruitlist
+#                fallbackUri: forward:/fallbacks/7
+#            - name: RewritePath
+#              args:
+#                regexp: /recruit/(?<path>.*)
+#                replacement: /$\{path}
+        - id: chat
+          uri: lb://CHAT
+          predicates:
+            - Path=/chat/**, /seat/finish
+          filters:
+            - AuthorizationHeaderFilter
+#            - name: Path
+#              args:
+#                patterns: /subway/**
+#            - name: Method
+#              args:
+#                methods:
+#                  - GET, POST
+#          filters:
+#            - name: CircuitBreaker
+#              args:
+#                name: recruitlist
+#                fallbackUri: forward:/fallbacks/7
+#            - name: RewritePath
+#              args:
+#                regexp: /recruit/(?<path>.*)
+#                replacement: /$\{path}

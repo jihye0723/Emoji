@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: module-service
+
+---
+
+# mongo
+spring:
+  data:
+    mongodb:
+#      uri: mongodb://localhost:27017/subway
+#      host: localhost
+      #      host: 52.79.215.19
+      host: 172.26.10.110
+      port: 27017
+      authentication-database: admin
+      database: subway
+      username: o2a4
+      password: o2a4602
+
+---
+
+# userDetailService
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+---
+
+# port
+server:
+  port: 8082
+
+---
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+#          , org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+#          , org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+
+
+---
+
+# redis
+spring:
+  redis:
+    #      host: 52.79.215.19
+    host: 172.26.10.110
+    port: 6379
+    password: o2a4redis
+
+---
+
+# eureka
+eureka:
+  instance:
+    hostname: k7a602.p.ssafy.io
+    appname: module-service
+#    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://3.34.252.107:8761/eureka/
+#      defaultZone: http://172.26.12.212:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka/

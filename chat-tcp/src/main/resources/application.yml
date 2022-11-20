@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: chat
+
+---
+
+spring:
+  redis:
+    password: o2a4redis
+    host: 52.79.215.19
+    #host: k7a602.p.ssafy.io
+#    host: 172.26.10.110
+    port: '6379'
+
+---
+
+spring:
+  kafka:
+    template:
+      default-topic: chats
+    bootstrap-servers: 52.79.215.19:8892
+#    bootstrap-servers: 172.26.10.110:8892
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+---
+
+spring:
+  data:
+    mongodb:
+      port: '27017'
+      host: 52.79.215.19
+#      host: 172.26.10.110
+      authentication-database: admin
+      username: o2a4
+      database: o2a4
+      password: o2a4602
+
+---
+
+server:
+#  port: '8101'
+  port: ${server.port}
+  netty:
+    bossCount: '1'
+    workerCount: '64'
+    backlog: '512'
+    transfer:
+#      port: '8102'
+      port: ${transfer.port}
+    keepAlive: 'true'
+    logLevel: INFO
+
+---
+
+# eureka
+eureka:
+  instance:
+    hostname: k7a6021.p.ssafy.io
+    appname: chat
+  #    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://3.34.252.107:8761/eureka/
+#      defaultZone: http://172.26.12.212:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka/

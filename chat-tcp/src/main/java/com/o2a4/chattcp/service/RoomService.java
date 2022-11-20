@@ -101,7 +101,7 @@ public class RoomService {
                 .flatMap(token -> {
                             WebClient webClient = WebClient.create();
 
-                            return webClient.get().uri("http://k7a6022.p.ssafy.io:8082/seat/" + userId)
+                            return webClient.get().uri("http://k7a6022.p.ssafy.io/seat/" + userId)
                                     .header("Authorization", "Bearer " + token)
                                     .retrieve().bodyToMono(String.class);
                         }

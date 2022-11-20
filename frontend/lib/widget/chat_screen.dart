@@ -158,16 +158,27 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     ) {
       var serverdata = data.getRange(2, data.length);
       print(data);
-      print(data[1]);
+      // print(data[1]);
+      // print(data.length-2);
+      // print(data.length);
+      var last = data[1];
+      if(data[0] == 0){
+        last = data[1];
+      }else {
+        last = data[0]*256 + data[1];
+      }
 
-      //List<int> templist = serverdata.toList().sublist(0,data[1]);
-      //Transfer receive2 = Transfer.fromBuffer(templist);
 
-
-      List<int> nowlist = serverdata.toList();
-      Transfer receive = Transfer.fromBuffer(nowlist);
-
+      var testdata = data.getRange(2, last+2);
+      List<int> nowlist2 = testdata.toList();
+      Transfer receive = Transfer.fromBuffer(nowlist2);
       print(receive);
+
+
+      // List<int> nowlist = serverdata.toList();
+      // Transfer receive = Transfer.fromBuffer(nowlist);
+
+      //print(receive);
 
       if (receive.userId != widget.myId) {
         if (receive.type == "room-in") {

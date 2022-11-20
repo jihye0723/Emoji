@@ -203,7 +203,7 @@ class _TextChatState extends State<TextChat> {
                               ),
                               onPressed: () async {
                                 await _audioPlayer
-                                    .setAsset("assets/audio/bird.mp3");
+                                    .setAsset("assets/audio/helpme.mp3");
                                 _audioPlayer.play();
                               },
                               child: const Text("네",
@@ -294,9 +294,8 @@ class _TextChatState extends State<TextChat> {
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                             ),
-                            onPressed: () async {
-                              await _audioPlayer.setAsset("assets/audio/helpme.mp3");
-                              _audioPlayer.play();
+                            onPressed: () {
+                              Navigator.pop(ctx);
                             },
                             child: const Text(
                               "닫기",

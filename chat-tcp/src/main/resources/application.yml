@@ -40,17 +40,17 @@ spring:
 ---
 
 server:
-  port: '8101'
-#  port: ${server.port}
+#  port: '8101'
+  port: ${server.port}
   netty:
     bossCount: '1'
     workerCount: '64'
     backlog: '512'
     transfer:
-      port: '8102'
-#      port: ${transfer.port}
+#      port: '8102'
+      port: ${transfer.port}
     keepAlive: 'true'
-    logLevel: DEBUG
+    logLevel: INFO
 
 ---
 

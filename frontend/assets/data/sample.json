@@ -1,0 +1,59 @@
+{
+  "stationName": "역삼",
+  "trainList": [
+    {
+      "line": "2호선",
+      "direction": 1,
+      "trainNo": "2001",
+      "remainTime": 777,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    },
+    {
+      "line": "2호선",
+      "direction": 0,
+      "trainNo": "2000",
+      "remainTime": 26,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    },
+    {
+      "line": "4호선",
+      "direction": 1,
+      "trainNo": "4001",
+      "remainTime": 444,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    },
+    {
+      "line": "4호선",
+      "direction": 0,
+      "trainNo": "4000",
+      "remainTime": 1313,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    },
+    {
+      "line": "5호선",
+      "direction": 1,
+      "trainNo": "5001",
+      "remainTime": 234,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    },
+    {
+      "line": "5호선",
+      "direction": 0,
+      "trainNo": "5000",
+      "remainTime": 37,
+      "detail": "",
+      "arvlMsg2": "",
+      "arvlMsg3": ""
+    }
+  ]
+}

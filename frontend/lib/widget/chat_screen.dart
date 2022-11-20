@@ -157,9 +157,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       Uint8List data,
     ) {
       var serverdata = data.getRange(2, data.length);
-      //print(data);
+      print(data);
+      print(data[1]);
+
+      //List<int> templist = serverdata.toList().sublist(0,data[1]);
+      //Transfer receive2 = Transfer.fromBuffer(templist);
+
+
       List<int> nowlist = serverdata.toList();
       Transfer receive = Transfer.fromBuffer(nowlist);
+
       print(receive);
 
       if (receive.userId != widget.myId) {
@@ -648,24 +655,23 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   //자리양도 만들기
   void makeseat(BuildContext context, String text) {
     // tcp서버에 시작한다고 알려주고
-    tcpsend("seat-start", "시작", widget.myId, widget.myName);
-
+    print("start");
+    tcpsend("seat-start", "", widget.myId, widget.myName);
     var temp;
 
 
     //10초 딜레이후에 rest보내
     Timer(Duration(seconds: 11), () async {
       //http 통신으로 끝났다고 알려줌
+      print("seat");
 
       seatresult = http.chatroom().finish(widget.myId, widget.myId, text);
       temp = await seatresult;
 
-      //print(temp);
     });
 
 
     Timer(Duration(seconds: 13), () async {
-
       if (temp == "OK") {
         snackbar.showSnackBar(context, '자리양도가 완료되었습니다!', 'common');
       }

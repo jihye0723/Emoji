@@ -294,8 +294,9 @@ class _TextChatState extends State<TextChat> {
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                             ),
-                            onPressed: () {
-                              Navigator.of(ctx).pop();
+                            onPressed: () async {
+                              await _audioPlayer.setAsset("assets/audio/helpme.mp3");
+                              _audioPlayer.play();
                             },
                             child: const Text(
                               "닫기",

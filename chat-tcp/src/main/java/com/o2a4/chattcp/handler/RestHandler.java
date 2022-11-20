@@ -93,7 +93,8 @@ public class RestHandler {
                             }))
                             .flatMap(portRes -> {
                                 Map<String, String> uMap = new HashMap<>();
-
+                                log.info("get result : {}", portRes);
+                                log.info("res class : {}", portRes.getClass());
                                 // 만약에 지금 서버가 아닌 다른 서버에서 만들었던 열차라면
                                 // 다른 서버의 포트로 유저를 저장해야 채팅방을 맞게 찾아감
                                 if (portRes.getClass() == Tuple2.class) uMap.put("server", port);

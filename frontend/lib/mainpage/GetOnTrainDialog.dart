@@ -62,6 +62,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
             widget.train.detail,
             style: TextStyle(fontWeight: FontWeight.w500),
           ),
+          Padding(padding: EdgeInsets.only(bottom: 10.h)),
           SizedBox(
             // width: 200.w,
             height: 30.h,
@@ -76,6 +77,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                   color: Colors.red,
                   fontSize: 9.sp,
                 ),
+                
               ),
             ),
           ),
@@ -84,6 +86,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Padding(padding: EdgeInsets.only(bottom: 10.h)),
                     Container(
                       // decoration: BoxDecoration(
                       //     border: Border.all(color: Colors.orange, width: 1)),
@@ -99,6 +102,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                       //       border: Border.all(color: Colors.red, width: 1)),
                       // ),
                     ),
+                    Padding(padding: EdgeInsets.only(bottom: 10.h)),
                     // TrainPositionSlider(),
                     Container(
                       // decoration: BoxDecoration(
@@ -149,6 +153,7 @@ class GetOnTrainDialogState extends State<GetOnTrainDialog> {
                         ),
                       ),
                     ),
+                    Padding(padding: EdgeInsets.only(bottom: 10.h)),
                     Container(
                       // decoration: BoxDecoration(
                       //     border: Border.all(color: Colors.orange, width: 1)),

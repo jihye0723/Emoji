@@ -652,20 +652,24 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     var temp;
 
+
     //10초 딜레이후에 rest보내
-    Timer(Duration(seconds: 10), () async {
+    Timer(Duration(seconds: 11), () async {
       //http 통신으로 끝났다고 알려줌
+
       seatresult = http.chatroom().finish(widget.myId, widget.myId, text);
       temp = await seatresult;
+
       //print(temp);
     });
 
-    Timer(Duration(seconds: 12), () async {
+
+    Timer(Duration(seconds: 13), () async {
+
       if (temp == "OK") {
         snackbar.showSnackBar(context, '자리양도가 완료되었습니다!', 'common');
       }
     });
-
     _seatController.clear();
   }
 

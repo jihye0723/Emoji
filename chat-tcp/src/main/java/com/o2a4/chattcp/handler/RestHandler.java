@@ -79,7 +79,7 @@ public class RestHandler {
                                 log.info("TRAIN {} DOES NOT EXIST", trainId);
                                 // 채널그룹 맵에 추가
                                 tcgRepo.getTrainChannelGroupMap().put(trainId, new DefaultChannelGroup(serverBootstrap.config().childGroup().next()));
-
+                                // 빈 열차 만들기
                                 Map<String, String> map = new HashMap<>();
                                 map.put("server", port);
                                 map.put("villain", "0");
@@ -89,10 +89,11 @@ public class RestHandler {
                             }))
                             .flatMap(portRes -> {
                                 log.info("ADD USER {} TO SERVER", userId);
-
+                                // 유저 정보 만들어서 저장
                                 Map<String, String> uMap = new HashMap<>();
                                 uMap.put("channelGroup", trainId);
                                 uMap.put("server", port);
+                                uMap.put("token", token);
 
                                 return Mono.zip(redisTemplate.opsForHash().putAll(uPrefix + userId, uMap),
                                         redisTemplate.expire(uPrefix + userId, Duration.ofHours(3)));

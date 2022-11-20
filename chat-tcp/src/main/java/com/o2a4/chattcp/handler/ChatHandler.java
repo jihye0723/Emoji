@@ -96,7 +96,6 @@ public class ChatHandler extends ChannelInboundHandlerAdapter {
 
                                     return Mono.just("ok");
                                 })
-                                .onErrorResume(throwable -> Mono.just("do redis"))
                                 .flatMap(i -> {
                                     log.info("DELETE USER {}", userId);
                                     return redisTemplate.opsForHash().delete(uPrefix + userId);

@@ -91,8 +91,8 @@ public class SeatController {
 
             seatsInfo.setWinnerId(winnerId);
         }
-
-        String port = (String) redisTemplate.opsForHash().get(userId, "server");
+        String portkey ="user:"+userId;
+        String port = (String) redisTemplate.opsForHash().get(portkey, "server");
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.postForObject("http://k7a6022.p.ssafy.io:"+port+"/seat/finish", seatsInfo, String.class );

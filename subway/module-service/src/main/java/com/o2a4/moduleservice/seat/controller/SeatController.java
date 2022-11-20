@@ -98,7 +98,7 @@ public class SeatController {
         // seatsInfo : 양도자/당첨자/자리정보 담겨있는 객체
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject("http://k7a6022.p.ssafy.io/seat/finish", seatsInfo, String.class );
+        restTemplate.postForObject("http://k7a6021.p.ssafy.io/seat/finish", seatsInfo, String.class );
 
         return new ResponseEntity<String>("success", HttpStatus.OK);
     }

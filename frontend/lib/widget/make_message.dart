@@ -94,6 +94,7 @@ Widget message(
                             // 토큰 얻어와야함.
                             //userreport(context, mytoken, id);
                             Navigator.of(ctx).pop();
+                            snackbar.showSnackBar(context, "신고 완료!", "villain");
                           },
                           child: const Text("신고하기"),
                         )

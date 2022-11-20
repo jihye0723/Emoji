@@ -143,12 +143,12 @@ class _FirstPageState extends State<FirstPage> {
         _loadedLocation = true;
       });
       Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
-        // "latitude": position.latitude.toString(),
-        // "longtitude": position.longitude.toString()
+         "latitude": position.latitude.toString(),
+         "longtitude": position.longitude.toString()
         //"latitude": 37.500643.toString(), // 역삼역
         //"longtitude": 127.036377.toString()
-        "latitude": 37.476559.toString(), // 사당역
-        "longtitude": 126.981633.toString()
+        //"latitude": 37.476559.toString(), // 사당역
+        //"longtitude": 126.981633.toString()
       });
 
       // Future<String?> mytoken = storage.read(key: "accessToken");

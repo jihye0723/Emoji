@@ -45,7 +45,7 @@ public class RoomService {
 
                             // 이 채팅서버에 할당된 열차가 아님
                             if (channelGroup == null) {
-                                redisTemplate.opsForHash().remove(uPrefix + userId);
+                                redisTemplate.opsForHash().delete(uPrefix + userId);
 
                                 Transfer send = Transfer.newBuilder()
                                         .setContent("채팅방 입장 실패")

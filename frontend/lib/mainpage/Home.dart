@@ -44,6 +44,15 @@ class _HomeState extends State<Home> {
             // SecondPage(),
           ];
         });
+      } else {
+        setState(() {
+          pages = <Widget>[
+            // 하단 내비게이션에 들어갈 페이지 리스트 2개
+            // FirstPage(userId: "gkswotmd96@naver.com"),
+            FirstPage(userId: "email"),
+            // SecondPage(),
+          ];
+        });
       }
     });
     // print(_email);
@@ -67,7 +76,7 @@ class _HomeState extends State<Home> {
         backgroundColor: Color(0xFFF8EFD2),
         centerTitle: true,
       ),
-      body: pages.length > 0 ? pages[_selectedIndex] : Container(),
+      body: pages.length > 0 ? pages[_selectedIndex] : Text("error"),
       // body: CustomSlider(),
       // bottomNavigationBar: BottomNavigationBar(
       //   selectedItemColor: Colors.green,

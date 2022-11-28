@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 
 bool validateToken(dynamic tkn) {
   // 앱 실행 (스플래시 화면동안)
@@ -34,36 +35,50 @@ bool validateToken(dynamic tkn) {
 
   final storage = FlutterSecureStorage();
 
-  // 토큰 검증 요청할 url
-  Uri uri = Uri.http("k7a6022.p.ssafy.io", "/oauth/validation");
-
   String at = json.decode(tkn)['accessToken'];
   String rt = json.decode(tkn)['refreshToken'];
 
-  http.post(uri, body: {'accessToken': at, 'refreshToken': rt}).then((value) {
-    int resultCode = value.statusCode;
-    print("statusCode = $resultCode");
-    if (resultCode == 200) {
-      // 정상 토큰
-      // secureStorage 토큰 갱신
-      print("저장된 토큰 갱신");
-      storage.write(
-          key: "accessToken", value: json.decode(value.body)['accessToken']);
-      storage.write(
-          key: "refreshToken", value: json.decode(value.body)['refreshToken']);
+  bool isExpired = Jwt.isExpired(at);
 
-      // 메인페이지로 이동
-      return true;
-    } else {
-      // secureStorage 토큰 삭제
-      print("저장된 토큰 삭제");
-      storage.delete(key: "accessToken");
-      storage.delete(key: "refreshToken");
+  if (isExpired) {
+    print("저장된 토큰 삭제");
+    storage.delete(key: "accessToken");
+    storage.delete(key: "refreshToken");
+    return false;
+  } else {
+    return true;
+  }
 
-      // 로그인 페이지로 이동
-      return false;
-    }
-  });
+  // 토큰 검증 요청할 url
+  // Uri uri = Uri.http("k7a6022.p.ssafy.io", "/oauth/validation");
+  //
+  // String at = json.decode(tkn)['accessToken'];
+  // String rt = json.decode(tkn)['refreshToken'];
+  //
+  // http.post(uri, body: {'accessToken': at, 'refreshToken': rt}).then((value) {
+  //   int resultCode = value.statusCode;
+  //   print("statusCode = $resultCode");
+  //   if (resultCode == 200) {
+  //     // 정상 토큰
+  //     // secureStorage 토큰 갱신
+  //     print("저장된 토큰 갱신");
+  //     storage.write(
+  //         key: "accessToken", value: json.decode(value.body)['accessToken']);
+  //     storage.write(
+  //         key: "refreshToken", value: json.decode(value.body)['refreshToken']);
+  //
+  //     // 메인페이지로 이동
+  //     return true;
+  //   } else {
+  //     // secureStorage 토큰 삭제
+  //     print("저장된 토큰 삭제");
+  //     storage.delete(key: "accessToken");
+  //     storage.delete(key: "refreshToken");
+  //
+  //     // 로그인 페이지로 이동
+  //     return false;
+  //   }
+  // });
 
   return false;
   // return true;

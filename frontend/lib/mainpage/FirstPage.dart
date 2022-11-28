@@ -143,8 +143,8 @@ class _FirstPageState extends State<FirstPage> {
         _loadedLocation = true;
       });
       Uri uri = Uri.http("k7a6022.p.ssafy.io", "/subway/station", {
-        // "latitude": position.latitude.toString(),
-        // "longtitude": position.longitude.toString()
+        // "latitude": _currentPosition?.latitude.toString(),
+        // "longtitude": _currentPosition?.longitude.toString()
         //"latitude": 37.500643.toString(), // 역삼역
         //"longtitude": 127.036377.toString()
         "latitude": 37.476559.toString(), // 사당역
@@ -158,9 +158,9 @@ class _FirstPageState extends State<FirstPage> {
       print("accessToken : $mytoken");
       print("refreshToken : $myrefreshtoken");
 
-      Map<String, dynamic> payload = Jwt.parseJwt(mytoken!);
-      print("payload : ");
-      print(payload);
+      // Map<String, dynamic> payload = Jwt.parseJwt(mytoken!);
+      // print("payload : ");
+      // print(payload);
 
       http.get(
         uri,
@@ -169,7 +169,7 @@ class _FirstPageState extends State<FirstPage> {
           "Authorization": "Bearer $mytoken",
         },
       ).then((data) {
-        if (data.statusCode == 200) {
+        if (data.statusCode == 200 && data.body.isNotEmpty) {
           print("data : $data");
           print("data.body.length : ${data.body.length}");
           print("요청 uri : ${uri.toString()}");

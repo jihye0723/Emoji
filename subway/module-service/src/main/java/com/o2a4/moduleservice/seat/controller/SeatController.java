@@ -39,7 +39,6 @@ public class SeatController {
         return "success";
     }
 
-/*-------------------이거 왜 오래걸림 ?-------------------------*/
     /*자리 양도 신청*/
     /*{ "userId" : 양도자 id,  "attend_id" : 참가자 id } */
     @PostMapping("/attend")
